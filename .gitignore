@@ -1,0 +1,16 @@
+# C++
+*.o
+
+# Emacs
+*~
+\#*\#
+
+# Qt
+*.qmlc
+*.moc
+/.qmake.stash
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+Makefile*
