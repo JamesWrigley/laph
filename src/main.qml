@@ -14,8 +14,9 @@ ApplicationWindow {
         color: "#494949"
 
         Canvas {
-            focus: true
             anchors.fill: parent
+
+            focus: true
 
             property real scale: 1
             property real xOffset: 0
@@ -42,8 +43,11 @@ ApplicationWindow {
                     var x = transform(i, xOffset, width);
                     var y = transform(i, yOffset, height);
 
+                    // Vertical lines
                     ctx.moveTo(x, 0);
                     ctx.lineTo(x, height);
+
+                    // Horizontal lines
                     ctx.moveTo(0, y);
                     ctx.lineTo(width, y);
                 }
@@ -76,11 +80,12 @@ ApplicationWindow {
             MouseArea {
                 anchors.fill: parent
 
+                hoverEnabled: true
+                acceptedButtons: Qt.MiddleButton
+
                 property real oldX
                 property real oldY
 
-                hoverEnabled: true
-                acceptedButtons: Qt.MiddleButton
                 onPositionChanged: {
                     if (pressed) {
                         parent.xOffset += mouse.x - oldX
@@ -97,6 +102,7 @@ ApplicationWindow {
             // Ctrl modifier is also pressed.
             MouseArea {
                 anchors.fill: parent
+
                 hoverEnabled: true
                 acceptedButtons: Qt.AllButtons
 
