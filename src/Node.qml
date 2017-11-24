@@ -2,12 +2,14 @@ import QtQuick 2.7
 import QtQuick.Layouts 1.3
 
 Rectangle {
+    id: canvas
+
     radius: 10
     color: "#555555"
     border.width: 4
     border.color: "gray"
-    width: socketRadius * 2 + 40
-    height: computeWidth()
+    width: childrenRect.width //socketRadius * 2 + 40
+    height: childrenRect.height
 
     // User-facing properties
     property int inputs
@@ -18,7 +20,7 @@ Rectangle {
     property real socketRadius: 14
     property real socketSpacing: 10
 
-    function computeWidth() {
+    function computeHeight() {
         return ( socketRadius * (inputs + outputs) +
                  (inputs + outputs - 2) * socketSpacing +
                  40 )
@@ -28,9 +30,6 @@ Rectangle {
         id: socketColumn
 
         Column {
-            anchors.topMargin: 15
-            anchors.bottomMargin: anchors.topMargin
-
             spacing: socketSpacing
 
             property int sockets
@@ -43,36 +42,49 @@ Rectangle {
                     height: width
                     radius: width / 2
                     border.width: 1
-                    border.color: "pink"
-                    color: "white"
+                    border.color: Qt.darker(color, 2)
+                    color: "purple"
                 }
             }
         }
     }
 
-    Loader {
-        id: inputSockets
-
+    RowLayout {
         anchors.top: parent.top
-        anchors.horizontalCenter: parent.left
 
-        sourceComponent: socketColumn
-        onLoaded: {
-            item.sockets = inputs
-            item.anchors.top = top
+        Loader {
+            id: inputSockets
+
+            Layout.alignment: Qt.AlignTop
+            Layout.topMargin: 15
+            Layout.bottomMargin: 15
+            anchors.horizontalCenter: parent.left
+
+            sourceComponent: socketColumn
+            onLoaded: {
+                item.sockets = inputs
+            }
         }
-    }
 
-    Loader {
-        id: outputSockets
+        Text {
+            Layout.topMargin: 5
+            Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
 
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.right
+            text: canvas.title
+        }
 
-        sourceComponent: socketColumn
-        onLoaded: {
-            item.sockets = outputs
-            item.anchors.bottom = bottom
-       }
+        Loader {
+            id: outputSockets
+
+            Layout.alignment: Qt.AlignBottom
+            Layout.topMargin: 15
+            Layout.bottomMargin: 15
+            anchors.horizontalCenter: parent.right
+
+            sourceComponent: socketColumn
+            onLoaded: {
+                item.sockets = outputs
+            }
+        }
     }
 }
