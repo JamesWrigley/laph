@@ -2,19 +2,20 @@ import QtQuick 2.7
 import QtQuick.Layouts 1.3
 
 Rectangle {
-    id: canvas
+    id: root
 
     radius: 10
     color: "#555555"
     border.width: 4
     border.color: "gray"
-    width: childrenRect.width //socketRadius * 2 + 40
+    width: childrenRect.width
     height: childrenRect.height
 
     // User-facing properties
     property int inputs
     property int outputs
     property string title
+    property Component ui
 
     // Private properties (do not modify)
     property real socketRadius: 14
@@ -52,12 +53,14 @@ Rectangle {
     RowLayout {
         anchors.top: parent.top
 
+        property real margin: 15
+
         Loader {
             id: inputSockets
 
             Layout.alignment: Qt.AlignTop
-            Layout.topMargin: 15
-            Layout.bottomMargin: 15
+            Layout.topMargin: parent.margin
+            Layout.bottomMargin: parent.margin
             anchors.horizontalCenter: parent.left
 
             sourceComponent: socketColumn
@@ -66,19 +69,36 @@ Rectangle {
             }
         }
 
-        Text {
-            Layout.topMargin: 5
-            Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+        ColumnLayout {
+            Layout.topMargin: parent.margin / 2
+            Layout.bottomMargin: parent.margin
+            Layout.alignment: Qt.AlignTop
 
-            text: canvas.title
+            width: childrenRect.width
+
+            Text {
+                Layout.alignment: Qt.AlignHCenter
+                text: root.title
+            }
+
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.bottomMargin: 4
+
+                width: parent.width * 0.75
+                height: 1
+                color: "black"
+            }
+
+            Loader { sourceComponent: root.ui }
         }
 
         Loader {
             id: outputSockets
 
             Layout.alignment: Qt.AlignBottom
-            Layout.topMargin: 15
-            Layout.bottomMargin: 15
+            Layout.topMargin: parent.margin
+            Layout.bottomMargin: parent.margin
             anchors.horizontalCenter: parent.right
 
             sourceComponent: socketColumn
