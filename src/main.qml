@@ -76,7 +76,6 @@ ApplicationWindow {
                 }
             }
 
-            // Handle MMB drags
             MouseArea {
                 anchors.fill: parent
 
@@ -85,6 +84,7 @@ ApplicationWindow {
 
                 property real oldX
                 property real oldY
+                property real step: 0.04
 
                 onPositionChanged: {
                     if (pressed) {
@@ -96,19 +96,6 @@ ApplicationWindow {
                     oldX = mouse.x
                     oldY = mouse.y
                 }
-            }
-
-            // Handle wheel events, which are used for translation unless the
-            // Ctrl modifier is also pressed.
-            MouseArea {
-                anchors.fill: parent
-
-                hoverEnabled: true
-                acceptedButtons: Qt.AllButtons
-
-                property real oldX
-                property real oldY
-                property real step: 0.04
 
                 onWheel: {
                     if (parent.controlPressed) {
@@ -123,8 +110,8 @@ ApplicationWindow {
                             }
                         }
                     } else {
-                        parent.xOffset += wheel.pixelDelta.x - oldX
-                        parent.yOffset += wheel.pixelDelta.y - oldY
+                        parent.xOffset += wheel.pixelDelta.x
+                        parent.yOffset += wheel.pixelDelta.y
                     }
 
                     parent.requestPaint()
