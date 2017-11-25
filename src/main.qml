@@ -1,5 +1,6 @@
 import QtQuick 2.7
 import QtQuick.Controls 1.4
+import "main.js" as Main
 
 ApplicationWindow {
     title: "Laph"
@@ -22,36 +23,6 @@ ApplicationWindow {
             property real xOffset: 0
             property real yOffset: 0
             property bool controlPressed: false
-
-            function drawGrid(ctx) {
-                var sep = 50 * scale;
-
-                function transform(pos, offset, dimension) {
-                    var new_pos = pos + offset
-                    var cd = dimension + ((sep - dimension % sep)) % sep;
-
-                    if (new_pos >= cd) {
-                        new_pos %= cd;
-                    } else if (new_pos < 0) {
-                        new_pos = cd - (Math.abs(new_pos) % cd);
-                    }
-
-                    return new_pos;
-                }
-
-                for (var i = 0; i < Math.max(width, height); i += sep) {
-                    var x = transform(i, xOffset, width);
-                    var y = transform(i, yOffset, height);
-
-                    // Vertical lines
-                    ctx.moveTo(x, 0);
-                    ctx.lineTo(x, height);
-
-                    // Horizontal lines
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(width, y);
-                }
-            }
 
             Keys.onPressed: {
                 if (event.modifiers & Qt.ControlModifier) {
@@ -122,7 +93,8 @@ ApplicationWindow {
                 var ctx = getContext("2d");
                 ctx.reset();
                 ctx.strokeStyle = "#353535";
-                drawGrid(ctx);
+                Main.drawGrid(ctx, width, height,
+                              scale, xOffset, yOffset);
                 ctx.stroke();
             }
         }
