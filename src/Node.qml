@@ -17,15 +17,11 @@ Rectangle {
     property string title
     property Component ui
 
-    // Private properties (do not modify)
-    property real socketRadius: 14
-    property real socketSpacing: 10
-
     Component {
         id: socketColumn
 
         Column {
-            spacing: socketSpacing
+            spacing: 10
 
             property int sockets
 
@@ -33,7 +29,7 @@ Rectangle {
                 model: parent.sockets
 
                 Rectangle {
-                    width: socketRadius
+                    width: 14
                     height: width
                     radius: width / 2
                     border.width: 1
