@@ -1,6 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Controls 1.4
 import "main.js" as Main
+import "."
 
 ApplicationWindow {
     title: "Laph"
@@ -9,15 +10,17 @@ ApplicationWindow {
     visible: true
 
     Rectangle {
-        id: canvas
         anchors.fill: parent
 
         color: "#494949"
 
+        property var nodes: []
+
         Canvas {
+            id: canvas
             anchors.fill: parent
 
-            focus: true
+            focus: FocusSingleton.canvasFocus
 
             property real scale: 1
             property real xOffset: 0
@@ -44,6 +47,16 @@ ApplicationWindow {
             Keys.onReleased: {
                 if (event.key & Qt.Key_Control) {
                     controlPressed = false
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+
+                acceptedButtons: Qt.AllButtons & ~Qt.MiddleButton
+
+                onClicked: {
+                    parent.focus = true
                 }
             }
 
