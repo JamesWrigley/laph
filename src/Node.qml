@@ -56,62 +56,86 @@ Rectangle {
         }
     }
 
-    RowLayout {
-        anchors.top: parent.top
+    ColumnLayout {
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.topMargin: root.border.width
+            Layout.leftMargin: root.border.width
+            Layout.rightMargin: root.border.width
 
-        property real margin: 15
+            height: 25
+            radius: 6
+            color: {
+                if (ma.containsPress) {
+                    return Qt.darker(root.color, 1.2)
+                } else if (ma.containsMouse) {
+                    return Qt.darker(root.color, 1.1)
+                } else {
+                    return root.color
+                } }
 
-        Loader {
-            id: inputSockets
+            // Inner rectangle to cover up the corner radius on the bottom edge
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
 
-            Layout.alignment: Qt.AlignTop
-            Layout.topMargin: parent.margin
-            Layout.bottomMargin: parent.margin
-            Layout.leftMargin: -5
-
-            sourceComponent: socketColumn
-            onLoaded: {
-                item.sockets = inputs
-                item.floatRight = true
+                color: parent.color
+                height: parent.radius
             }
-        }
-
-        ColumnLayout {
-            Layout.topMargin: parent.margin / 2
-            Layout.bottomMargin: parent.margin
-            Layout.alignment: Qt.AlignTop
-
-            width: childrenRect.width
-
+        
             Text {
-                Layout.alignment: Qt.AlignHCenter
+                id: titleLabel
+        
+                anchors.centerIn: parent
                 text: root.title
             }
-
-            Rectangle {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.bottomMargin: 4
-
-                width: parent.width * 0.75
-                height: 1
-                color: "black"
+        
+            MouseArea {
+                id: ma
+        
+                anchors.fill: parent
+                hoverEnabled: true
             }
-
-            Loader { sourceComponent: root.ui }
         }
 
-        Loader {
-            id: outputSockets
+        RowLayout {
+            property real margin: 15
 
-            Layout.alignment: Qt.AlignBottom
-            Layout.topMargin: parent.margin
-            Layout.bottomMargin: parent.margin
-            Layout.rightMargin: -5
+            Loader {
+                id: inputSockets
 
-            sourceComponent: socketColumn
-            onLoaded: {
-                item.sockets = outputs
-                item.floatRight = false
+                Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                Layout.topMargin: parent.margin
+                Layout.bottomMargin: parent.margin
+                Layout.leftMargin: -5
+
+                sourceComponent: socketColumn
+                onLoaded: {
+                    item.sockets = inputs
+                    item.floatRight = true
+                }
+            }
+
+            Loader {
+                Layout.minimumWidth: titleLabel.width
+
+                sourceComponent: root.ui
+            }
+
+            Loader {
+                id: outputSockets
+
+                Layout.alignment: Qt.AlignBottom | Qt.AlignRight
+                Layout.topMargin: parent.margin
+                Layout.bottomMargin: parent.margin
+                Layout.rightMargin: -5
+
+                sourceComponent: socketColumn
+                onLoaded: {
+                    item.sockets = outputs
+                    item.floatRight = false
+                }
             }
         }
     }
