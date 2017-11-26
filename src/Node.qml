@@ -17,6 +17,11 @@ Rectangle {
     property string title
     property Component ui
 
+    FontLoader {
+        id: sans
+        source: "fonts/FiraSans-Regular.otf"
+    }
+
     Component {
         id: socketColumn
 
@@ -49,7 +54,10 @@ Rectangle {
                         id: label
 
                         width: text.width
+
                         text: modelData
+                        color: "#202020"
+                        font.family: sans.name
                     }
                 }
             }
@@ -100,6 +108,7 @@ Rectangle {
         }
 
         RowLayout {
+            spacing: 10
             property real margin: 15
 
             Loader {
