@@ -12,8 +12,8 @@ Rectangle {
     height: childrenRect.height
 
     // User-facing properties
-    property int inputs
-    property int outputs
+    property var inputs
+    property var outputs
     property string title
     property Component ui
 
@@ -21,20 +21,36 @@ Rectangle {
         id: socketColumn
 
         Column {
+            id: column
+
             spacing: 10
 
-            property int sockets
+            property var sockets
+            property bool floatRight
 
             Repeater {
                 model: parent.sockets
 
-                Rectangle {
-                    width: 14
-                    height: width
-                    radius: width / 2
-                    border.width: 1
-                    border.color: Qt.darker(color, 2)
-                    color: "purple"
+                RowLayout {
+                    LayoutMirroring.enabled: !floatRight
+
+                    Rectangle {
+                        id: socket
+
+                        width: 14
+                        height: width
+                        radius: width / 2
+                        border.width: 1
+                        border.color: Qt.darker(color, 2)
+                        color: "purple"
+                    }
+
+                    Text {
+                        id: label
+
+                        width: text.width
+                        text: modelData
+                    }
                 }
             }
         }
@@ -51,11 +67,12 @@ Rectangle {
             Layout.alignment: Qt.AlignTop
             Layout.topMargin: parent.margin
             Layout.bottomMargin: parent.margin
-            anchors.horizontalCenter: parent.left
+            Layout.leftMargin: -5
 
             sourceComponent: socketColumn
             onLoaded: {
                 item.sockets = inputs
+                item.floatRight = true
             }
         }
 
@@ -89,11 +106,12 @@ Rectangle {
             Layout.alignment: Qt.AlignBottom
             Layout.topMargin: parent.margin
             Layout.bottomMargin: parent.margin
-            anchors.horizontalCenter: parent.right
+            Layout.rightMargin: -5
 
             sourceComponent: socketColumn
             onLoaded: {
                 item.sockets = outputs
+                item.floatRight = false
             }
         }
     }
