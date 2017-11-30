@@ -91,19 +91,24 @@ Rectangle {
                 color: parent.color
                 height: parent.radius
             }
-        
+
             Text {
                 id: titleLabel
-        
+
                 anchors.centerIn: parent
                 text: root.title
             }
-        
+
             MouseArea {
                 id: ma
-        
+
                 anchors.fill: parent
                 hoverEnabled: true
+
+                drag.target: root
+                drag.axis: Drag.XAndYAxis
+                drag.minimumX: 0
+                drag.minimumY: 0
             }
         }
 
