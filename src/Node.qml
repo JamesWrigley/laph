@@ -132,6 +132,8 @@ Rectangle {
             }
 
             Loader {
+                Layout.topMargin: parent.margin
+                Layout.bottomMargin: parent.margin
                 Layout.minimumWidth: titleLabel.width
 
                 sourceComponent: root.ui
