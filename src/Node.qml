@@ -117,7 +117,6 @@ Rectangle {
 
                 drag.onActiveChanged: {
                     dragging = !dragging
-                    console.info(dragging)
                     if (dragging) {
                         startDragPos = Qt.point(root.x, root.y)
                     } else {
