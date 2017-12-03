@@ -9,107 +9,100 @@ ApplicationWindow {
     height: 480
     visible: true
 
-    Rectangle {
+    Canvas {
+        id: canvas
         anchors.fill: parent
 
-        color: "#494949"
+        focus: FocusSingleton.canvasFocus
 
         property var nodes: []
+        property real xOffset: 0
+        property real yOffset: 0
+        property real scaling: 1
+        property bool controlPressed: false
 
-        Canvas {
-            id: canvas
+        Keys.onPressed: {
+            if (event.modifiers & Qt.ControlModifier) {
+                controlPressed = true
+            }
+
+            // Home key: center canvas
+            if (event.key == Qt.Key_Home) {
+                canvas.scaling = 1
+                xOffset = 0
+                yOffset = 0
+                requestPaint()
+            } else if (event.key == Qt.Key_Q &&
+                       event.modifiers & Qt.ControlModifier) { // Ctrl + Q: Quit
+                    Qt.quit()
+            }
+        }
+
+        Keys.onReleased: {
+            if (event.key & Qt.Key_Control) {
+                controlPressed = false
+            }
+        }
+
+        MouseArea {
             anchors.fill: parent
 
-            focus: FocusSingleton.canvasFocus
+            acceptedButtons: Qt.AllButtons & ~Qt.MiddleButton
 
-            property real scale: 1
-            property real xOffset: 0
-            property real yOffset: 0
-            property bool controlPressed: false
-
-            Keys.onPressed: {
-                if (event.modifiers & Qt.ControlModifier) {
-                    controlPressed = true
-                }
-
-                // Home key: center canvas
-                if (event.key == Qt.Key_Home) {
-                    scale = 1
-                    xOffset = 0
-                    yOffset = 0
-                    requestPaint()
-                } else if (event.key == Qt.Key_Q &&
-                           event.modifiers & Qt.ControlModifier) { // Ctrl + Q: Quit
-                        Qt.quit()
-                }
+            onClicked: {
+                parent.focus = true
             }
+        }
 
-            Keys.onReleased: {
-                if (event.key & Qt.Key_Control) {
-                    controlPressed = false
-                }
-            }
+        MouseArea {
+            anchors.fill: parent
 
-            MouseArea {
-                anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.MiddleButton
 
-                acceptedButtons: Qt.AllButtons & ~Qt.MiddleButton
+            property real oldX
+            property real oldY
+            property real step: 0.01
 
-                onClicked: {
-                    parent.focus = true
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-
-                hoverEnabled: true
-                acceptedButtons: Qt.MiddleButton
-
-                property real oldX
-                property real oldY
-                property real step: 0.04
-
-                onPositionChanged: {
-                    if (pressed) {
-                        parent.xOffset += mouse.x - oldX
-                        parent.yOffset += mouse.y - oldY
-                        parent.requestPaint()
-                    }
-
-                    oldX = mouse.x
-                    oldY = mouse.y
-                }
-
-                onWheel: {
-                    if (parent.controlPressed) {
-                        var delta = wheel.angleDelta
-                        var maxDelta = Math.abs(delta.x) > Math.abs(delta.y) ? delta.x : delta.y
-
-                        if (Math.abs(maxDelta) > 0) {
-                            if (maxDelta < 0 && parent.scale > 0.25) {
-                                parent.scale -= step
-                            } else if (maxDelta > 0 && parent.scale < 3) {
-                                parent.scale += step
-                            }
-                        }
-                    } else {
-                        parent.xOffset += wheel.pixelDelta.x
-                        parent.yOffset += wheel.pixelDelta.y
-                    }
-
+            onPositionChanged: {
+                if (pressed) {
+                    parent.xOffset += mouse.x - oldX
+                    parent.yOffset += mouse.y - oldY
                     parent.requestPaint()
                 }
+
+                oldX = mouse.x
+                oldY = mouse.y
             }
 
-            onPaint: {
-                var ctx = getContext("2d");
-                ctx.reset();
-                ctx.strokeStyle = "#353535";
-                Main.drawGrid(ctx, width, height,
-                              scale, xOffset, yOffset);
-                ctx.stroke();
+            onWheel: {
+                if (parent.controlPressed) {
+                    var delta = wheel.angleDelta
+                    var maxDelta = Math.abs(delta.x) > Math.abs(delta.y) ? delta.x : delta.y
+
+                    if (Math.abs(maxDelta) > 0) {
+                        if (maxDelta < 0 && parent.scaling > 0.4) {
+                            parent.scaling -= step
+                        } else if (maxDelta > 0 && parent.scaling < 3) {
+                            parent.scaling += step
+                        }
+                    }
+                } else {
+                    parent.xOffset += wheel.pixelDelta.x
+                    parent.yOffset += wheel.pixelDelta.y
+                }
+
+                parent.requestPaint()
             }
+        }
+
+        onPaint: {
+            var ctx = getContext("2d");
+            ctx.reset()
+            ctx.strokeStyle = "#353535";
+            ctx.fillStyle = "#494949"
+            Main.drawGrid(ctx, width, height, scaling, xOffset, yOffset);
+            ctx.stroke();
         }
     }
 }

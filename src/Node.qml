@@ -10,12 +10,19 @@ Rectangle {
     border.color: "gray"
     width: childrenRect.width
     height: childrenRect.height
+    x: xDrag + xOffset
+    y: yDrag + yOffset
 
     // User-facing properties
     property var inputs
     property var outputs
     property string title
     property Component ui
+    property real xOffset
+    property real yOffset
+
+    property real xDrag
+    property real yDrag
 
     FontLoader {
         id: sans
@@ -102,8 +109,22 @@ Rectangle {
             MouseArea {
                 id: ma
 
+                property bool dragging: false
+                property point startDragPos
+
                 anchors.fill: parent
                 hoverEnabled: true
+
+                drag.onActiveChanged: {
+                    dragging = !dragging
+                    console.info(dragging)
+                    if (dragging) {
+                        startDragPos = Qt.point(root.x, root.y)
+                    } else {
+                        root.xDrag += root.x - startDragPos.x
+                        root.yDrag += root.y - startDragPos.y
+                    }
+                }
 
                 drag.target: root
                 drag.axis: Drag.XAndYAxis
