@@ -18,11 +18,12 @@ Rectangle {
     property var outputs
     property string title
     property Component ui
-    property real xOffset
-    property real yOffset
 
+    // Private properties (subclassing nodes should not touch these)
     property real xDrag
     property real yDrag
+    property real xOffset
+    property real yOffset
 
     FontLoader {
         id: sans
