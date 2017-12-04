@@ -21,6 +21,17 @@ ApplicationWindow {
         property real scaling: 1
         property bool controlPressed: false
 
+        function addNode(nodeFile) {
+            var nodeComponent = Qt.createComponent(nodeFile)
+            if (nodeComponent.status == Component.Ready) {
+                var node = nodeComponent.createObject(canvas, {"xOffset": Qt.binding(function() { return canvas.xOffset }),
+                                                               "yOffset": Qt.binding(function() { return canvas.yOffset })})
+                if (node != null) {
+                    nodes.push(node)
+                }
+            }
+        }
+
         Keys.onPressed: {
             if (event.modifiers & Qt.ControlModifier) {
                 controlPressed = true
