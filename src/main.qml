@@ -28,7 +28,11 @@ ApplicationWindow {
                                                                "yOffset": Qt.binding(function() { return canvas.yOffset })})
                 if (node != null) {
                     nodes.push(node)
+                } else {
+                    console.error("Object could not be created")
                 }
+            } else {
+                console.error("Component is not ready")
             }
         }
 
