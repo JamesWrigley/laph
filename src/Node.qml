@@ -1,5 +1,6 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
+import "."
 
 Rectangle {
     id: root
@@ -55,7 +56,7 @@ Rectangle {
                         radius: width / 2
                         border.width: 1
                         border.color: Qt.darker(color, 2)
-                        color: "purple"
+                        color: modelData[1] == Socket.scalar ? "purple" : "green"
                     }
 
                     Text {
@@ -63,7 +64,7 @@ Rectangle {
 
                         width: text.width
 
-                        text: modelData
+                        text: modelData[0]
                         color: "#202020"
                         font.family: sans.name
                     }
