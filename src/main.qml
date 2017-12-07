@@ -25,7 +25,8 @@ ApplicationWindow {
             var nodeComponent = Qt.createComponent(nodeFile)
             if (nodeComponent.status == Component.Ready) {
                 var node = nodeComponent.createObject(canvas, {"xOffset": Qt.binding(function() { return canvas.xOffset }),
-                                                               "yOffset": Qt.binding(function() { return canvas.yOffset })})
+                                                               "yOffset": Qt.binding(function() { return canvas.yOffset }),
+                                                               "canvas":  Qt.binding(function() { return canvas })})
                 if (node != null) {
                     nodes.push(node)
                 } else {

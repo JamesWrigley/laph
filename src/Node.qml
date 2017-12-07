@@ -21,6 +21,7 @@ Rectangle {
     property Component ui
 
     // Private properties (subclassing nodes should not touch these)
+    property var canvas
     property real xDrag
     property real yDrag
     property real xOffset
@@ -57,6 +58,44 @@ Rectangle {
                         border.width: 1
                         border.color: Qt.darker(color, 2)
                         color: modelData[1] == Socket.scalar ? "purple" : "green"
+
+                        Connections {
+                            target: root.canvas
+
+                            onPaint: {
+                                var ctx = root.canvas.context
+                                ctx.strokeStyle = "cyan"
+                                ctx.path = wire
+                                ctx.stroke()
+                            }
+                        }
+
+                        Path {
+                            id: wire
+
+                            PathCurve { id: curve }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+
+                            onPressed: {
+                                var origin = parent.mapToItem(root.parent,
+                                                              parent.width / 2,
+                                                              parent.height / 2)
+                                wire.startX = origin.x
+                                wire.startY = origin.y
+                            }
+
+                            onPositionChanged: {
+                                if (pressed) {
+                                    var tip = parent.mapToItem(root.parent, mouse.x, mouse.y)
+                                    curve.x = tip.x
+                                    curve.y = tip.y
+                                    root.canvas.requestPaint()
+                                }
+                            }
+                        }
                     }
 
                     Text {
