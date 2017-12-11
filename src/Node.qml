@@ -63,36 +63,98 @@ Rectangle {
                             target: root.canvas
 
                             onPaint: {
-                                var ctx = root.canvas.context
-                                ctx.strokeStyle = "cyan"
-                                ctx.path = wire
-                                ctx.stroke()
+                                if (tip.Drag.target != null || tip.Drag.active) {
+                                    var ctx = root.canvas.context
+                                    ctx.strokeStyle = "cyan"
+                                    ctx.path = wire
+                                    ctx.stroke()
+                                }
                             }
                         }
 
                         Path {
                             id: wire
 
-                            PathCurve { id: curve }
+                            PathCurve {
+                                id: curve
+
+                                x: tip.mapToItem(root.parent, tip.width / 2, tip.x + tip.updateHookX).x
+                                y: tip.mapToItem(root.parent, tip.y + tip.updateHookY, tip.height / 2).y
+
+                                onXChanged: {
+                                    root.parent.requestPaint()
+                                }
+                                onYChanged: {
+                                    root.parent.requestPaint()
+                                }
+                            }
                         }
 
-                        MouseArea {
+                        DropArea {
                             anchors.fill: parent
 
-                            onPressed: {
-                                var origin = parent.mapToItem(root.parent,
-                                                              parent.width / 2,
-                                                              parent.height / 2)
-                                wire.startX = origin.x
-                                wire.startY = origin.y
+                            onDropped: {
+                                drop.accepted = true
+                                drop.source.updateHookX = Qt.binding(function () { return root.x })
+                                drop.source.updateHookY = Qt.binding(function () { return root.y })
                             }
+                        }
 
-                            onPositionChanged: {
-                                if (pressed) {
-                                    var tip = parent.mapToItem(root.parent, mouse.x, mouse.y)
-                                    curve.x = tip.x
-                                    curve.y = tip.y
-                                    root.canvas.requestPaint()
+                        Rectangle {
+                            id: tip
+
+                            width: parent.width
+                            height: parent.height
+                            color: "green"
+                            opacity: 0.5
+
+                            Drag.active: ma.drag.active
+                            Drag.hotSpot.x: width / 2
+                            Drag.hotSpot.y: height / 2
+
+                            property real updateHookX: root.x
+                            property real updateHookY: root.y
+
+                            MouseArea {
+                                id: ma
+                                anchors.fill: parent
+
+                                drag.target: parent
+                                drag.axis: Drag.XAndYAxis
+                                drag.threshold: 0
+
+                                onPositionChanged: {
+                                    if (drag.active) {
+                                        root.parent.requestPaint()
+                                    }
+                                }
+
+                                onPressed: {
+                                    wire.startX = Qt.binding(function () {
+                                        return socket.mapToItem(root.parent, socket.width / 2, root.x).x
+                                    })
+                                    wire.startY = Qt.binding(function () {
+                                        return socket.mapToItem(root.parent, root.y, socket.height / 2).y
+                                    })
+                                }
+
+                                onReleased: {
+                                    if (parent.Drag.drop() != Qt.MoveAction) {
+                                        if (tip.parent != socket) {
+                                            tip.parent = parent
+                                        }
+
+                                        parent.x = 0
+                                        parent.y = 0
+                                        root.parent.requestPaint()
+                                    } else {
+                                        tip.x = 0
+                                        tip.y = 0
+
+                                        if (tip.parent != parent.Drag.target) {
+                                            tip.parent = parent.Drag.target
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -168,8 +230,7 @@ Rectangle {
 
                 drag.target: root
                 drag.axis: Drag.XAndYAxis
-                drag.minimumX: 0
-                drag.minimumY: 0
+                drag.threshold: 0
             }
         }
 
