@@ -94,9 +94,16 @@ Rectangle {
                             anchors.fill: parent
 
                             onDropped: {
+                                tip.enabled = false
                                 drop.accepted = true
                                 drop.source.updateHookX = Qt.binding(function () { return root.x })
                                 drop.source.updateHookY = Qt.binding(function () { return root.y })
+                            }
+
+                            onExited: {
+                                if (!tip.enabled) {
+                                    tip.enabled = true
+                                }
                             }
                         }
 
@@ -112,8 +119,9 @@ Rectangle {
                             Drag.hotSpot.x: width / 2
                             Drag.hotSpot.y: height / 2
 
-                            property real updateHookX: root.x
-                            property real updateHookY: root.y
+                            property real parentChangedHook: 0
+                            property real updateHookX: root.x + parentChangedHook
+                            property real updateHookY: root.y + parentChangedHook
 
                             MouseArea {
                                 id: ma
@@ -141,12 +149,11 @@ Rectangle {
                                 onReleased: {
                                     if (parent.Drag.drop() != Qt.MoveAction) {
                                         if (tip.parent != socket) {
-                                            tip.parent = parent
+                                            tip.parent = socket
                                         }
 
                                         parent.x = 0
                                         parent.y = 0
-                                        root.parent.requestPaint()
                                     } else {
                                         tip.x = 0
                                         tip.y = 0
@@ -155,6 +162,8 @@ Rectangle {
                                             tip.parent = parent.Drag.target
                                         }
                                     }
+
+                                    root.parent.requestPaint()
                                 }
                             }
                         }
