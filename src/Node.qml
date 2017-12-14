@@ -82,6 +82,9 @@ Rectangle {
                                 y: tip.mapToItem(root.parent, tip.y + tip.updateHookY, tip.height / 2).y
 
                                 onXChanged: {
+                                    if (!floatRight) {
+                                        console.info(x, y, tip.x, tip.y)
+                                    }
                                     root.parent.requestPaint()
                                 }
                                 onYChanged: {
@@ -94,7 +97,6 @@ Rectangle {
                             anchors.fill: parent
 
                             onDropped: {
-                                tip.enabled = false
                                 drop.accepted = true
                                 drop.source.updateHookX = Qt.binding(function () { return root.x })
                                 drop.source.updateHookY = Qt.binding(function () { return root.y })
@@ -155,12 +157,12 @@ Rectangle {
                                         parent.x = 0
                                         parent.y = 0
                                     } else {
-                                        tip.x = 0
-                                        tip.y = 0
-
                                         if (tip.parent != parent.Drag.target) {
                                             tip.parent = parent.Drag.target
                                         }
+
+                                        tip.x = 0
+                                        tip.y = 0
                                     }
 
                                     root.parent.requestPaint()
