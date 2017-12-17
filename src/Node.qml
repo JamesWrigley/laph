@@ -59,113 +59,38 @@ Rectangle {
                         border.color: Qt.darker(color, 2)
                         color: modelData[1] == Socket.scalar ? "purple" : "green"
 
-                        Connections {
-                            target: root.canvas
-
-                            onPaint: {
-                                if (tip.Drag.target != null || tip.Drag.active) {
-                                    var ctx = root.canvas.context
-                                    ctx.strokeStyle = "cyan"
-                                    ctx.path = wire
-                                    ctx.stroke()
-                                }
-                            }
-                        }
-
-                        Path {
-                            id: wire
-
-                            PathCurve {
-                                id: curve
-
-                                x: tip.mapToItem(root.parent, tip.width / 2, tip.x + tip.updateHookX).x
-                                y: tip.mapToItem(root.parent, tip.y + tip.updateHookY, tip.height / 2).y
-
-                                onXChanged: {
-                                    if (!floatRight) {
-                                        console.info(x, y, tip.x, tip.y)
-                                    }
-                                    root.parent.requestPaint()
-                                }
-                                onYChanged: {
-                                    root.parent.requestPaint()
-                                }
-                            }
-                        }
-
                         DropArea {
                             anchors.fill: parent
 
                             onDropped: {
-                                drop.accepted = true
-                                drop.source.updateHookX = Qt.binding(function () { return root.x })
-                                drop.source.updateHookY = Qt.binding(function () { return root.y })
+                                ma.enabled = false
+                                drop.accepted
                             }
 
                             onExited: {
-                                if (!tip.enabled) {
-                                    tip.enabled = true
+                                if (!ma.enabled) {
+                                    ma.enabled = true
                                 }
                             }
                         }
 
-                        Rectangle {
-                            id: tip
+                        MouseArea {
+                            id: ma
+                            anchors.fill: parent
 
-                            width: parent.width
-                            height: parent.height
-                            color: "green"
-                            opacity: 0.5
+                            onPressed: {
+                                var component = Qt.createComponent("Wire.qml")
+                                if (component.status == Component.Ready) {
+                                    var object = component.createObject(socket, {"endX": Qt.binding(function () { return mouseX }),
+                                                                                 "endY": Qt.binding(function () { return mouseY }),
+                                                                                 "canvas": Qt.binding(function () { return canvas }),
+                                                                                 "initialRelease": Qt.binding(function () { return pressed })})
 
-                            Drag.active: ma.drag.active
-                            Drag.hotSpot.x: width / 2
-                            Drag.hotSpot.y: height / 2
-
-                            property real parentChangedHook: 0
-                            property real updateHookX: root.x + parentChangedHook
-                            property real updateHookY: root.y + parentChangedHook
-
-                            MouseArea {
-                                id: ma
-                                anchors.fill: parent
-
-                                drag.target: parent
-                                drag.axis: Drag.XAndYAxis
-                                drag.threshold: 0
-
-                                onPositionChanged: {
-                                    if (drag.active) {
-                                        root.parent.requestPaint()
+                                    if (object == null) {
+                                        console.error("Object 'Wire.qml' could not be created")
                                     }
-                                }
-
-                                onPressed: {
-                                    wire.startX = Qt.binding(function () {
-                                        return socket.mapToItem(root.parent, socket.width / 2, root.x).x
-                                    })
-                                    wire.startY = Qt.binding(function () {
-                                        return socket.mapToItem(root.parent, root.y, socket.height / 2).y
-                                    })
-                                }
-
-                                onReleased: {
-                                    if (parent.Drag.drop() != Qt.MoveAction) {
-                                        if (tip.parent != socket) {
-                                            tip.parent = socket
-                                        }
-
-                                        parent.x = 0
-                                        parent.y = 0
-                                    } else {
-                                        if (tip.parent != parent.Drag.target) {
-                                            tip.parent = parent.Drag.target
-                                        }
-
-                                        tip.x = 0
-                                        tip.y = 0
-                                    }
-
-                                    root.parent.requestPaint()
+                                } else {
+                                    console.error("Component 'Wire.qml' is not ready:", component.status)
                                 }
                             }
                         }
@@ -175,7 +100,6 @@ Rectangle {
                         id: label
 
                         width: text.width
-
                         text: modelData[0]
                         color: "#202020"
                         font.family: sans.name
