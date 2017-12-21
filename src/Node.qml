@@ -60,38 +60,69 @@ Rectangle {
                         color: modelData[1] == Socket.scalar ? "purple" : "green"
 
                         DropArea {
+                            id: da
                             anchors.fill: parent
 
-                            onDropped: {
-                                ma.enabled = false
-                                drop.accepted
-                            }
+                            property var node: root
 
-                            onExited: {
-                                if (!ma.enabled) {
-                                    ma.enabled = true
+                            onDropped: {
+                                if (drop.source != ma.wire) {
+                                    ma.enabled = false
+                                    drop.accept(Qt.MoveAction)
                                 }
                             }
                         }
 
                         MouseArea {
                             id: ma
-                            anchors.fill: parent
+                            width: parent.width
+                            height: parent.height
+
+                            enabled: wire == null
+                            Drag.hotSpot.x: width / 2
+                            Drag.hotSpot.y: height / 2
+                            Drag.active: drag.active
+                            drag.threshold: 0
+                            drag.target: this
+                            drag.axis: Drag.XAndYAxis
+
+                            property var wire: null
 
                             onPressed: {
                                 var component = Qt.createComponent("Wire.qml")
                                 if (component.status == Component.Ready) {
-                                    var object = component.createObject(socket, {"endX": Qt.binding(function () { return mouseX }),
-                                                                                 "endY": Qt.binding(function () { return mouseY }),
-                                                                                 "canvas": Qt.binding(function () { return canvas }),
-                                                                                 "initialRelease": Qt.binding(function () { return pressed })})
+                                    wire = component.createObject(parent, {"dragging": true,
+                                                                           "endX": Qt.binding(function () { return x }),
+                                                                           "endY": Qt.binding(function () { return y }),
+                                                                           "canvas": Qt.binding(function () { return canvas }),
+                                                                           "startUpdateHook": Qt.binding(function () {
+                                                                               return root.x + root.y
+                                                                           })})
 
-                                    if (object == null) {
+                                    if (wire == null) {
                                         console.error("Object 'Wire.qml' could not be created")
                                     }
                                 } else {
                                     console.error("Component 'Wire.qml' is not ready:", component.status)
                                 }
+                            }
+
+                            onReleased: {
+                                if (Drag.drop() == Qt.MoveAction && Drag.target != da) {
+                                    var targetNode = Drag.target.node
+
+                                    wire.dragging = false
+                                    wire.setEndParent(Drag.target)
+                                    wire.endUpdateHook = Qt.binding(function () {
+                                        return targetNode.x + targetNode.y
+                                    })
+                                } else {
+                                    wire.destroy()
+                                    wire = null
+                                }
+
+                                x = 0
+                                y = 0
                             }
                         }
                     }

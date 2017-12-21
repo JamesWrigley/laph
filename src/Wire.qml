@@ -6,7 +6,13 @@ Item {
     property real endX
     property real endY
     property var canvas
-    property bool initialRelease
+    property bool dragging
+    property real endUpdateHook: 0
+    property real startUpdateHook: 0
+
+    function setEndParent(endParent) {
+        end.item.parent = endParent
+    }
 
     Connections {
         target: canvas
@@ -19,20 +25,34 @@ Item {
         }
     }
 
+    function computeCoord(wireTip, hook, x) {
+        var oldCoord = x ? wireTip.x : wireTip.y
+            + (x ? wireTip.width : wireTip.height) / 2
+        var newCoord = (dragging ? wireTip.parent : wireTip)
+            .mapToItem(root.canvas, x ? oldCoord : hook, x ? hook : oldCoord)
+
+        if (root.dragging && wireTip != start.item && x) {
+            var coord = end.item.mapToItem(root.canvas, endX, 0)
+            console.info(newCoord.x, endX, coord.x)
+        }
+
+        return x ? newCoord.x : newCoord.y
+    }
+
     Path {
         id: wire
 
-        startX: start.mapToItem(canvas, start.item.x + start.item.width / 2, 0).x
-        startY: start.mapToItem(canvas, 0, start.item.y + start.item.height / 2).y
+        startX: computeCoord(start.item, startUpdateHook, true)
+        startY: computeCoord(start.item, startUpdateHook, false)
 
-        onStartXChanged: canvas.requestPaint()
+        onStartXChanged: canvas.requestPaint()            
         onStartYChanged: canvas.requestPaint()
 
         PathCurve {
             id: curve
 
-            x: end.mapToItem(canvas, end.item.x + end.item.width / 2, 0).x
-            y: end.mapToItem(canvas, 0, end.item.y + end.item.height / 2).y
+            x: computeCoord(end.item, endUpdateHook, true)
+            y: computeCoord(end.item, endUpdateHook, false)
 
             onXChanged: canvas.requestPaint()
             onYChanged: canvas.requestPaint()
@@ -48,30 +68,32 @@ Item {
             color: "green"
             opacity: 0.5
 
-            Drag.active: ma.Drag.active
             Drag.hotSpot.x: width / 2
             Drag.hotSpot.y: height / 2
+            Drag.active: ma.drag.active
 
-            Connections {
-                target: root
-
-                onInitialReleaseChanged: {
-                    if (!initialRelease && parent.Drag.target == null) {
-                        root.destroy()
-                        canvas.requestPaint()
-                    } else {
-                        initialRelease = true
-                    }
-                }
-            }
+            property var mouseArea: ma
 
             MouseArea {
                 id: ma
                 anchors.fill: parent
 
+                drag.threshold: 0
                 drag.target: parent
                 drag.axis: Drag.XAndYAxis
-                drag.threshold: 0
+
+                onPressed: {
+                    root.dragging = true
+                }
+
+                onReleased: {
+                    root.dragging = false
+
+                    if (parent.Drag.target == null) {
+                        root.destroy()
+                        canvas.requestPaint()
+                    }
+                }
             }
         }
     }
@@ -90,8 +112,8 @@ Item {
         sourceComponent: tip
 
         onLoaded: {
-            item.x = Qt.binding(function () { return endX - item.width / 2 })
-            item.y = Qt.binding(function () { return endY - item.height / 2 })
+            item.x = Qt.binding(function () { return endX })
+            item.y = Qt.binding(function () { return endY })
         }
     }
 }
