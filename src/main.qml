@@ -21,10 +21,12 @@ ApplicationWindow {
         property real scaling: 1
         property bool controlPressed: false
 
-        function addNode(nodeFile) {
+        function addNode(nodeFile, x, y) {
             var nodeComponent = Qt.createComponent(nodeFile)
             if (nodeComponent.status == Component.Ready) {
-                var node = nodeComponent.createObject(canvas, {"xOffset": Qt.binding(function() { return canvas.xOffset }),
+                var node = nodeComponent.createObject(canvas, {"xDrag": x,
+                                                               "yDrag": y,
+                                                               "xOffset": Qt.binding(function() { return canvas.xOffset }),
                                                                "yOffset": Qt.binding(function() { return canvas.yOffset }),
                                                                "canvas":  Qt.binding(function() { return canvas })})
                 if (node != null) {
