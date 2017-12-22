@@ -31,11 +31,6 @@ Item {
         var newCoord = (dragging ? wireTip.parent : wireTip)
             .mapToItem(root.canvas, x ? oldCoord : hook, x ? hook : oldCoord)
 
-        if (root.dragging && wireTip != start.item && x) {
-            var coord = end.item.mapToItem(root.canvas, endX, 0)
-            console.info(newCoord.x, endX, coord.x)
-        }
-
         return x ? newCoord.x : newCoord.y
     }
 
@@ -74,6 +69,11 @@ Item {
 
             property var mouseArea: ma
 
+            onParentChanged: {
+                x = 0
+                y = 0
+            }
+
             MouseArea {
                 id: ma
                 anchors.fill: parent
@@ -87,11 +87,17 @@ Item {
                 }
 
                 onReleased: {
-                    root.dragging = false
-
                     if (parent.Drag.target == null) {
                         root.destroy()
                         canvas.requestPaint()
+                    } else if (parent.Drag.drop() == Qt.MoveAction) {
+                        root.dragging = false
+
+                        var targetNode = parent.Drag.target.node
+                        root.setEndParent(parent.Drag.target)
+                        root.endUpdateHook = Qt.binding(function () {
+                            return targetNode.x + targetNode.y
+                        })
                     }
                 }
             }
