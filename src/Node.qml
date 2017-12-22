@@ -65,6 +65,10 @@ Rectangle {
 
                             property var node: root
 
+                            onExited: {
+                                ma.enabled = true
+                            }
+
                             onDropped: {
                                 if (drop.source != ma.wire) {
                                     ma.enabled = false
@@ -88,6 +92,10 @@ Rectangle {
 
                             property var wire: null
 
+                            onWireChanged: {
+                                console.info(wire)
+                            }
+
                             onPressed: {
                                 var component = Qt.createComponent("Wire.qml")
                                 if (component.status == Component.Ready) {
@@ -108,7 +116,7 @@ Rectangle {
                             }
 
                             onReleased: {
-                                if (Drag.drop() == Qt.MoveAction && Drag.target != da) {
+                                if (Drag.drop() == Qt.MoveAction) {
                                     var targetNode = Drag.target.node
 
                                     wire.dragging = false
