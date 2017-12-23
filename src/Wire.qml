@@ -41,8 +41,9 @@ Item {
         target: canvas
 
         onPaint: {
-            var ctx = canvas.context
-            ctx.strokeStyle = "cyan"
+            var ctx = canvas.getContext("2d")
+            ctx.strokeStyle = "lightsteelblue"
+            ctx.lineWidth = 2
             ctx.path = wire
             ctx.stroke()
         }
@@ -65,11 +66,20 @@ Item {
         onStartXChanged: canvas.requestPaint()
         onStartYChanged: canvas.requestPaint()
 
-        PathCurve {
-            id: curve
-
+        PathCubic {
+            id: cubic
             x: computeCoord(end.item, endUpdateHook, true)
             y: computeCoord(end.item, endUpdateHook, false)
+            relativeControl1X: startOnLeft ? Math.max(relative1X, sturdiness) : Math.min(relative1X, -sturdiness)
+            relativeControl1Y: 0
+            relativeControl2X: startOnLeft ? Math.min(relative2X, relative2X - sturdiness) : Math.max(relative2X, relative2X + sturdiness)
+            relativeControl2Y: y - wire.startY
+
+            property int curvature: 2
+            property real relative2X: x - wire.startX
+            property real relative1X: (x - wire.startX) / curvature
+            property bool startOnLeft: start.item.parent.onLeft
+            property real sturdiness: Math.abs(wire.startX - x) / curvature
 
             onXChanged: canvas.requestPaint()
             onYChanged: canvas.requestPaint()

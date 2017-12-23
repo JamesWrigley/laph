@@ -60,12 +60,15 @@ Rectangle {
                         border.color: Qt.darker(color, 2)
                         color: modelData[1] == Socket.scalar ? "purple" : "green"
 
+                        property alias onLeft: da.onLeft
+
                         DropArea {
                             id: da
                             anchors.fill: parent
 
                             property var node: root
                             property int wires: children.length
+                            property bool onLeft: !floatRight
 
                             onDropped: {
                                 if (drop.source != ma.wire &&
@@ -77,16 +80,17 @@ Rectangle {
 
                         MouseArea {
                             id: ma
+
                             width: parent.width
                             height: parent.height
 
-                            enabled: wire == null && da.wires == 0
+                            drag.target: this
+                            drag.threshold: 0
+                            drag.axis: Drag.XAndYAxis
+                            Drag.active: drag.active
                             Drag.hotSpot.x: width / 2
                             Drag.hotSpot.y: height / 2
-                            Drag.active: drag.active
-                            drag.threshold: 0
-                            drag.target: this
-                            drag.axis: Drag.XAndYAxis
+                            enabled: wire == null && da.wires == 0
 
                             property var wire: null
                             property int twinIndex: root.index
