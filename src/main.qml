@@ -1,13 +1,16 @@
 import QtQuick 2.7
+import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import "main.js" as Main
 import "."
 
 ApplicationWindow {
     title: "Laph"
-    width: 640
-    height: 480
     visible: true
+    width: Screen.width / 1.5
+    height: Screen.height / 1.5
+    x: (Screen.width - width) / 2
+    y: (Screen.height - height) / 2
 
     Canvas {
         id: canvas
