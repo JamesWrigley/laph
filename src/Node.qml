@@ -21,6 +21,7 @@ Rectangle {
     property Component ui
 
     // Private properties (subclassing nodes should not touch these)
+    property int index
     property var canvas
     property real xDrag
     property real yDrag

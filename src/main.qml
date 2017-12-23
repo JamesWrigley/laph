@@ -19,17 +19,20 @@ ApplicationWindow {
         property real xOffset: 0
         property real yOffset: 0
         property real scaling: 1
+        property int nodeCount: 0
         property bool controlPressed: false
 
         function addNode(nodeFile, x, y) {
             var nodeComponent = Qt.createComponent(nodeFile)
             if (nodeComponent.status == Component.Ready) {
-                var node = nodeComponent.createObject(canvas, {"xDrag": x,
+                var node = nodeComponent.createObject(canvas, {"index": nodeCount,
+                                                               "xDrag": x,
                                                                "yDrag": y,
                                                                "xOffset": Qt.binding(function() { return canvas.xOffset }),
                                                                "yOffset": Qt.binding(function() { return canvas.yOffset }),
                                                                "canvas":  Qt.binding(function() { return canvas })})
                 if (node != null) {
+                    nodeCount += 1
                     nodes.push(node)
                 } else {
                     console.error("Object could not be created")
