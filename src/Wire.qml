@@ -49,8 +49,7 @@ Item {
     }
 
     function computeCoord(wireTip, hook, x) {
-        var oldCoord = x ? wireTip.x : wireTip.y
-            + (x ? wireTip.width : wireTip.height) / 2
+        var oldCoord = (x ? wireTip.x : wireTip.y) + wireTip.width / 2
         var newCoord = (dragging ? wireTip.parent : wireTip)
             .mapToItem(root.canvas, x ? oldCoord : hook, x ? hook : oldCoord)
 
@@ -84,7 +83,7 @@ Item {
             width: 14
             height: 14
             color: "green"
-            opacity: 0.5
+            opacity: 0
 
             Drag.hotSpot.x: width / 2
             Drag.hotSpot.y: height / 2
