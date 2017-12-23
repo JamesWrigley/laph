@@ -1,17 +1,40 @@
 import QtQuick 2.7
+import "."
 
 Item {
     id: root
+
+    property int endIndex: -1
+    property int startIndex: -1
 
     property real endX
     property real endY
     property var canvas
     property bool dragging
-    property real endUpdateHook: 0
-    property real startUpdateHook: 0
+    property real endUpdateHook
+    property real startUpdateHook
 
     function setEndParent(endParent) {
         end.item.parent = endParent
+        end.item.x = 0
+        end.item.y = 0
+    }
+
+    function setParent(wireTip) {
+        var target = wireTip.Drag.target
+        wireTip.parent = target
+        wireTip.x = 0
+        wireTip.y = 0
+
+        var hook = Qt.binding(function () {
+            return target.node.x + target.node.y
+        })
+
+        if (wireTip == start.item) {
+            root.startUpdateHook = hook
+        } else {
+            root.endUpdateHook = hook
+        }
     }
 
     Connections {
@@ -40,7 +63,7 @@ Item {
         startX: computeCoord(start.item, startUpdateHook, true)
         startY: computeCoord(start.item, startUpdateHook, false)
 
-        onStartXChanged: canvas.requestPaint()            
+        onStartXChanged: canvas.requestPaint()
         onStartYChanged: canvas.requestPaint()
 
         PathCurve {
@@ -67,12 +90,7 @@ Item {
             Drag.hotSpot.y: height / 2
             Drag.active: ma.drag.active
 
-            property var mouseArea: ma
-
-            onParentChanged: {
-                x = 0
-                y = 0
-            }
+            property int twinIndex
 
             MouseArea {
                 id: ma
@@ -87,17 +105,12 @@ Item {
                 }
 
                 onReleased: {
-                    if (parent.Drag.target == null) {
+                    if (parent.Drag.target != null && parent.Drag.drop() == Qt.MoveAction) {
+                        root.dragging = false
+                        root.setParent(parent)
+                    } else {
                         root.destroy()
                         canvas.requestPaint()
-                    } else if (parent.Drag.drop() == Qt.MoveAction) {
-                        root.dragging = false
-
-                        var targetNode = parent.Drag.target.node
-                        root.setEndParent(parent.Drag.target)
-                        root.endUpdateHook = Qt.binding(function () {
-                            return targetNode.x + targetNode.y
-                        })
                     }
                 }
             }
@@ -110,6 +123,7 @@ Item {
 
         onLoaded: {
             item.parent = Qt.binding(function () { return parent.parent })
+            item.twinIndex = Qt.binding(function () { return endIndex })
         }
     }
 
@@ -120,6 +134,7 @@ Item {
         onLoaded: {
             item.x = Qt.binding(function () { return endX })
             item.y = Qt.binding(function () { return endY })
+            item.twinIndex = Qt.binding(function () { return startIndex })
         }
     }
 }

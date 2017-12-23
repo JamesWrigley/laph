@@ -65,14 +65,11 @@ Rectangle {
                             anchors.fill: parent
 
                             property var node: root
-
-                            onExited: {
-                                ma.enabled = true
-                            }
+                            property int wires: children.length
 
                             onDropped: {
-                                if (drop.source != ma.wire) {
-                                    ma.enabled = false
+                                if (drop.source != ma.wire &&
+                                    drop.source.twinIndex != root.index) {
                                     drop.accept(Qt.MoveAction)
                                 }
                             }
@@ -83,7 +80,7 @@ Rectangle {
                             width: parent.width
                             height: parent.height
 
-                            enabled: wire == null
+                            enabled: wire == null && da.wires == 0
                             Drag.hotSpot.x: width / 2
                             Drag.hotSpot.y: height / 2
                             Drag.active: drag.active
@@ -92,15 +89,13 @@ Rectangle {
                             drag.axis: Drag.XAndYAxis
 
                             property var wire: null
-
-                            onWireChanged: {
-                                console.info(wire)
-                            }
+                            property int twinIndex: root.index
 
                             onPressed: {
                                 var component = Qt.createComponent("Wire.qml")
                                 if (component.status == Component.Ready) {
-                                    wire = component.createObject(parent, {"dragging": true,
+                                    wire = component.createObject(parent, {"startIndex": root.index,
+                                                                           "dragging": true,
                                                                            "endX": Qt.binding(function () { return x }),
                                                                            "endY": Qt.binding(function () { return y }),
                                                                            "canvas": Qt.binding(function () { return canvas }),
@@ -118,10 +113,11 @@ Rectangle {
 
                             onReleased: {
                                 if (Drag.drop() == Qt.MoveAction) {
-                                    var targetNode = Drag.target.node
-
                                     wire.dragging = false
                                     wire.setEndParent(Drag.target)
+
+                                    var targetNode = Drag.target.node
+                                    wire.endIndex = targetNode.index
                                     wire.endUpdateHook = Qt.binding(function () {
                                         return targetNode.x + targetNode.y
                                     })
