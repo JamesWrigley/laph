@@ -41,10 +41,10 @@ ApplicationWindow {
                     nodeCount += 1
                     nodes.push(node)
                 } else {
-                    console.error("Object could not be created")
+                    console.error("Node object", nodeFile, "could not be created")
                 }
             } else {
-                console.error("Component is not ready")
+                console.error("Component", nodeFile, "is not ready")
             }
         }
 
