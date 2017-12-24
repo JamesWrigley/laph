@@ -1,0 +1,2 @@
+module Laph
+singleton Socket         1.0 Socket.qml

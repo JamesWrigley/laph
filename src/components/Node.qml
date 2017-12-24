@@ -1,5 +1,6 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
+
 import "."
 
 Rectangle {
@@ -30,7 +31,7 @@ Rectangle {
 
     FontLoader {
         id: sans
-        source: "fonts/FiraSans-Regular.otf"
+        source: "../fonts/FiraSans-Regular.otf"
     }
 
     Component {
@@ -96,7 +97,7 @@ Rectangle {
                             property int twinIndex: root.index
 
                             onPressed: {
-                                var component = Qt.createComponent("Wire.qml")
+                                var component = Qt.createComponent("../core/Wire.qml")
                                 if (component.status == Component.Ready) {
                                     wire = component.createObject(parent, {"startIndex": root.index,
                                                                            "dragging": true,

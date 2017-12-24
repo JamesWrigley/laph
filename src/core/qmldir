@@ -1,3 +1,2 @@
 module Laph
 singleton FocusSingleton 1.0 FocusSingleton.qml
-singleton Socket         1.0 Socket.qml

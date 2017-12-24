@@ -1,8 +1,11 @@
 import QtQuick 2.7
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
-import "main.js" as Main
+
 import "."
+import "../nodes"
+import "../components"
+import "main.js" as Main
 
 ApplicationWindow {
     title: "Laph"
