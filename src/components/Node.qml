@@ -70,6 +70,7 @@ Rectangle {
                             property var node: root
                             property bool onLeft: !floatRight
                             property int wires: children.length
+                            property var socketType: modelData[1]
 
                             onDropped: {
                                 if (drop.source != ma.wire &&
@@ -97,7 +98,6 @@ Rectangle {
                                 if (component.status == Component.Ready) {
                                     wire = component.createObject(da, {"dragging": true,
                                                                        "startIndex": root.index,
-                                                                       "startType": modelData[1],
                                                                        "canvas": Qt.binding(function () { return canvas }),
                                                                        "startUpdateHook": Qt.binding(function () {
                                                                            return root.x + root.y

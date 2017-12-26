@@ -5,16 +5,18 @@ import "../components"
 Item {
     id: root
 
-    property int endIndex: -1
-    property int startIndex: -1
-
     property real endX
     property real endY
     property var canvas
     property bool dragging
     property real endUpdateHook
     property real startUpdateHook
+
+    property int endIndex: -1
+    property int startIndex: -1
     property var endTip: end.item
+    property var endType: end.item.socketType
+    property var startType: start.item.socketType
 
     function setEndParent(endParent) {
         end.item.parent = endParent
@@ -54,7 +56,8 @@ Item {
 
         onPaint: {
             var ctx = canvas.getContext("2d")
-            ctx.strokeStyle = "lightsteelblue"
+            ctx.strokeStyle = ((startType == null || endType == null) ||
+                               (startType == endType)) ? "lightsteelblue" : "red"
             ctx.lineWidth = 2
             ctx.path = wire
             ctx.stroke()
@@ -113,6 +116,7 @@ Item {
 
             property int twinIndex
             property var mouseArea: ma
+            property var socketType: parent.socketType
 
             MouseArea {
                 id: ma
