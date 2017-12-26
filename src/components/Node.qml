@@ -73,8 +73,8 @@ Rectangle {
                             property var socketType: modelData[1]
 
                             onDropped: {
-                                if (drop.source != ma.wire &&
-                                    drop.source.twinIndex != root.index) {
+                                if (drop.source.twinIndex != root.index &&
+                                    drop.source.twinSide == !onLeft) {
                                     drop.accept(Qt.MoveAction)
                                 }
                             }
@@ -98,6 +98,7 @@ Rectangle {
                                 if (component.status == Component.Ready) {
                                     wire = component.createObject(da, {"dragging": true,
                                                                        "startIndex": root.index,
+                                                                       "startOnLeft": parent.onLeft,
                                                                        "canvas": Qt.binding(function () { return canvas }),
                                                                        "startUpdateHook": Qt.binding(function () {
                                                                            return root.x + root.y

@@ -9,6 +9,7 @@ Item {
     property real endY
     property var canvas
     property bool dragging
+    property bool startOnLeft
     property real endUpdateHook
     property real startUpdateHook
 
@@ -91,8 +92,8 @@ Item {
             relativeControl2Y: y - wire.startY
 
             property int curvature: 2
-            property real relative2X: x - wire.startX
             property real relative1X: (x - wire.startX) / curvature
+            property real relative2X: x - wire.startX
             property bool startOnLeft: start.item.parent.onLeft
             property real sturdiness: Math.abs(wire.startX - x) / curvature
 
@@ -115,6 +116,7 @@ Item {
             Drag.hotSpot.y: height / 2
 
             property int twinIndex
+            property bool twinSide
             property var mouseArea: ma
             property var socketType: parent.socketType
 
@@ -143,6 +145,7 @@ Item {
 
         onLoaded: {
             item.parent = Qt.binding(function () { return parent.parent })
+            item.twinSide = Qt.binding(function () { return !root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return endIndex })
         }
     }
@@ -152,6 +155,7 @@ Item {
         sourceComponent: tip
 
         onLoaded: {
+            item.twinSide = Qt.binding(function () { return root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return startIndex })
         }
     }
