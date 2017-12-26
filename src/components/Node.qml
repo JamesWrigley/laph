@@ -96,8 +96,7 @@ Rectangle {
                             onPressed: {
                                 var component = Qt.createComponent("../core/Wire.qml")
                                 if (component.status == Component.Ready) {
-                                    wire = component.createObject(da, {"dragging": true,
-                                                                       "startIndex": root.index,
+                                    wire = component.createObject(da, {"startIndex": root.index,
                                                                        "startOnLeft": parent.onLeft,
                                                                        "canvas": Qt.binding(function () { return canvas }),
                                                                        "startUpdateHook": Qt.binding(function () {

@@ -5,10 +5,13 @@ import "../components"
 Item {
     id: root
 
+    property int dragging
+    property int endDragging: 1
+    property int startDragging: 2
+
     property real endX
     property real endY
     property var canvas
-    property bool dragging
     property bool startOnLeft
     property real endUpdateHook
     property real startUpdateHook
@@ -44,12 +47,12 @@ Item {
 
     function handleRelease(wireTip) {
         if (wireTip.Drag.target != null && wireTip.Drag.drop() == Qt.MoveAction) {
-            root.dragging = false
             root.setParent(wireTip)
         } else {
             root.destroy()
             canvas.requestPaint()
         }
+        root.dragging = (~startDragging) & (~endDragging)
     }
 
     Connections {
@@ -67,7 +70,7 @@ Item {
 
     function computeCoord(wireTip, hook, x) {
         var oldCoord = (x ? wireTip.x : wireTip.y) + wireTip.width / 2
-        var newCoord = (dragging ? wireTip.parent : wireTip)
+        var newCoord = (dragging > 0 ? wireTip.parent : wireTip)
             .mapToItem(root.canvas, x ? oldCoord : hook, x ? hook : oldCoord)
 
         return x ? newCoord.x : newCoord.y
@@ -111,10 +114,11 @@ Item {
             color: "green"
             opacity: 0
 
-            Drag.active: true
+            Drag.active: dragMask & root.dragging > 0
             Drag.hotSpot.x: width / 2
             Drag.hotSpot.y: height / 2
 
+            property int dragMask
             property int twinIndex
             property bool twinSide
             property var mouseArea: ma
@@ -129,7 +133,7 @@ Item {
                 drag.axis: Drag.XAndYAxis
 
                 onPressed: {
-                    root.dragging = true
+                    root.dragging = dragMask
                 }
 
                 onReleased: {
@@ -144,6 +148,7 @@ Item {
         sourceComponent: tip
 
         onLoaded: {
+            item.dragMask = startDragging
             item.parent = Qt.binding(function () { return parent.parent })
             item.twinSide = Qt.binding(function () { return !root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return endIndex })
@@ -155,6 +160,9 @@ Item {
         sourceComponent: tip
 
         onLoaded: {
+            root.dragging = startDragging & (~endDragging)
+
+            item.dragMask = endDragging
             item.twinSide = Qt.binding(function () { return root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return startIndex })
         }
