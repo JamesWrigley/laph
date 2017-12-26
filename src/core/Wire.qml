@@ -14,6 +14,7 @@ Item {
     property bool dragging
     property real endUpdateHook
     property real startUpdateHook
+    property var endTip: end.item
 
     function setEndParent(endParent) {
         end.item.parent = endParent
@@ -35,6 +36,16 @@ Item {
             root.startUpdateHook = hook
         } else {
             root.endUpdateHook = hook
+        }
+    }
+
+    function handleRelease(wireTip) {
+        if (wireTip.Drag.target != null && wireTip.Drag.drop() == Qt.MoveAction) {
+            root.dragging = false
+            root.setParent(wireTip)
+        } else {
+            root.destroy()
+            canvas.requestPaint()
         }
     }
 
@@ -96,11 +107,12 @@ Item {
             color: "green"
             opacity: 0
 
+            Drag.active: true
             Drag.hotSpot.x: width / 2
             Drag.hotSpot.y: height / 2
-            Drag.active: ma.drag.active
 
             property int twinIndex
+            property var mouseArea: ma
 
             MouseArea {
                 id: ma
@@ -115,13 +127,7 @@ Item {
                 }
 
                 onReleased: {
-                    if (parent.Drag.target != null && parent.Drag.drop() == Qt.MoveAction) {
-                        root.dragging = false
-                        root.setParent(parent)
-                    } else {
-                        root.destroy()
-                        canvas.requestPaint()
-                    }
+                    root.handleRelease(parent)
                 }
             }
         }
@@ -142,8 +148,6 @@ Item {
         sourceComponent: tip
 
         onLoaded: {
-            item.x = Qt.binding(function () { return endX })
-            item.y = Qt.binding(function () { return endY })
             item.twinIndex = Qt.binding(function () { return startIndex })
         }
     }

@@ -68,8 +68,8 @@ Rectangle {
                             anchors.fill: parent
 
                             property var node: root
-                            property int wires: children.length
                             property bool onLeft: !floatRight
+                            property int wires: children.length
 
                             onDropped: {
                                 if (drop.source != ma.wire &&
@@ -85,28 +85,26 @@ Rectangle {
                             width: parent.width
                             height: parent.height
 
-                            drag.target: this
+                            drag.target: wire == null ? undefined : wire.endTip
                             drag.threshold: 0
                             drag.axis: Drag.XAndYAxis
-                            Drag.active: drag.active
-                            Drag.hotSpot.x: width / 2
-                            Drag.hotSpot.y: height / 2
                             enabled: wire == null && da.wires == 0
 
                             property var wire: null
-                            property int twinIndex: root.index
 
                             onPressed: {
                                 var component = Qt.createComponent("../core/Wire.qml")
                                 if (component.status == Component.Ready) {
-                                    wire = component.createObject(parent, {"startIndex": root.index,
-                                                                           "dragging": true,
-                                                                           "endX": Qt.binding(function () { return x }),
-                                                                           "endY": Qt.binding(function () { return y }),
-                                                                           "canvas": Qt.binding(function () { return canvas }),
-                                                                           "startUpdateHook": Qt.binding(function () {
-                                                                               return root.x + root.y
-                                                                           })})
+                                    wire = component.createObject(da, {"dragging": true,
+                                                                       "startIndex": root.index,
+                                                                       "startType": modelData[1],
+                                                                       "canvas": Qt.binding(function () { return canvas }),
+                                                                       "startUpdateHook": Qt.binding(function () {
+                                                                           return root.x + root.y
+                                                                       }),
+                                                                       "endUpdateHook": Qt.binding(function () {
+                                                                           return ma.mouseX + ma.mouseY
+                                                                       })})
 
                                     if (wire == null) {
                                         console.error("Object 'Wire.qml' could not be created")
@@ -117,22 +115,7 @@ Rectangle {
                             }
 
                             onReleased: {
-                                if (Drag.drop() == Qt.MoveAction) {
-                                    wire.dragging = false
-                                    wire.setEndParent(Drag.target)
-
-                                    var targetNode = Drag.target.node
-                                    wire.endIndex = targetNode.index
-                                    wire.endUpdateHook = Qt.binding(function () {
-                                        return targetNode.x + targetNode.y
-                                    })
-                                } else {
-                                    wire.destroy()
-                                    wire = null
-                                }
-
-                                x = 0
-                                y = 0
+                                wire.handleRelease(wire.endTip)
                             }
                         }
                     }
