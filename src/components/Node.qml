@@ -20,6 +20,7 @@ import QtQuick 2.7
 import QtQuick.Layouts 1.3
 
 import "."
+import "../core"
 
 Rectangle {
     id: root
@@ -27,13 +28,13 @@ Rectangle {
     radius: 10
     color: "#555555"
     border.width: 4
-    border.color: "gray"
+    border.color: selected ? Qt.lighter("gray", 1.5) : "gray"
     width: childrenRect.width
     height: childrenRect.height
     x: xDrag + xOffset
     y: yDrag + yOffset
 
-    // User-facing properties
+    // Public properties
     property var inputs
     property var outputs
     property string title
@@ -46,10 +47,25 @@ Rectangle {
     property real yDrag
     property real xOffset
     property real yOffset
+    property bool selected: FocusSingleton.selectedNode == index
 
     FontLoader {
         id: sans
         source: "../fonts/FiraSans-Regular.otf"
+    }
+
+    MouseArea {
+        z: 10 // Ugly hack to make sure that this overlays all other MouseArea's
+        anchors.fill: parent
+
+        onClicked: mouse.accepted = false
+        onWheel: mouse.accepted = false
+        onPressed: {
+            FocusSingleton.selectedNode = index
+            mouse.accepted = false
+        }
+        onReleased: mouse.accepted = false
+        onDoubleClicked: mouse.accepted = false
     }
 
     Component {

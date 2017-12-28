@@ -21,5 +21,6 @@ pragma Singleton
 import QtQuick 2.7
 
 QtObject {
+    property int selectedNode: -1
     property bool canvasFocus: true
 }
