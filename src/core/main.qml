@@ -19,6 +19,9 @@
 import QtQuick 2.7
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
+
+import laph 0.1
 
 import "."
 import "../nodes"
@@ -32,6 +35,43 @@ ApplicationWindow {
     height: Screen.height / 1.5
     x: (Screen.width - width) / 2
     y: (Screen.height - height) / 2
+
+    NodeMonitor {
+        id: nm
+        dir: "src/nodes"
+    }
+
+    Shortcut {
+        context: Qt.ApplicationShortcut
+        sequence: "Shift+A"
+        onActivated: addMenu.popup()
+    }
+
+    Menu {
+        id: addMenu
+
+        title: "Nodes"
+
+        style: MenuStyle {
+            frame: Rectangle {
+                color: "#202020"
+            }
+        }
+
+        MenuItem { text: "Nodes"; enabled: false }
+        MenuSeparator { }
+        Instantiator {
+            model: nm.nodes
+            onObjectAdded: addMenu.insertItem(index, object)
+            onObjectRemoved: addMenu.removeItem(object)
+
+            MenuItem {
+                text: modelData.slice(0, -4) // Remove the file extension
+                onTriggered: canvas.addNode(nm.dir + "/" + modelData,
+                                            mouseArea.mouseX, mouseArea.mouseY)
+            }
+        }
+    }
 
     Canvas {
         id: canvas
@@ -100,6 +140,7 @@ ApplicationWindow {
         }
 
         MouseArea {
+            id: mouseArea
             anchors.fill: parent
 
             hoverEnabled: true
