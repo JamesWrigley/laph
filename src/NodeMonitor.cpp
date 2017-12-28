@@ -17,18 +17,43 @@
  *********************************************************************************/
 
 #include <QDir>
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#include <QCoreApplication>
 
 #include "NodeMonitor.hpp"
 
-int main(int argc, char* argv[])
+NodeMonitor::NodeMonitor(QObject* parent) : QObject(parent)
 {
-    QGuiApplication app(argc, argv);
+    connect(&(this->watcher), &QFileSystemWatcher::directoryChanged,
+            [&] (const QString&) { this->refreshNodes(); });
+}
 
-    QDir basePath{app.applicationDirPath()};
-    qmlRegisterType<NodeMonitor>("laph", 0, 1, "NodeMonitor");
-    QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
+QString NodeMonitor::getDir() const
+{
+    return this->dir;
+}
 
-    return app.exec();
+void NodeMonitor::setDir(const QString& new_dir)
+{
+    QDir basePath{QCoreApplication::instance()->applicationDirPath()};
+    this->dir = basePath.filePath(new_dir);
+
+    if (!this->watcher.directories().empty()) {
+        this->watcher.removePaths(this->watcher.directories());
+    }
+
+    this->watcher.addPath(this->dir);
+    this->refreshNodes();
+    emit this->nodesChanged();
+}
+
+void NodeMonitor::refreshNodes()
+{
+    QDir qdir(this->dir, "*.qml", QDir::Name, QDir::Files);
+    this->nodes = qdir.entryList();
+    emit this->nodesChanged();
+}
+
+QStringList NodeMonitor::getNodes()
+{
+    return nodes;
 }

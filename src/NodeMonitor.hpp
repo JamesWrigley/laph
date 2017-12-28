@@ -16,19 +16,39 @@
  *                                                                                *
  *********************************************************************************/
 
-#include <QDir>
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#ifndef NODEMONITOR_HPP
+#define NODEMONITOR_HPP
 
-#include "NodeMonitor.hpp"
+#include <QObject>
+#include <QString>
+#include <QStringList>
+#include <QFileSystemWatcher>
 
-int main(int argc, char* argv[])
+class NodeMonitor : public QObject
 {
-    QGuiApplication app(argc, argv);
+    Q_OBJECT
+    Q_PROPERTY(QString dir READ getDir WRITE setDir)
+    Q_PROPERTY(QStringList nodes READ getNodes NOTIFY nodesChanged)
 
-    QDir basePath{app.applicationDirPath()};
-    qmlRegisterType<NodeMonitor>("laph", 0, 1, "NodeMonitor");
-    QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
+public:
+    NodeMonitor(QObject* = Q_NULLPTR);
+    QString getDir() const;
+    void setDir(QString const&);
+    QStringList getNodes();
 
-    return app.exec();
-}
+private:
+    QString dir;
+    QStringList nodes;
+    QFileSystemWatcher watcher;
+
+    int countNodes() const;
+    QString* nodeAt(int) const;
+
+signals:
+    void nodesChanged();
+
+private slots:
+    void refreshNodes();
+};
+
+#endif
