@@ -86,6 +86,18 @@ ApplicationWindow {
         property int nodeCount: 0
         property bool controlPressed: false
 
+        function nodeHigherAt(point, srcNode) {
+            for (var i = 0; i < canvas.nodes.length; ++i) {
+                var node = canvas.nodes[i]
+                var mappedPoint = node.mapFromItem(srcNode, point.x, point.y)
+                if (node.contains(mappedPoint) && node.z > srcNode.z) {
+                    return true
+                }
+            }
+
+            return false
+        }
+
         function addNode(nodeFile, x, y) {
             var nodeComponent = Qt.createComponent(nodeFile)
             if (nodeComponent.status == Component.Ready) {

@@ -56,14 +56,23 @@ Rectangle {
     }
 
     MouseArea {
-        z: 10 // Ugly hack to make sure that this overlays all other MouseArea's
+        // Ugly hack to make sure that this overlays all other MouseArea's
+        z: 1 + parent.z
         anchors.fill: parent
 
         onClicked: mouse.accepted = false
-        onWheel: mouse.accepted = false
+        onWheel: wheel.accepted = false
         onPressed: {
-            FocusSingleton.selectedNode = index
-            mouse.accepted = false
+            if (!canvas.nodeHigherAt(Qt.point(mouse.x, mouse.y), parent)) {
+                if (FocusSingleton.selectedNode != index) {
+                    FocusSingleton.selectedNode = index
+                    parent.z = FocusSingleton.maxZ
+                }
+
+                mouse.accepted = false
+            } else {
+                mouse.accepted = true
+            }
         }
         onReleased: mouse.accepted = false
         onDoubleClicked: mouse.accepted = false

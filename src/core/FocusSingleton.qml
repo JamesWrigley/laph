@@ -21,6 +21,13 @@ pragma Singleton
 import QtQuick 2.7
 
 QtObject {
+    property int maxZ: 0
     property int selectedNode: -1
     property bool canvasFocus: true
+
+    onSelectedNodeChanged: {
+        // We need to increment by 2 so that there's no Z-fighting between the
+        // nodes and their MouseArea's.
+        maxZ += 2
+    }
 }
