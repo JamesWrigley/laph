@@ -116,19 +116,29 @@ Rectangle {
                             property int wires: children.length
                             property var socketType: modelData[1]
 
+                            function disconnectWire(wire) {
+                                if (wire == ma.wire) {
+                                    wire.destroy()
+                                } else {
+                                    wire.destroyWire()
+                                }
+                            }
+
                             Component.onDestruction: {
                                 for (var i = 0; i < wires; ++i) {
-                                    if (children[i] == ma.wire) {
-                                        children[i].destroy()
-                                    } else {
-                                        children[i].destroyWire()
-                                    }
+                                    disconnectWire(children[i])
                                 }
                             }
 
                             onDropped: {
                                 if (drop.source.twinIndex != root.index &&
                                     drop.source.twinSide == !onLeft) {
+                                    if (!onLeft && wires != 0) {
+                                        // If this is an input, replace the old
+                                        // wire with the new one.
+                                        disconnectWire(children[0])
+                                    }
+
                                     drop.accept(Qt.MoveAction)
                                 }
                             }
