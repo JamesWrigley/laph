@@ -26,6 +26,7 @@ Rectangle {
     id: root
 
     radius: 10
+    opacity: 0.8
     color: "#555555"
     border.width: 4
     border.color: selected ? Qt.lighter("gray", 1.5) : "gray"
