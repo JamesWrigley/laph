@@ -215,15 +215,14 @@ Rectangle {
             MouseArea {
                 id: ma
 
-                property bool dragging: false
-                property point startDragPos
-
                 anchors.fill: parent
-                hoverEnabled: true
 
+                hoverEnabled: true
+                drag.target: root
+                drag.threshold: 0
+                drag.axis: Drag.XAndYAxis
                 drag.onActiveChanged: {
-                    dragging = !dragging
-                    if (dragging) {
+                    if (drag.active) {
                         startDragPos = Qt.point(root.x, root.y)
                     } else {
                         root.xDrag += root.x - startDragPos.x
@@ -231,9 +230,7 @@ Rectangle {
                     }
                 }
 
-                drag.target: root
-                drag.axis: Drag.XAndYAxis
-                drag.threshold: 0
+                property point startDragPos
             }
         }
 
