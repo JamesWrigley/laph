@@ -47,6 +47,12 @@ ApplicationWindow {
         onActivated: addMenu.popup()
     }
 
+    Shortcut {
+        context: Qt.ApplicationShortcut
+        sequence: "X"
+        onActivated: canvas.deleteSelectedNode()
+    }
+
     Menu {
         id: addMenu
 
@@ -79,7 +85,7 @@ ApplicationWindow {
 
         focus: FocusSingleton.canvasFocus
 
-        property var nodes: []
+        property var nodes: new Array()
         property real xOffset: 0
         property real yOffset: 0
         property real scaling: 1
@@ -87,8 +93,8 @@ ApplicationWindow {
         property bool controlPressed: false
 
         function nodeHigherAt(point, srcNode) {
-            for (var i = 0; i < canvas.nodes.length; ++i) {
-                var node = canvas.nodes[i]
+            for (var i = 0; i < nodes.length; ++i) {
+                var node = nodes[i]
                 var mappedPoint = node.mapFromItem(srcNode, point.x, point.y)
                 if (node.contains(mappedPoint) && node.z > srcNode.z) {
                     return true
@@ -96,6 +102,19 @@ ApplicationWindow {
             }
 
             return false
+        }
+
+        function deleteSelectedNode() {
+            if (FocusSingleton.selectedNode != -1) {
+                for (var i = 0; i < nodes.length; ++i) {
+                    if (nodes[i].index == FocusSingleton.selectedNode) {
+                        FocusSingleton.selectedNode = -1
+                        nodes[i].destroy()
+                        nodes.splice(i, 1)
+                        canvas.requestPaint()
+                    }
+                }
+            }
         }
 
         function addNode(nodeFile, x, y) {

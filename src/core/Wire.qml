@@ -53,7 +53,7 @@ Item {
         wireTip.y = 0
 
         var hook = Qt.binding(function () {
-            return target.node.x + target.node.y
+            return target.node == null ? 0 : target.node.x + target.node.y
         })
 
         if (wireTip == start.item) {
@@ -140,7 +140,11 @@ Item {
             property int twinIndex
             property bool twinSide
             property var mouseArea: ma
-            property var socketType: parent.socketType
+            property var socketType: parent == null ? undefined : parent.socketType
+
+            function destroyWire() {
+                root.destroy()
+            }
 
             MouseArea {
                 id: ma

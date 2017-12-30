@@ -116,6 +116,16 @@ Rectangle {
                             property int wires: children.length
                             property var socketType: modelData[1]
 
+                            Component.onDestruction: {
+                                for (var i = 0; i < wires; ++i) {
+                                    if (children[i] == ma.wire) {
+                                        children[i].destroy()
+                                    } else {
+                                        children[i].destroyWire()
+                                    }
+                                }
+                            }
+
                             onDropped: {
                                 if (drop.source.twinIndex != root.index &&
                                     drop.source.twinSide == !onLeft) {
