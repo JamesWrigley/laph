@@ -184,13 +184,17 @@ Rectangle {
                         }
                     }
 
-                    Text {
-                        id: label
+                    TextInput {
+                        width: contentWidth
+                        height: contentHeight
 
-                        width: text.width
-                        text: modelData[0]
                         color: "#202020"
+                        text: modelData[0]
                         font.family: sans.name
+                        validator: RegExpValidator { regExp: /^([a-zA-Z]|_)+\S*$/ }
+
+                        onEditingFinished: focus = false
+                        Keys.onEscapePressed: focus = false
                     }
                 }
             }
