@@ -58,7 +58,7 @@ Rectangle {
     MouseArea {
         // Ugly hack to make sure that this overlays all other MouseArea's
         z: 1 + parent.z
-        anchors.fill: parent
+        anchors.fill: mainLayout
 
         onClicked: mouse.accepted = false
         onWheel: wheel.accepted = false
@@ -198,6 +198,8 @@ Rectangle {
     }
 
     ColumnLayout {
+        id: mainLayout
+
         Rectangle {
             Layout.fillWidth: true
             Layout.topMargin: root.border.width
