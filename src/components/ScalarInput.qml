@@ -16,4 +16,10 @@
  *                                                                                *
  *********************************************************************************/
 
-Input { }
+import QtQuick 2.7
+
+Input {
+    validator: DoubleValidator { }
+
+    property double scalar: acceptableInput ? parseFloat(text) : NaN
+}
