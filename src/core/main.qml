@@ -53,6 +53,32 @@ ApplicationWindow {
         onActivated: canvas.deleteSelectedNode()
     }
 
+    Shortcut {
+        context: Qt.ApplicationShortcut
+        sequence: "Space"
+        onActivated: {
+            searchBox.x = mouseArea.mouseX
+            searchBox.y = mouseArea.mouseY
+            searchBox.visible = true
+        }
+    }
+
+    SearchBox {
+        id: searchBox
+
+        z: FocusSingleton.maxZ + 1
+        nodes: nm.nodes
+
+        onSelected: {
+            canvas.addNode(node, mouseArea.mouseX, mouseArea.mouseY)
+        }
+
+        Component.onCompleted: {
+            // If we don't do this after the component is loaded, QML throws an error
+            visible = false
+        }
+    }
+
     Menu {
         id: addMenu
 
