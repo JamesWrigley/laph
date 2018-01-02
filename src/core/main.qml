@@ -73,7 +73,7 @@ ApplicationWindow {
 
             MenuItem {
                 text: modelData.slice(0, -4) // Remove the file extension
-                onTriggered: canvas.addNode(nm.dir + "/" + modelData,
+                onTriggered: canvas.addNode(modelData,
                                             mouseArea.mouseX, mouseArea.mouseY)
             }
         }
@@ -118,7 +118,7 @@ ApplicationWindow {
         }
 
         function addNode(nodeFile, x, y) {
-            var nodeComponent = Qt.createComponent(nodeFile)
+            var nodeComponent = Qt.createComponent(nm.dir + "/" + nodeFile)
             if (nodeComponent.status == Component.Ready) {
                 var node = nodeComponent.createObject(canvas, {"index": nodeCount,
                                                                "xDrag": x,
