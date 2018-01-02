@@ -22,12 +22,15 @@
 
 #include "NodeMonitor.hpp"
 
+#define MAJOR 0
+#define MINOR 1
+
 int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
 
     QDir basePath{app.applicationDirPath()};
-    qmlRegisterType<NodeMonitor>("laph", 0, 1, "NodeMonitor");
+    qmlRegisterType<NodeMonitor>("laph", MAJOR, MINOR, "NodeMonitor");
     QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
 
     return app.exec();
