@@ -33,7 +33,7 @@ Node {
 
         ColumnLayout {
             Text { text: "Expression:" }
-            Expression { }
+            Input { }
         }
     }
 }
