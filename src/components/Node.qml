@@ -118,7 +118,7 @@ Glode {
                             radius: width / 2
                             border.width: 1
                             border.color: Qt.darker(color, 2)
-                            color: modelData[1] == Socket.scalar ? "purple" : "green"
+                            color: modelData[1] == Glode.Scalar ? "purple" : "green"
 
                             property alias onLeft: da.onLeft
 

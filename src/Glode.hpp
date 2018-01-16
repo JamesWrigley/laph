@@ -41,6 +41,9 @@ public:
     Glode(QQuickItem* = Q_NULLPTR);
     Glode(Glode const&, QQuickItem* = Q_NULLPTR);
 
+    enum Socket { Scalar, Vector, Generic };
+    Q_ENUM(Socket)
+
     int getIndex();
     void setIndex(int);
     QQuickItem* getElements();
