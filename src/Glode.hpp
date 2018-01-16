@@ -34,8 +34,8 @@ class Glode : public QQuickItem
     Q_OBJECT
     Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
     Q_PROPERTY(QVariantMap hooks READ getHooks WRITE setHooks)
-    Q_PROPERTY(QQuickItem* elements READ getElements WRITE setElements)
-    Q_CLASSINFO("DefaultProperty", "elements")
+    Q_PROPERTY(QQuickItem* element READ getElement WRITE setElement)
+    Q_CLASSINFO("DefaultProperty", "element")
 
 public:
     Glode(QQuickItem* = Q_NULLPTR);
@@ -46,16 +46,16 @@ public:
 
     int getIndex();
     void setIndex(int);
-    QQuickItem* getElements();
-    void setElements(QQuickItem*);
+    QQuickItem* getElement();
+    void setElement(QQuickItem*);
     QVariantMap getHooks();
     void setHooks(QVariantMap const&);
 
     QVariant evaluate(Glode*);
     Q_INVOKABLE QString input(QString);
 
-    QQuickItem* elements;
     unsigned int index;
+    QQuickItem* element;
     std::unordered_map<Glode*, std::string> outputs;
     std::unordered_map<std::string, Glode*> inputs;
 

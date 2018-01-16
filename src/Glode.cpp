@@ -69,15 +69,15 @@ int Glode::getIndex()
     return this->index;
 }
 
-void Glode::setElements(QQuickItem* elements)
+void Glode::setElement(QQuickItem* element)
 {
-    this->elements = elements;
-    this->elements->setParentItem(this);
+    this->element = element;
+    this->element->setParentItem(this);
 }
 
-QQuickItem* Glode::getElements()
+QQuickItem* Glode::getElement()
 {
-    return this->elements;
+    return this->element;
 }
 
 void Glode::setHooks(QVariantMap const& hooks)
