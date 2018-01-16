@@ -146,7 +146,6 @@ Glode {
                                 }
 
                                 onDropped: {
-                                    console.info(drop.source.twinIndex, glode.index, glode.index)
                                     if (drop.source.twinIndex != glode.index &&
                                         drop.source.twinSide == !onLeft) {
                                         if (!onLeft && wires != 0) {
