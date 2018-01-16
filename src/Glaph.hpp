@@ -23,18 +23,21 @@
 #include <unordered_map>
 
 #include <julia.h>
+#include <QObject>
 
 #include "Glode.hpp"
 
-class Glaph
+class Glaph : public QObject
 {
+    Q_OBJECT
+
 public:
-    Glaph();
+    Glaph(QObject* = Q_NULLPTR);
     ~Glaph();
 
     void load_file(std::string);
     jl_value_t* safe_eval(std::string);
-    void add_node(std::string, unsigned int);
+    Q_INVOKABLE void add_node(std::string, Glode const&);
 
 private:
     std::unordered_map<unsigned int, Glode> nodes;

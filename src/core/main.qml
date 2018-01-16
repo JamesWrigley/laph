@@ -16,12 +16,12 @@
  *                                                                                *
  *********************************************************************************/
 
+import Laph 0.1
+
 import QtQuick 2.7
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
-
-import laph 0.1
 
 import "."
 import "../nodes"
@@ -40,6 +40,8 @@ ApplicationWindow {
         id: nm
         dir: "src/nodes"
     }
+
+    Glaph { id: graphEngine }
 
     Shortcut {
         context: Qt.ApplicationShortcut
@@ -159,7 +161,7 @@ ApplicationWindow {
                     console.error("Node object", nodeFile, "could not be created")
                 }
             } else {
-                console.error("Component", nodeFile, "is not ready")
+                console.error("Component", nodeFile, "is not ready:", nodeComponent.errorString())
             }
         }
 

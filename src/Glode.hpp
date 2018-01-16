@@ -20,21 +20,49 @@
 #define GLODE_HPP
 
 #include <vector>
+#include <unordered_map>
 
 #include <julia.h>
+#include <QVariant>
+#include <QQuickItem>
+#include <QVariantMap>
 
 class Glaph;
 
-class Glode
+class Glode : public QQuickItem
 {
-public:
-    Glode(unsigned int, jl_function_t*);
+    Q_OBJECT
+    Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
+    Q_PROPERTY(QVariantMap hooks READ getHooks WRITE setHooks)
+    Q_PROPERTY(QQuickItem* elements READ getElements WRITE setElements)
+    Q_CLASSINFO("DefaultProperty", "elements")
 
+public:
+    Glode(QQuickItem* = Q_NULLPTR);
+    Glode(Glode const&, QQuickItem* = Q_NULLPTR);
+
+    int getIndex();
+    void setIndex(int);
+    QQuickItem* getElements();
+    void setElements(QQuickItem*);
+    QVariantMap getHooks();
+    void setHooks(QVariantMap const&);
+
+    QVariant evaluate(Glode*);
+    Q_INVOKABLE QString input(QString);
+
+    QQuickItem* elements;
     unsigned int index;
-    std::vector<Glode*> outputs;
+    std::unordered_map<Glode*, std::string> outputs;
+    std::unordered_map<std::string, Glode*> inputs;
 
 private:
+    QVariantMap hooks;
     jl_function_t* func;
+    std::vector<jl_value_t*> args;
+
+signals:
+    void indexChanged();
 };
 
 #endif

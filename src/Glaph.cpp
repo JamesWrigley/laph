@@ -27,7 +27,7 @@
 
 #include "Glaph.hpp"
 
-Glaph::Glaph()
+Glaph::Glaph(QObject* parent) : QObject(parent)
 {
     jl_init();
 }
@@ -37,14 +37,14 @@ Glaph::~Glaph()
     jl_atexit_hook(0);
 }
 
-void Glaph::add_node(std::string code_path, unsigned int index)
+void Glaph::add_node(std::string code_path, Glode const& node)
 {
     QString node_name{QFileInfo(QString::fromStdString(code_path)).baseName()};
     jl_function_t* node_func;
 
     if (functions.count(node_name.toStdString()) == 0) {
         std::smatch matches;
-        std::regex func_re{"^function\\s+(\\S+)\\("};
+        std::regex func_re{"^function\\s+(\\S+)\\s+\\("};
         std::vector<std::string> func_names;
 
         std::string line;
@@ -58,19 +58,18 @@ void Glaph::add_node(std::string code_path, unsigned int index)
             code << line;
         }
         
-        jl_eval_string(code.str().c_str());
+        this->safe_eval(code.str());
         node_func = jl_get_function(jl_base_module, func_names.at(0).c_str());
     } else {
         node_func = functions.at(node_name.toStdString());
     }
 
-    Glode node{index, node_func};
-    nodes.insert({index, node});
+    nodes.insert({node.index, node});
 }
 
 void Glaph::load_file(std::string) { }
 
-jl_value_t* safe_eval(std::string code)
+jl_value_t* Glaph::safe_eval(std::string code)
 {
     if (!jl_is_initialized()) {
         throw std::runtime_error("Julia not initialized");

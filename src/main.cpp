@@ -17,20 +17,29 @@
  *********************************************************************************/
 
 #include <QDir>
+#include <QQmlContext>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include "Glaph.hpp"
+#include "Glode.hpp"
 #include "NodeMonitor.hpp"
 
-#define MAJOR 0
-#define MINOR 1
+template<typename T>
+void registerType(std::string name)
+{
+    qmlRegisterType<T>("Laph", 0, 1, name.c_str());
+}
 
 int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
 
+    registerType<Glode>("Glode");
+    registerType<NodeMonitor>("NodeMonitor");
+    registerType<Glaph>("Glaph");
+
     QDir basePath{app.applicationDirPath()};
-    qmlRegisterType<NodeMonitor>("laph", MAJOR, MINOR, "NodeMonitor");
     QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
 
     return app.exec();
