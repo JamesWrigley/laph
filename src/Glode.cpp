@@ -48,13 +48,17 @@ QVariant Glode::evaluate(Glode* child)
 
 QString Glode::input(QString socket_name)
 {
-    Glode* parent{this->inputs.at(socket_name.toStdString())};
-    QVariant result{parent->evaluate(this)};
+    if (this->inputs.count(socket_name.toStdString()) > 0) {
+        Glode* parent{this->inputs.at(socket_name.toStdString())};
+        QVariant result{parent->evaluate(this)};
 
-    if (result.canConvert<double>()) {
-        return result.toString();
+        if (result.canConvert<double>()) {
+            return result.toString();
+        } else {
+            return "ERROR";
+        }
     } else {
-        return "ERROR";
+        return "";
     }
 }
 
@@ -92,4 +96,24 @@ void Glode::setHooks(QVariantMap const& hooks)
 QVariantMap Glode::getHooks()
 {
     return this->hooks;
+}
+
+void Glode::setOutputs(QVariantList const& outputs)
+{
+    this->outputs_map = outputs;
+}
+
+QVariantList Glode::getOutputs()
+{
+    return this->outputs_map;
+}
+
+void Glode::setInputs(QVariantList const& inputs)
+{
+    this->inputs_map = inputs;
+}
+
+QVariantList Glode::getInputs()
+{
+    return this->inputs_map;
 }

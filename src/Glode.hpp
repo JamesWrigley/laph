@@ -34,6 +34,8 @@ class Glode : public QQuickItem
     Q_OBJECT
     Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
     Q_PROPERTY(QVariantMap hooks READ getHooks WRITE setHooks)
+    Q_PROPERTY(QVariantList outputs READ getOutputs WRITE setOutputs)
+    Q_PROPERTY(QVariantList inputs READ getInputs WRITE setInputs)
     Q_PROPERTY(QQuickItem* element READ getElement WRITE setElement)
     Q_CLASSINFO("DefaultProperty", "element")
 
@@ -45,11 +47,15 @@ public:
     Q_ENUM(Socket)
 
     int getIndex();
-    void setIndex(int);
-    QQuickItem* getElement();
-    void setElement(QQuickItem*);
     QVariantMap getHooks();
+    QQuickItem* getElement();
+    QVariantList getInputs();
+    QVariantList getOutputs();
+    void setIndex(int);
+    void setElement(QQuickItem*);
     void setHooks(QVariantMap const&);
+    void setInputs(QVariantList const&);
+    void setOutputs(QVariantList const&);
 
     QVariant evaluate(Glode*);
     Q_INVOKABLE QString input(QString);
@@ -61,6 +67,8 @@ public:
 
 private:
     QVariantMap hooks;
+    QVariantList inputs_map;
+    QVariantList outputs_map;
     jl_function_t* func;
     std::vector<jl_value_t*> args;
 

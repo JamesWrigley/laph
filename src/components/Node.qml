@@ -36,8 +36,6 @@ Glode {
     z: root.z
 
     // Public properties
-    property var inputs
-    property var outputs
     property string title
 
     // Private properties (subclassing nodes should not touch these)
@@ -289,7 +287,7 @@ Glode {
 
                     sourceComponent: socketColumn
                     onLoaded: {
-                        item.sockets = inputs
+                        item.sockets = glode.inputs
                         item.floatRight = true
                     }
                 }
@@ -313,7 +311,7 @@ Glode {
 
                     sourceComponent: socketColumn
                     onLoaded: {
-                        item.sockets = outputs
+                        item.sockets = glode.outputs
                         item.floatRight = false
                     }
                 }

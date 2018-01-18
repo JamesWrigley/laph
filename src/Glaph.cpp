@@ -17,7 +17,6 @@
  *********************************************************************************/
 
 #include <regex>
-#include <utility>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -40,9 +39,8 @@ Glaph::~Glaph()
 void Glaph::add_node(std::string code_path, Glode const& node)
 {
     QString node_name{QFileInfo(QString::fromStdString(code_path)).baseName()};
-    jl_function_t* node_func;
 
-    if (functions.count(node_name.toStdString()) == 0) {
+    if (node.outputs.size() > 0 && functions.count(node_name.toStdString()) == 0) {
         std::smatch matches;
         std::regex func_re{"^function\\s+(\\S+)\\s+\\("};
         std::vector<std::string> func_names;
@@ -57,11 +55,14 @@ void Glaph::add_node(std::string code_path, Glode const& node)
 
             code << line;
         }
-        
+
         this->safe_eval(code.str());
-        node_func = jl_get_function(jl_base_module, func_names.at(0).c_str());
-    } else {
-        node_func = functions.at(node_name.toStdString());
+        for (auto& func_name : func_names) {
+            jl_function_t* func{jl_get_function(jl_base_module,
+                                                func_name.c_str())};
+            std::string func_label{node_name.toStdString() + "::" + func_name};
+            this->functions.insert({func_label, func});
+        }
     }
 
     nodes.insert({node.index, node});

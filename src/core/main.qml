@@ -146,7 +146,8 @@ ApplicationWindow {
         }
 
         function addNode(nodeFile, x, y) {
-            var nodeComponent = Qt.createComponent(nm.dir + "/" + nodeFile)
+            var path = nm.dir + "/" + nodeFile
+            var nodeComponent = Qt.createComponent(path)
             if (nodeComponent.status == Component.Ready) {
                 var node = nodeComponent.createObject(canvas, {"index": nodeCount,
                                                                "xDrag": x,
@@ -154,9 +155,11 @@ ApplicationWindow {
                                                                "xOffset": Qt.binding(function() { return canvas.xOffset }),
                                                                "yOffset": Qt.binding(function() { return canvas.yOffset }),
                                                                "canvas":  Qt.binding(function() { return canvas })})
+
                 if (node != null) {
                     nodeCount += 1
                     nodes.push(node)
+                    graphEngine.add_node(path, node)
                 } else {
                     console.error("Node object", nodeFile, "could not be created")
                 }
