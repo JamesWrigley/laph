@@ -6,7 +6,7 @@ QT += qml quick
 TARGET = laph
 TEMPLATE = app
 LIBS += -ljulia
-CONFIG += c++14
+CONFIG += c++14 debug_and_release
 INCLUDEPATH += . /usr/include/julia
 DEFINES += QT_DEPRECATED_WARNINGS JULIA_ENABLE_THREADING
 
