@@ -152,6 +152,7 @@ ApplicationWindow {
                 var node = nodeComponent.createObject(canvas, {"index": nodeCount,
                                                                "xDrag": x,
                                                                "yDrag": y,
+                                                               "rootZ": FocusSingleton.maxZ,
                                                                "xOffset": Qt.binding(function() { return canvas.xOffset }),
                                                                "yOffset": Qt.binding(function() { return canvas.yOffset }),
                                                                "canvas":  Qt.binding(function() { return canvas })})

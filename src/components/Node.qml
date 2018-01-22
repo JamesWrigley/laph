@@ -42,6 +42,7 @@ Glode {
     property var canvas
     property real xDrag
     property real yDrag
+    property real rootZ
     property real xOffset
     property real yOffset
     property var ui: uiLoader.item
@@ -51,6 +52,7 @@ Glode {
     Rectangle {
         id: root
 
+        z: rootZ
         radius: 10
         opacity: 0.8
         color: "#555555"
