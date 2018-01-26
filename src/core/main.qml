@@ -41,8 +41,6 @@ ApplicationWindow {
         dir: "src/nodes"
     }
 
-    Glaph { id: graphEngine }
-
     Shortcut {
         context: Qt.ApplicationShortcut
         sequence: "Shift+A"

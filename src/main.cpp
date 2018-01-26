@@ -37,10 +37,12 @@ int main(int argc, char* argv[])
 
     registerType<Glode>("Glode");
     registerType<NodeMonitor>("NodeMonitor");
-    registerType<Glaph>("Glaph");
 
     QDir basePath{app.applicationDirPath()};
     QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
+
+    Glaph graph{};
+    engine.rootContext()->setContextProperty("graphEngine", &graph);
 
     return app.exec();
 }
