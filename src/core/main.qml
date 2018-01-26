@@ -140,6 +140,7 @@ ApplicationWindow {
                         nodes[i].destroy()
                         nodes.splice(i, 1)
                         canvas.requestPaint()
+                        FocusSingleton.canvasFocus = true
                     }
                 }
             }
