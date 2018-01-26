@@ -26,7 +26,7 @@
 #include "NodeMonitor.hpp"
 
 template<typename T>
-void registerType(std::string name)
+void registerLaphType(std::string name)
 {
     qmlRegisterType<T>("Laph", 0, 1, name.c_str());
 }
@@ -35,8 +35,8 @@ int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
 
-    registerType<Glode>("Glode");
-    registerType<NodeMonitor>("NodeMonitor");
+    registerLaphType<Glode>("Glode");
+    registerLaphType<NodeMonitor>("NodeMonitor");
 
     QDir basePath{app.applicationDirPath()};
     QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
