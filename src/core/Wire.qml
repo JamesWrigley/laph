@@ -40,12 +40,6 @@ Item {
     property var endType: end.item.socketType
     property var startType: start.item.socketType
 
-    function setEndParent(endParent) {
-        end.item.parent = endParent
-        end.item.x = 0
-        end.item.y = 0
-    }
-
     function setParent(wireTip) {
         var target = wireTip.Drag.target
         wireTip.parent = target
