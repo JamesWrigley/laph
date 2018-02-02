@@ -16,12 +16,24 @@
  *                                                                                *
  *********************************************************************************/
 
+import Laph 0.1
+
 import QtQuick 2.7
 
 import "../components"
 
-Item {
+WireItem {
     id: root
+
+    inputNode: endParent == null ? null : choose(endParent.onLeft, endParent.node, startParent.node, null)
+    outputNode: endParent == null ? null : choose(endParent.onLeft, startParent.node, endParent.node, null)
+    inputSocket: endParent == null ? "" : choose(inputNode == endParent.node, startParent.socketName, endParent.socketName, "")
+    outputSocket: endParent == null ? "" : choose(endParent.onLeft, endParent.socketName, startParent.socketName, "")
+
+    function choose(condition, option1, option2, unity) {
+        var choice = condition ? option1 : option2
+        return choice == undefined ? unity : choice
+    }
 
     property int dragging
     property int endDragging: 1
@@ -33,6 +45,9 @@ Item {
     property bool startOnLeft
     property real endUpdateHook
     property real startUpdateHook
+
+    property var endParent: end.item.parent
+    property var startParent: start.item.parent
 
     property int endIndex: -1
     property int startIndex: -1
@@ -59,7 +74,12 @@ Item {
 
     function handleRelease(wireTip) {
         if (wireTip.Drag.target != null && wireTip.Drag.drop() == Qt.MoveAction) {
+            var justCreated = endParent == end
             root.setParent(wireTip)
+
+            if (justCreated) {
+                graphEngine.addWire(this)
+            }
         } else {
             root.destroy()
             canvas.requestPaint()
@@ -135,6 +155,7 @@ Item {
             property bool twinSide
             property var mouseArea: ma
             property var socketType: parent == null ? undefined : parent.socketType
+            property var socketName: parent == null ? undefined : parent.socketName
 
             function destroyWire() {
                 root.destroy()

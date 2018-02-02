@@ -16,19 +16,27 @@
  *                                                                                *
  *********************************************************************************/
 
+import Laph 0.1
+
 import QtQuick 2.7
 
 import "../components"
 
 Node {
+    id: root
+
     title: "Constant"
     inputs: []
-    outputs: [["k", Socket.scalar]]
-    ui: constantUI
+    outputs: [["k", NodeItem.Scalar]]
+    hooks: ({
+        "k": [ parseFloat(ui.text) ]
+    })
 
-    Component {
-        id: constantUI
-
-        ScalarInput { }
+    ScalarInput {
+        onFocusChanged: {
+            if (!focus) {
+                inputChanged(root, ["k"])
+            }
+        }
     }
 }

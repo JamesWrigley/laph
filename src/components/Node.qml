@@ -24,19 +24,19 @@ import QtQuick.Layouts 1.3
 import "."
 import "../core"
 
-Glode {
+NodeItem {
     id: glode
 
     x: xDrag + xOffset
     y: yDrag + yOffset
+    z: root.z
 
     width: root.width
     height: root.height
 
-    z: root.z
-
     // Public properties
     property string title
+    property var ui: uiLoader.item
 
     // Private properties (subclassing nodes should not touch these)
     property var canvas
@@ -45,9 +45,12 @@ Glode {
     property real rootZ
     property real xOffset
     property real yOffset
-    property var ui: uiLoader.item
     default property Component uiComponent
     property bool selected: FocusSingleton.selectedNode == index
+
+    function input(socketName) {
+        return graphEngine.inputAsString(this, socketName)
+    }
 
     Rectangle {
         id: root
@@ -118,7 +121,7 @@ Glode {
                             radius: width / 2
                             border.width: 1
                             border.color: Qt.darker(color, 2)
-                            color: modelData[1] == Glode.Scalar ? "purple" : "green"
+                            color: modelData[1] == NodeItem.Scalar ? "purple" : "green"
 
                             property alias onLeft: da.onLeft
 
@@ -130,6 +133,7 @@ Glode {
                                 property bool onLeft: !floatRight
                                 property int wires: children.length
                                 property var socketType: modelData[1]
+                                property string socketName: modelData[0]
 
                                 function disconnectWire(wire) {
                                     if (wire == ma.wire) {
@@ -153,7 +157,7 @@ Glode {
                                             // wire with the new one.
                                             disconnectWire(children[0])
                                         }
-
+                                        
                                         drop.accept(Qt.MoveAction)
                                     }
                                 }
@@ -189,7 +193,7 @@ Glode {
                                             console.error("Object 'Wire.qml' could not be created")
                                         }
                                     } else {
-                                        console.error("Component 'Wire.qml' is not ready:", component.status)
+                                        console.error("Component 'Wire.qml' is not ready:", component.errorString())
                                     }
                                 }
 

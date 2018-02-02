@@ -159,7 +159,7 @@ ApplicationWindow {
                 if (node != null) {
                     nodeCount += 1
                     nodes.push(node)
-                    graphEngine.add_node(path, node)
+                    graphEngine.addNode(path.replace("qml", "jl"), node)
                 } else {
                     console.error("Node object", nodeFile, "could not be created")
                 }

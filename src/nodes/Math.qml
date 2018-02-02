@@ -16,6 +16,8 @@
  *                                                                                *
  *********************************************************************************/
 
+import Laph 0.1
+
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 1.4
@@ -23,17 +25,25 @@ import QtQuick.Controls 1.4
 import "../components"
 
 Node {
+    id: root
+
     title: "Math"
-    inputs: [["x", Socket.vector]]
-    outputs: [["y", Socket.vector]]
-    ui: expr
+    inputs: [["x", NodeItem.Scalar]]
+    outputs: [["y", NodeItem.Scalar]]
+    hooks: ({
+        "y": [ "x" ]
+    })
 
-    Component {
-        id: expr
+    ColumnLayout {
+        Text { text: "Expression:" }
+        Input {
+            id: expr
 
-        ColumnLayout {
-            Text { text: "Expression:" }
-            Input { }
+            onFocusChanged: {
+                if (!focus) {
+                    inputChanged(root, ["y"])
+                }
+            }
         }
     }
 }
