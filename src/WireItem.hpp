@@ -16,64 +16,48 @@
  *                                                                                *
  *********************************************************************************/
 
-#ifndef GLODE_HPP
-#define GLODE_HPP
+#ifndef WIREITEM_HPP
+#define WIREITEM_HPP
 
-#include <vector>
-#include <unordered_map>
-
-#include <julia.h>
-#include <QVariant>
 #include <QQuickItem>
-#include <QVariantMap>
 
-class Glaph;
+#include "NodeItem.hpp"
 
-class Glode : public QQuickItem
+class WireItem : public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
-    Q_PROPERTY(QVariantMap hooks READ getHooks WRITE setHooks)
-    Q_PROPERTY(QVariantList outputs READ getOutputs WRITE setOutputs)
-    Q_PROPERTY(QVariantList inputs READ getInputs WRITE setInputs)
-    Q_PROPERTY(QQuickItem* element READ getElement WRITE setElement)
-    Q_CLASSINFO("DefaultProperty", "element")
+    Q_PROPERTY(QQuickItem* inputNode READ getInputNode WRITE setInputNode NOTIFY inputNodeChanged)
+    Q_PROPERTY(QQuickItem* outputNode READ getOutputNode WRITE setOutputNode NOTIFY outputNodeChanged)
+    Q_PROPERTY(QString inputSocket READ getInputSocket WRITE setInputSocket NOTIFY inputSocketChanged)
+    Q_PROPERTY(QString outputSocket READ getOutputSocket WRITE setOutputSocket NOTIFY outputSocketChanged)
 
 public:
-    Glode(QQuickItem* = Q_NULLPTR);
-    Glode(Glode const&, QQuickItem* = Q_NULLPTR);
+    WireItem(QQuickItem* = Q_NULLPTR);
 
-    enum Socket { Scalar, Vector, Generic };
-    Q_ENUM(Socket)
+    QString getInputSocket();
+    QString getOutputSocket();
+    QQuickItem* getInputNode();
+    QQuickItem* getOutputNode();
+    void setInputSocket(QString&);
+    void setOutputSocket(QString&);
+    void setInputNode(QQuickItem*);
+    void setOutputNode(QQuickItem*);
 
-    int getIndex();
-    QVariantMap getHooks();
-    QQuickItem* getElement();
-    QVariantList getInputs();
-    QVariantList getOutputs();
-    void setIndex(int);
-    void setElement(QQuickItem*);
-    void setHooks(QVariantMap const&);
-    void setInputs(QVariantList const&);
-    void setOutputs(QVariantList const&);
+    friend bool operator==(WireItem const& one, WireItem const& two)
+        {
+            return one.inputNode == two.inputNode && one.inputSocket == two.inputSocket;
+        }
 
-    QVariant evaluate(Glode*);
-    Q_INVOKABLE QString input(QString);
-
-    unsigned int index;
-    QQuickItem* element;
-    std::unordered_map<Glode*, std::string> outputs;
-    std::unordered_map<std::string, Glode*> inputs;
-
-private:
-    QVariantMap hooks;
-    QVariantList inputs_map;
-    QVariantList outputs_map;
-    jl_function_t* func;
-    std::vector<jl_value_t*> args;
+    NodeItem* inputNode;
+    NodeItem* outputNode;
+    QString inputSocket;
+    QString outputSocket;
 
 signals:
-    void indexChanged();
+    void inputNodeChanged();
+    void outputNodeChanged();
+    void inputSocketChanged();
+    void outputSocketChanged();
 };
 
 #endif

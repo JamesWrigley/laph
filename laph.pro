@@ -14,8 +14,10 @@ DEFINES += QT_DEPRECATED_WARNINGS JULIA_ENABLE_THREADING
 SOURCES += src/main.cpp        \
            src/NodeMonitor.cpp \
            src/Glaph.cpp       \
-           src/Glode.cpp
+           src/NodeItem.cpp    \
+           src/WireItem.cpp
 
 HEADERS += src/NodeMonitor.hpp \
            src/Glaph.hpp       \
-           src/Glode.hpp
+           src/NodeItem.hpp    \
+           src/WireItem.hpp

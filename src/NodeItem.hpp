@@ -16,47 +16,70 @@
  *                                                                                *
  *********************************************************************************/
 
-#ifndef GLAPH_HPP
-#define GLAPH_HPP
+#ifndef GLODE_HPP
+#define GLODE_HPP
 
-#include <string>
 #include <functional>
-#include <unordered_set>
 #include <unordered_map>
 
 #include <julia.h>
-#include <QObject>
+#include <QHash>
+#include <QVariant>
+#include <QQuickItem>
 #include <QStringList>
+#include <QVariantMap>
 
-#include "NodeItem.hpp"
-#include "WireItem.hpp"
+class NodeItem;
+using InputMap = std::unordered_map<QString, NodeItem*>;
 
-class Glaph : public QObject
+namespace std {
+    template<>
+    struct hash<QString>
+    {
+        std::size_t operator()(QString const& str) const
+            {
+                return qHash(str);
+            }
+    };
+}
+
+class NodeItem : public QQuickItem
 {
     Q_OBJECT
+    Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
+    Q_PROPERTY(QVariantMap hooks READ getHooks WRITE setHooks NOTIFY hooksChanged)
+    Q_PROPERTY(QVariantList outputs READ getOutputs WRITE setOutputs)
+    Q_PROPERTY(QVariantList inputs READ getInputs WRITE setInputs)
 
 public:
-    Glaph(QObject* = Q_NULLPTR);
-    ~Glaph();
+    NodeItem(QQuickItem* = Q_NULLPTR);
+    NodeItem(NodeItem const&, QQuickItem* = Q_NULLPTR);
 
-    Q_INVOKABLE void addNode(QString, QObject*);
-    Q_INVOKABLE void addWire(QObject*);
-    Q_INVOKABLE QString inputAsString(QObject*, QString);
+    enum Socket { Scalar, Vector, Generic };
+    Q_ENUM(Socket)
 
-private:
-    jl_value_t* safe_eval(std::string);
+    int getIndex();
+    QVariantMap getHooks();
+    QVariantList getInputs();
+    QVariantList getOutputs();
+    void setIndex(int);
+    void setHooks(QVariantMap const&);
+    void setInputs(QVariantList const&);
+    void setOutputs(QVariantList const&);
 
-    InputMap getInputsMap(NodeItem*);
-    void evaluateFrom(NodeItem*, QStringList);
-    std::unordered_set<WireItem*> getInputs(NodeItem*);
-    std::unordered_set<WireItem*> getOutputs(NodeItem*);
+    QVariant evaluate(QString const&, InputMap const&);
 
-    std::unordered_set<WireItem*> wires;
-    std::unordered_map<unsigned int, NodeItem*> nodes;
-    std::unordered_map<std::string, std::unordered_map<std::string, jl_function_t*>> functions;
+    QVariantMap hooks;
+    unsigned int index;
+    QVariantList inputs_map;
+    QVariantList outputs_map;
+    std::unordered_map<QString, QVariant> output_values;
+    std::unordered_map<std::string, jl_function_t*> functions;
 
-public slots:
-    void removeWire(QObject*);
+signals:
+    void hooksChanged();
+    void indexChanged();
+    void inputChanged(NodeItem*, QStringList);
 };
 
 #endif

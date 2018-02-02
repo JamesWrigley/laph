@@ -16,35 +16,56 @@
  *                                                                                *
  *********************************************************************************/
 
-#include <QDir>
-#include <QQmlContext>
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#include <cstdint>
 
-#include "Glaph.hpp"
-#include "NodeItem.hpp"
 #include "WireItem.hpp"
-#include "NodeMonitor.hpp"
 
-template<typename T>
-void registerLaphType(std::string name)
+WireItem::WireItem(QQuickItem* parent) : QQuickItem(parent) { }
+
+QString WireItem::getInputSocket()
 {
-    qmlRegisterType<T>("Laph", 0, 1, name.c_str());
+    return this->inputSocket;
 }
 
-int main(int argc, char* argv[])
+QString WireItem::getOutputSocket()
 {
-    QGuiApplication app(argc, argv);
+    return this->outputSocket;
+}
 
-    registerLaphType<NodeItem>("NodeItem");
-    registerLaphType<WireItem>("WireItem");
-    registerLaphType<NodeMonitor>("NodeMonitor");
+QQuickItem* WireItem::getInputNode()
+{
+    return static_cast<QQuickItem*>(this->inputNode);
+}
 
-    QDir basePath{app.applicationDirPath()};
-    QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
+QQuickItem* WireItem::getOutputNode()
+{
+    return static_cast<QQuickItem*>(this->outputNode);
+}
 
-    Glaph graph{};
-    engine.rootContext()->setContextProperty("graphEngine", &graph);
+void WireItem::setInputSocket(QString& socketName)
+{
+    this->inputSocket = socketName;
+    emit this->inputSocketChanged();
+}
 
-    return app.exec();
+void WireItem::setOutputSocket(QString& socketName)
+{
+    this->outputSocket = socketName;
+    emit this->outputSocketChanged();
+}
+
+void WireItem::setInputNode(QQuickItem* node)
+{
+    if (node != nullptr) {
+        this->inputNode = static_cast<NodeItem*>(node);
+        emit this->inputNodeChanged();
+    }
+}
+
+void WireItem::setOutputNode(QQuickItem* node)
+{
+    if (node != nullptr) {
+        this->outputNode = static_cast<NodeItem*>(node);
+        emit this->outputNodeChanged();
+    }
 }

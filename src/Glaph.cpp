@@ -16,6 +16,8 @@
  *                                                                                *
  *********************************************************************************/
 
+#include <iostream>
+
 #include <regex>
 #include <fstream>
 #include <sstream>
@@ -36,39 +38,123 @@ Glaph::~Glaph()
     jl_atexit_hook(0);
 }
 
-void Glaph::add_node(std::string code_path, Glode const& node)
+void Glaph::addNode(QString code_path, QObject* qobj_node)
 {
-    QString node_name{QFileInfo(QString::fromStdString(code_path)).baseName()};
+    NodeItem* node{static_cast<NodeItem*>(qobj_node)};
+    connect(node, &NodeItem::inputChanged, this, &Glaph::evaluateFrom);
+    QString node_name{QFileInfo(code_path).baseName()};
 
-    if (node.outputs.size() > 0 && functions.count(node_name.toStdString()) == 0) {
-        std::smatch matches;
-        std::regex func_re{"^function\\s+(\\S+)\\s+\\("};
-        std::vector<std::string> func_names;
+    if (node->outputs_map.size() > 0) {
+        if (this->functions.count(node_name.toStdString()) == 0) {
+            std::smatch matches{};
+            std::regex func_re{"^function\\s+(\\S+)\\s*\\("};
+            std::vector<std::string> func_names{};
+            std::unordered_map<std::string, jl_function_t*> funcs_map{};
 
-        std::string line;
-        std::stringstream code;
-        std::ifstream code_file{code_path};
-        while (std::getline(code_file, line)) {
-            if (std::regex_search(line, matches, func_re)) {
-                func_names.push_back(matches[1].str());
+            std::string line{};
+            std::stringstream code{};
+            std::ifstream code_file{code_path.toStdString()};
+            while (std::getline(code_file, line)) {
+                if (std::regex_search(line, matches, func_re)) {
+                    func_names.push_back(matches[1].str());
+                }
+
+                code << line << "\n";
             }
 
-            code << line;
+            this->safe_eval(code.str());
+            for (auto& func_name : func_names) {
+                jl_function_t* func{jl_get_function(jl_main_module,
+                                                    func_name.c_str())};
+                funcs_map.insert({func_name, func});
+            }
+
+            this->functions.insert({node_name.toStdString(), funcs_map});
         }
 
-        this->safe_eval(code.str());
-        for (auto& func_name : func_names) {
-            jl_function_t* func{jl_get_function(jl_base_module,
-                                                func_name.c_str())};
-            std::string func_label{node_name.toStdString() + "::" + func_name};
-            this->functions.insert({func_label, func});
+        node->functions = this->functions.at(node_name.toStdString());
+    }
+
+    this->nodes.insert({node->index, node});
+}
+
+void Glaph::addWire(QObject* wire_qobj)
+{
+    WireItem* wire{static_cast<WireItem*>(wire_qobj)};
+    connect(wire, &QObject::destroyed, this, &Glaph::removeWire);
+    this->wires.insert(wire);
+}
+
+QString Glaph::inputAsString(QObject* node_qobj, QString socket_name)
+{
+    // std::cout << "inputAsString()\n";
+    NodeItem* node{static_cast<NodeItem*>(node_qobj)};
+    InputMap inputs{this->getInputsMap(node)};
+
+    if (inputs.count(socket_name) > 0) {
+        NodeItem* parent{inputs.at(socket_name)};
+        QVariant result{parent->evaluate(socket_name, inputs)};
+
+        if (result.isValid() && result.canConvert<double>()) {
+            return result.toString();
+        } else {
+            return "ERROR";
+        }
+    } else {
+        return "";
+    }
+}
+
+void Glaph::removeWire(QObject* wire_qobj)
+{
+    this->wires.erase(static_cast<WireItem*>(wire_qobj));
+}
+
+void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
+{
+    // std::cout << "evaluateFrom(" << node->index << ")\n";
+    std::unordered_set<WireItem*> output_wires{this->getOutputs(node)};
+    InputMap inputs{this->getInputsMap(node)};
+    for (auto& wire : output_wires) {
+        if (outputs.contains(wire->outputSocket)) {
+            node->evaluate(wire->outputSocket, this->getInputsMap(node));
+        }
+    }
+}
+
+InputMap Glaph::getInputsMap(NodeItem* node)
+{
+    InputMap inputs{};
+    for (auto& wire : this->getInputs(node)) {
+        inputs.insert({wire->inputSocket, wire->inputNode});
+    }
+
+    return inputs;
+}
+
+std::unordered_set<WireItem*> Glaph::getInputs(NodeItem* node)
+{
+    std::unordered_set<WireItem*> inputs{};
+    for (auto& wire : this->wires) {
+        if (wire->outputNode == node) {
+            inputs.insert(wire);
         }
     }
 
-    nodes.insert({node.index, node});
+    return inputs;
 }
 
-void Glaph::load_file(std::string) { }
+std::unordered_set<WireItem*> Glaph::getOutputs(NodeItem* node)
+{
+    std::unordered_set<WireItem*> outputs{};
+    for (auto& wire : this->wires) {
+        if (wire->inputNode == node) {
+            outputs.insert(wire);
+        }
+    }
+
+    return outputs;
+}
 
 jl_value_t* Glaph::safe_eval(std::string code)
 {
