@@ -31,13 +31,15 @@ Node {
     inputs: [["x", NodeItem.Scalar]]
     outputs: [["y", NodeItem.Scalar]]
     hooks: ({
-        "y": [ "x" ]
+        "y": [ "x", ui.expr.text ]
     })
 
     ColumnLayout {
+        property var expr: exprItem
+
         Text { text: "Expression:" }
         Input {
-            id: expr
+            id: exprItem
 
             onFocusChanged: {
                 if (!focus) {
