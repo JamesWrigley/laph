@@ -27,8 +27,8 @@ WireItem {
 
     inputNode: endParent == null ? null : choose(endParent.onLeft, endParent.node, startParent.node, null)
     outputNode: endParent == null ? null : choose(endParent.onLeft, startParent.node, endParent.node, null)
-    inputSocket: endParent == null ? "" : choose(inputNode == endParent.node, startParent.socketName, endParent.socketName, "")
-    outputSocket: endParent == null ? "" : choose(endParent.onLeft, endParent.socketName, startParent.socketName, "")
+    inputSocket: endParent == null ? "" : choose(inputNode == endParent.node, endParent.socketName, startParent.socketName, "")
+    outputSocket: endParent == null ? "" : choose(endParent.onLeft, startParent.socketName, endParent.socketName, "")
 
     function choose(condition, option1, option2, unity) {
         var choice = condition ? option1 : option2
