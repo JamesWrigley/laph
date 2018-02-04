@@ -56,16 +56,12 @@ void WireItem::setOutputSocket(QString& socketName)
 
 void WireItem::setInputNode(QQuickItem* node)
 {
-    if (node != nullptr) {
-        this->inputNode = static_cast<NodeItem*>(node);
-        emit this->inputNodeChanged();
-    }
+    this->inputNode = static_cast<NodeItem*>(node);
+    emit this->inputNodeChanged();
 }
 
 void WireItem::setOutputNode(QQuickItem* node)
 {
-    if (node != nullptr) {
-        this->outputNode = static_cast<NodeItem*>(node);
-        emit this->outputNodeChanged();
-    }
+    this->outputNode = static_cast<NodeItem*>(node);
+    emit this->outputNodeChanged();
 }
