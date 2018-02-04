@@ -68,7 +68,9 @@ public:
     void setOutputs(QVariantList const&);
 
     QVariant evaluate(QString const&, InputMap const&);
+    bool isInput(QString);
 
+    bool dirty;
     QVariantMap hooks;
     unsigned int index;
     QVariantList inputs_map;

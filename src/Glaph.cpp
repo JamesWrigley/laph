@@ -112,13 +112,42 @@ void Glaph::removeWire(QObject* wire_qobj)
 
 void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
 {
-    // std::cout << "evaluateFrom(" << node->index << ")\n";
-    std::unordered_set<WireItem*> output_wires{this->getOutputs(node)};
     InputMap inputs{this->getInputsMap(node)};
-    for (auto& wire : output_wires) {
-        if (outputs.contains(wire->outputSocket)) {
-            node->evaluate(wire->outputSocket, this->getInputsMap(node));
+    std::unordered_set<WireItem*> output_wires{};
+    for (auto& wire : this->getOutputs(node)) {
+        if (outputs.contains(wire->inputSocket)) {
+            output_wires.insert(wire);
         }
+    }
+
+    // Evaluate all affected output values (looking backwards)
+    node->dirty = true;
+    for (auto& wire : output_wires) {
+        node->evaluate(wire->inputSocket, this->getInputsMap(node));
+    }
+    node->dirty = false;
+
+    // Find all nodes that have this node as an input
+    std::unordered_map<NodeItem*, QStringList> dirtied_outputs{};
+    for (auto& wire : output_wires) {
+        QString socket_name{wire->outputSocket};
+        QVariantMap other_hooks{wire->outputNode->hooks};
+
+        for (auto it{other_hooks.begin()}; it != other_hooks.end(); ++it) {
+            QStringList output_args{it.value().value<QStringList>()};
+            if (output_args.contains(socket_name)) {
+                if (dirtied_outputs.count(wire->outputNode) > 0) {
+                    dirtied_outputs.at(wire->outputNode).append(it.key());
+                } else {
+                    dirtied_outputs.insert({wire->outputNode, QStringList{it.key()}});
+                }
+            }
+        }
+    }
+
+    // And then evaluate them
+    for (auto it{dirtied_outputs.begin()}; it != dirtied_outputs.end(); ++it) {
+        this->evaluateFrom(it->first, it->second);
     }
 }
 
