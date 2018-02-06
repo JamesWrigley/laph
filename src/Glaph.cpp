@@ -16,8 +16,6 @@
  *                                                                                *
  *********************************************************************************/
 
-#include <iostream>
-
 #include <regex>
 #include <fstream>
 #include <sstream>
@@ -27,6 +25,10 @@
 #include <QFileInfo>
 
 #include "Glaph.hpp"
+
+#ifdef QT_DEBUG
+#include <iostream>
+#endif
 
 Glaph::Glaph(QObject* parent) : QObject(parent)
 {
