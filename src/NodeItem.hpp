@@ -21,6 +21,7 @@
 
 #include <functional>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <julia.h>
 #include <QHash>
@@ -29,8 +30,7 @@
 #include <QStringList>
 #include <QVariantMap>
 
-class NodeItem;
-using InputMap = std::unordered_map<QString, NodeItem*>;
+#include "WireItem.hpp"
 
 namespace std {
     template<>
@@ -67,7 +67,7 @@ public:
     void setInputs(QVariantList const&);
     void setOutputs(QVariantList const&);
 
-    QVariant evaluate(QString const&, InputMap const&);
+    QVariant evaluate(QString const&, std::unordered_set<WireItem*> const&);
     bool isInput(QString);
 
     bool dirty;

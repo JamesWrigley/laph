@@ -89,10 +89,14 @@ QString Glaph::inputAsString(QObject* node_qobj, QString socket_name)
 {
     // std::cout << "inputAsString()\n";
     NodeItem* node{static_cast<NodeItem*>(node_qobj)};
-    InputMap inputs{this->getInputsMap(node)};
+    std::unordered_set<WireItem*> inputs{this->getInputs(node)};
+    auto wire_it{std::find_if(inputs.begin(), inputs.end(),
+                              [&socket_name] (WireItem* wire) {
+                                  return socket_name == wire->outputSocket;
+                              })};
 
-    if (inputs.count(socket_name) > 0) {
-        NodeItem* parent{inputs.at(socket_name)};
+    if (wire_it != inputs.end()) {
+        NodeItem* parent{(*wire_it)->inputNode};
         QVariant result{parent->evaluate(socket_name, inputs)};
 
         if (result.isValid() && result.canConvert<double>()) {
@@ -112,7 +116,6 @@ void Glaph::removeWire(QObject* wire_qobj)
 
 void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
 {
-    InputMap inputs{this->getInputsMap(node)};
     std::unordered_set<WireItem*> output_wires{};
     for (auto& wire : this->getOutputs(node)) {
         if (outputs.contains(wire->inputSocket)) {
@@ -123,7 +126,7 @@ void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
     // Evaluate all affected output values (looking backwards)
     node->dirty = true;
     for (auto& wire : output_wires) {
-        node->evaluate(wire->inputSocket, this->getInputsMap(node));
+        node->evaluate(wire->inputSocket, this->getInputs(node));
     }
     node->dirty = false;
 
@@ -149,16 +152,6 @@ void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
     for (auto it{dirtied_outputs.begin()}; it != dirtied_outputs.end(); ++it) {
         this->evaluateFrom(it->first, it->second);
     }
-}
-
-InputMap Glaph::getInputsMap(NodeItem* node)
-{
-    InputMap inputs{};
-    for (auto& wire : this->getInputs(node)) {
-        inputs.insert({wire->inputSocket, wire->inputNode});
-    }
-
-    return inputs;
 }
 
 std::unordered_set<WireItem*> Glaph::getInputs(NodeItem* node)

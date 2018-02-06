@@ -34,12 +34,12 @@ QString WireItem::getOutputSocket()
 
 QQuickItem* WireItem::getInputNode()
 {
-    return static_cast<QQuickItem*>(this->inputNode);
+    return reinterpret_cast<QQuickItem*>(this->inputNode);
 }
 
 QQuickItem* WireItem::getOutputNode()
 {
-    return static_cast<QQuickItem*>(this->outputNode);
+    return reinterpret_cast<QQuickItem*>(this->outputNode);
 }
 
 void WireItem::setInputSocket(QString& socketName)
@@ -56,12 +56,12 @@ void WireItem::setOutputSocket(QString& socketName)
 
 void WireItem::setInputNode(QQuickItem* node)
 {
-    this->inputNode = static_cast<NodeItem*>(node);
+    this->inputNode = reinterpret_cast<NodeItem*>(node);
     emit this->inputNodeChanged();
 }
 
 void WireItem::setOutputNode(QQuickItem* node)
 {
-    this->outputNode = static_cast<NodeItem*>(node);
+    this->outputNode = reinterpret_cast<NodeItem*>(node);
     emit this->outputNodeChanged();
 }

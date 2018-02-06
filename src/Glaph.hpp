@@ -46,7 +46,6 @@ public:
 private:
     jl_value_t* safe_eval(std::string);
 
-    InputMap getInputsMap(NodeItem*);
     void evaluateFrom(NodeItem*, QStringList);
     std::unordered_set<WireItem*> getInputs(NodeItem*);
     std::unordered_set<WireItem*> getOutputs(NodeItem*);

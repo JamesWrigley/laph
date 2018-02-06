@@ -32,7 +32,8 @@ NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent) { }
 
 NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
 
-QVariant NodeItem::evaluate(QString const& output_socket_name, InputMap const& inputs)
+QVariant NodeItem::evaluate(QString const& output_socket_name,
+                            std::unordered_set<WireItem*> const& inputs)
 {
     if (this->dirty) {
         jl_function_t* output_function{this->functions.at(output_socket_name.toStdString())};
@@ -50,10 +51,16 @@ QVariant NodeItem::evaluate(QString const& output_socket_name, InputMap const& i
 
                 // Check if we are dealing with an input
                 if (this->isInput(arg_str)) {
+                    auto wire_it{std::find_if(inputs.begin(), inputs.end(),
+                                              [&arg_str] (WireItem* wire) {
+                                                  return wire->outputSocket == arg_str;
+                                              })};
+
                     // If the socket is connected
-                    if (inputs.count(arg_str) > 0) {
-                        NodeItem* input_node{inputs.at(arg_str)};
-                        QVariant value{input_node->output_values.at(arg_str)};
+                    if (wire_it != inputs.end()) {
+                        NodeItem* input_node{(*wire_it)->inputNode};
+                        std::cout << "Looking for " << (*wire_it)->inputSocket.toStdString() << " " << (*wire_it)->outputSocket.toStdString() << "\n";
+                        QVariant value{input_node->output_values.at((*wire_it)->inputSocket)};
 
                         if (!value.isValid()) { // If the node can't compute its result
                             JL_GC_POP(); // Pop arguments

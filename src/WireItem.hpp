@@ -21,7 +21,7 @@
 
 #include <QQuickItem>
 
-#include "NodeItem.hpp"
+class NodeItem;
 
 class WireItem : public QQuickItem
 {
