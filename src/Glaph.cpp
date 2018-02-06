@@ -89,7 +89,6 @@ void Glaph::addWire(QObject* wire_qobj)
 
 QString Glaph::inputAsString(QObject* node_qobj, QString socket_name)
 {
-    // std::cout << "inputAsString()\n";
     NodeItem* node{static_cast<NodeItem*>(node_qobj)};
     std::unordered_set<WireItem*> inputs{this->getInputs(node)};
     auto wire_it{std::find_if(inputs.begin(), inputs.end(),

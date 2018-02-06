@@ -16,6 +16,7 @@
  *                                                                                *
  *********************************************************************************/
 
+#include <iostream>
 #include <algorithm>
 #include <stdexcept>
 
@@ -24,10 +25,6 @@
 
 #include "NodeItem.hpp"
 
-#ifdef QT_DEBUG
-#include <iostream>
-#endif
-
 NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent) { }
 
 NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
@@ -35,7 +32,6 @@ NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
 void NodeItem::evaluate(QString const& output_socket_name,
                             std::unordered_set<WireItem*> const& inputs)
 {
-    std::cout << "evaluate(" << output_socket_name.toStdString() << ")\n";
     jl_function_t* output_function{this->functions.at(output_socket_name.toStdString())};
     QVariantList var_args(this->hooks.value(output_socket_name).toList());
     jl_value_t** args{};
@@ -59,7 +55,6 @@ void NodeItem::evaluate(QString const& output_socket_name,
                 // If the socket is connected
                 if (wire_it != inputs.end()) {
                     NodeItem* input_node{(*wire_it)->inputNode};
-                    std::cout << "Looking for " << (*wire_it)->inputSocket.toStdString() << " " << (*wire_it)->outputSocket.toStdString() << "\n";
                     QVariant value{input_node->output_values.at((*wire_it)->inputSocket)};
 
                     if (!value.isValid()) { // If the node can't compute its result
@@ -71,7 +66,6 @@ void NodeItem::evaluate(QString const& output_socket_name,
                         throw std::runtime_error("Got non-double result from node");
                     }
                 } else { // Otherwise, return a invalid QVariant
-                    std::cout << "Unconnected\n";
                     JL_GC_POP(); // Pop arguments
                     this->output_values[output_socket_name] = QVariant();
                 }
@@ -87,9 +81,6 @@ void NodeItem::evaluate(QString const& output_socket_name,
         this->output_values[output_socket_name] = QVariant();
     } else if (jl_typeis(result, jl_float64_type)) {
         this->output_values[output_socket_name] = QVariant(jl_unbox_float64(result));
-        std::cout << "Evaluated to " << this->output_values[output_socket_name].value<double>() << "\n";
-    } else if (jl_typeis(result, jl_int64_type)) {
-        std::cout << "Number\n";
     }
 
     JL_GC_POP(); // Pop arguments
