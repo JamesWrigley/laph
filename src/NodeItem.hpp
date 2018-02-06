@@ -67,10 +67,9 @@ public:
     void setInputs(QVariantList const&);
     void setOutputs(QVariantList const&);
 
-    QVariant evaluate(QString const&, std::unordered_set<WireItem*> const&);
     bool isInput(QString);
+    void evaluate(QString const&, std::unordered_set<WireItem*> const&);
 
-    bool dirty;
     QVariantMap hooks;
     unsigned int index;
     QVariantList inputs_map;

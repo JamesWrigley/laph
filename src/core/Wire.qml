@@ -80,6 +80,8 @@ WireItem {
             if (justCreated) {
                 graphEngine.addWire(this)
             }
+
+            graphEngine.evaluateFrom(inputNode, [inputSocket])
         } else {
             root.destroy()
             canvas.requestPaint()

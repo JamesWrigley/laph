@@ -32,66 +32,67 @@ NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent) { }
 
 NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
 
-QVariant NodeItem::evaluate(QString const& output_socket_name,
+void NodeItem::evaluate(QString const& output_socket_name,
                             std::unordered_set<WireItem*> const& inputs)
 {
-    if (this->dirty) {
-        jl_function_t* output_function{this->functions.at(output_socket_name.toStdString())};
-        QVariantList var_args(this->hooks.value(output_socket_name).toList());
-        jl_value_t** args{};
-        JL_GC_PUSHARGS(args, var_args.size());
+    std::cout << "evaluate(" << output_socket_name.toStdString() << ")\n";
+    jl_function_t* output_function{this->functions.at(output_socket_name.toStdString())};
+    QVariantList var_args(this->hooks.value(output_socket_name).toList());
+    jl_value_t** args{};
+    JL_GC_PUSHARGS(args, var_args.size());
 
-        for (int i = 0; i < var_args.size(); ++i) {
-            QVariant arg{var_args.at(i)};
+    for (int i = 0; i < var_args.size(); ++i) {
+        QVariant arg{var_args.at(i)};
 
-            if (arg.userType() == QMetaType::Double) { // Double
-                args[i] = jl_box_float64(arg.value<double>());
-            } else if (arg.userType() == QMetaType::QString) {
-                QString arg_str{arg.value<QString>()};
+        if (arg.userType() == QMetaType::Double) { // Double
+            args[i] = jl_box_float64(arg.value<double>());
+        } else if (arg.userType() == QMetaType::QString) {
+            QString arg_str{arg.value<QString>()};
 
-                // Check if we are dealing with an input
-                if (this->isInput(arg_str)) {
-                    auto wire_it{std::find_if(inputs.begin(), inputs.end(),
-                                              [&arg_str] (WireItem* wire) {
-                                                  return wire->outputSocket == arg_str;
-                                              })};
+            // Check if we are dealing with an input
+            if (this->isInput(arg_str)) {
+                auto wire_it{std::find_if(inputs.begin(), inputs.end(),
+                                          [&arg_str] (WireItem* wire) {
+                                              return wire->outputSocket == arg_str;
+                                          })};
 
-                    // If the socket is connected
-                    if (wire_it != inputs.end()) {
-                        NodeItem* input_node{(*wire_it)->inputNode};
-                        std::cout << "Looking for " << (*wire_it)->inputSocket.toStdString() << " " << (*wire_it)->outputSocket.toStdString() << "\n";
-                        QVariant value{input_node->output_values.at((*wire_it)->inputSocket)};
+                // If the socket is connected
+                if (wire_it != inputs.end()) {
+                    NodeItem* input_node{(*wire_it)->inputNode};
+                    std::cout << "Looking for " << (*wire_it)->inputSocket.toStdString() << " " << (*wire_it)->outputSocket.toStdString() << "\n";
+                    QVariant value{input_node->output_values.at((*wire_it)->inputSocket)};
 
-                        if (!value.isValid()) { // If the node can't compute its result
-                            JL_GC_POP(); // Pop arguments
-                            return QVariant();
-                        } else if (value.canConvert<double>()) {
-                            args[i] = jl_box_float64(value.value<double>());
-                        } else {
-                            throw std::runtime_error("Got non-double result from node");
-                        }
-                    } else { // Otherwise, return a invalid QVariant
+                    if (!value.isValid()) { // If the node can't compute its result
                         JL_GC_POP(); // Pop arguments
-                        return QVariant();
+                        this->output_values[output_socket_name] = QVariant();
+                    } else if (value.canConvert<double>()) {
+                        args[i] = jl_box_float64(value.value<double>());
+                    } else {
+                        throw std::runtime_error("Got non-double result from node");
                     }
-                } else {
-                    args[i] = jl_cstr_to_string(arg_str.toStdString().c_str());
+                } else { // Otherwise, return a invalid QVariant
+                    std::cout << "Unconnected\n";
+                    JL_GC_POP(); // Pop arguments
+                    this->output_values[output_socket_name] = QVariant();
                 }
+            } else {
+                args[i] = jl_cstr_to_string(arg_str.toStdString().c_str());
             }
         }
-
-        jl_value_t* result{jl_call(output_function, args, var_args.size())};
-        if (jl_exception_occurred()) {
-            std::cout << "Error: " << jl_typeof_str(jl_exception_occurred()) << "\n";
-            this->output_values[output_socket_name] = QVariant();
-        } else if (jl_typeis(result, jl_float64_type)) {
-            this->output_values[output_socket_name] = QVariant(jl_unbox_float64(result));
-        }
-
-        JL_GC_POP(); // Pop arguments
     }
 
-    return this->output_values.at(output_socket_name);
+    jl_value_t* result{jl_call(output_function, args, var_args.size())};
+    if (jl_exception_occurred()) {
+        std::cout << "Error: " << jl_typeof_str(jl_exception_occurred()) << "\n";
+        this->output_values[output_socket_name] = QVariant();
+    } else if (jl_typeis(result, jl_float64_type)) {
+        this->output_values[output_socket_name] = QVariant(jl_unbox_float64(result));
+        std::cout << "Evaluated to " << this->output_values[output_socket_name].value<double>() << "\n";
+    } else if (jl_typeis(result, jl_int64_type)) {
+        std::cout << "Number\n";
+    }
+
+    JL_GC_POP(); // Pop arguments
 }
 
 bool NodeItem::isInput(QString socket_name)

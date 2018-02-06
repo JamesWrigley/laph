@@ -99,7 +99,7 @@ QString Glaph::inputAsString(QObject* node_qobj, QString socket_name)
 
     if (wire_it != inputs.end()) {
         NodeItem* parent{(*wire_it)->inputNode};
-        QVariant result{parent->evaluate(socket_name, inputs)};
+        QVariant result{parent->output_values[socket_name]};
 
         if (result.isValid() && result.canConvert<double>()) {
             return result.toString();
@@ -126,11 +126,9 @@ void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
     }
 
     // Evaluate all affected output values (looking backwards)
-    node->dirty = true;
     for (auto& wire : output_wires) {
         node->evaluate(wire->inputSocket, this->getInputs(node));
     }
-    node->dirty = false;
 
     // Find all nodes that have this node as an input
     std::unordered_map<NodeItem*, QStringList> dirtied_outputs{};

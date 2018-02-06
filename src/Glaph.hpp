@@ -42,11 +42,11 @@ public:
     Q_INVOKABLE void addNode(QString, QObject*);
     Q_INVOKABLE void addWire(QObject*);
     Q_INVOKABLE QString inputAsString(QObject*, QString);
+    Q_INVOKABLE void evaluateFrom(NodeItem*, QStringList);
 
 private:
     jl_value_t* safe_eval(std::string);
 
-    void evaluateFrom(NodeItem*, QStringList);
     std::unordered_set<WireItem*> getInputs(NodeItem*);
     std::unordered_set<WireItem*> getOutputs(NodeItem*);
 
