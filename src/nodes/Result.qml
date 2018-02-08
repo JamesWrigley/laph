@@ -27,8 +27,9 @@ Node {
     inputs: [["y", NodeItem.Scalar]]
     outputs: []
 
-    Input {
-        text: input("y")
-        readOnly: true
+    onInputChanged: {
+        ui.text = input("y")
     }
+
+    Output { }
 }

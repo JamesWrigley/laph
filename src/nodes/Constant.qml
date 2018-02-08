@@ -35,7 +35,7 @@ Node {
     ScalarInput {
         onFocusChanged: {
             if (!focus) {
-                inputChanged(root, ["k"])
+                nodeChanged(root, ["k"])
             }
         }
     }

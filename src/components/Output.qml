@@ -16,36 +16,6 @@
  *                                                                                *
  *********************************************************************************/
 
-import Laph 0.1
-
-import QtQuick 2.7
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 1.4
-
-import "../components"
-
-Node {
-    id: root
-
-    title: "Math"
-    inputs: [["x", NodeItem.Scalar]]
-    outputs: [["y", NodeItem.Scalar]]
-    hooks: ({
-        "y": [ "x", ui.expr.text ]
-    })
-
-    ColumnLayout {
-        property var expr: exprItem
-
-        Text { text: "Expression:" }
-        Input {
-            id: exprItem
-
-            onFocusChanged: {
-                if (!focus) {
-                    nodeChanged(root, ["y"])
-                }
-            }
-        }
-    }
+Input {
+    readOnly: true
 }

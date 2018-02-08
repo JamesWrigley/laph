@@ -60,14 +60,16 @@ void NodeItem::evaluate(QString const& output_socket_name,
                     if (!value.isValid()) { // If the node can't compute its result
                         JL_GC_POP(); // Pop arguments
                         this->output_values[output_socket_name] = QVariant();
+                        return;
                     } else if (value.canConvert<double>()) {
                         args[i] = jl_box_float64(value.value<double>());
                     } else {
                         throw std::runtime_error("Got non-double result from node");
                     }
-                } else { // Otherwise, return a invalid QVariant
+                } else { // Otherwise, set an invalid QVariant
                     JL_GC_POP(); // Pop arguments
                     this->output_values[output_socket_name] = QVariant();
+                    return;
                 }
             } else {
                 args[i] = jl_cstr_to_string(arg_str.toStdString().c_str());

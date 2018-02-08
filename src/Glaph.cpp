@@ -43,7 +43,7 @@ Glaph::~Glaph()
 void Glaph::addNode(QString code_path, QObject* qobj_node)
 {
     NodeItem* node{static_cast<NodeItem*>(qobj_node)};
-    connect(node, &NodeItem::inputChanged, this, &Glaph::evaluateFrom);
+    connect(node, &NodeItem::nodeChanged, this, &Glaph::evaluateFrom);
     QString node_name{QFileInfo(code_path).baseName()};
 
     if (node->outputs_map.size() > 0) {
@@ -98,7 +98,7 @@ QString Glaph::inputAsString(QObject* node_qobj, QString socket_name)
 
     if (wire_it != inputs.end()) {
         NodeItem* parent{(*wire_it)->inputNode};
-        QVariant result{parent->output_values[socket_name]};
+        QVariant result{parent->output_values.at((*wire_it)->inputSocket)};
 
         if (result.isValid() && result.canConvert<double>()) {
             return result.toString();
@@ -134,6 +134,7 @@ void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
     for (auto& wire : output_wires) {
         QString socket_name{wire->outputSocket};
         QVariantMap other_hooks{wire->outputNode->hooks};
+        emit this->inputChanged(wire->outputNode->index);
 
         for (auto it{other_hooks.begin()}; it != other_hooks.end(); ++it) {
             QStringList output_args{it.value().value<QStringList>()};
@@ -157,7 +158,7 @@ std::unordered_set<WireItem*> Glaph::getInputs(NodeItem* node)
 {
     std::unordered_set<WireItem*> inputs{};
     for (auto& wire : this->wires) {
-        if (wire->outputNode == node) {
+        if (wire->outputNode->index == node->index) {
             inputs.insert(wire);
         }
     }

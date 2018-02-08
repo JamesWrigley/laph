@@ -54,6 +54,9 @@ private:
     std::unordered_map<unsigned int, NodeItem*> nodes;
     std::unordered_map<std::string, std::unordered_map<std::string, jl_function_t*>> functions;
 
+signals:
+    void inputChanged(unsigned int nodeIndex);
+
 public slots:
     void removeWire(QObject*);
 };

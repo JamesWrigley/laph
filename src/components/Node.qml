@@ -48,8 +48,20 @@ NodeItem {
     default property Component uiComponent
     property bool selected: FocusSingleton.selectedNode == index
 
+    signal inputChanged()
+
+    Connections {
+        target: graphEngine
+
+        onInputChanged: {
+            if (nodeIndex == glode.index) {
+                inputChanged()
+            }
+        }
+    }
+
     function input(socketName) {
-        return graphEngine.inputAsString(this, socketName)
+        return graphEngine.inputAsString(glode, socketName)
     }
 
     Rectangle {

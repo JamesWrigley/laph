@@ -80,7 +80,7 @@ public:
 signals:
     void hooksChanged();
     void indexChanged();
-    void inputChanged(NodeItem*, QStringList);
+    void nodeChanged(NodeItem*, QStringList);
 };
 
 #endif
