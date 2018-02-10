@@ -62,7 +62,7 @@ WireItem {
         wireTip.y = 0
 
         var hook = Qt.binding(function () {
-            return target.node == null ? 0 : target.node.x + target.node.y
+            return target.node == null ? 0 : target.node.x + target.node.y + canvas.scaling
         })
 
         if (wireTip == start.item) {

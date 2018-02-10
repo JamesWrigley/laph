@@ -112,11 +112,25 @@ ApplicationWindow {
         focus: FocusSingleton.canvasFocus
 
         property var nodes: new Array()
-        property real xOffset: 0
-        property real yOffset: 0
-        property real scaling: 1
         property int nodeCount: 0
         property bool controlPressed: false
+
+        property real scaling: 1
+        property real xOffset: 0
+        property real yOffset: 0
+
+        Item {
+            id: nodesContainer
+
+            z: 1
+            transform: Scale {
+                xScale: canvas.scaling
+                yScale: canvas.scaling
+
+                origin.x: canvas.width / 2
+                origin.y: canvas.height / 2
+            }
+        }
 
         function nodeHigherAt(point, srcNode) {
             for (var i = 0; i < nodes.length; ++i) {
@@ -148,13 +162,15 @@ ApplicationWindow {
             var path = nm.dir + "/" + nodeFile
             var nodeComponent = Qt.createComponent(path)
             if (nodeComponent.status == Component.Ready) {
-                var node = nodeComponent.createObject(canvas, {"index": nodeCount,
-                                                               "xDrag": x - xOffset,
-                                                               "yDrag": y - yOffset,
-                                                               "rootZ": FocusSingleton.maxZ,
-                                                               "xOffset": Qt.binding(function() { return canvas.xOffset }),
-                                                               "yOffset": Qt.binding(function() { return canvas.yOffset }),
-                                                               "canvas":  Qt.binding(function() { return canvas })})
+                var node = nodeComponent.createObject(nodesContainer,
+                                                      {"index": nodeCount,
+                                                       "xDrag": x - xOffset,
+                                                       "yDrag": y - yOffset,
+                                                       "rootZ": FocusSingleton.maxZ,
+                                                       "scaling": scaling,
+                                                       "xOffset": Qt.binding(function() { return canvas.xOffset }),
+                                                       "yOffset": Qt.binding(function() { return canvas.yOffset }),
+                                                       "canvas":  Qt.binding(function() { return canvas })})
 
                 if (node != null) {
                     nodeCount += 1
@@ -210,7 +226,7 @@ ApplicationWindow {
 
             property real oldX
             property real oldY
-            property real step: 0.01
+            property real step: 0.05
 
             onPositionChanged: {
                 if (pressed) {

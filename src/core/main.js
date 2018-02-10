@@ -18,10 +18,12 @@
 
 function drawGrid(ctx, width, height, scale, xOffset, yOffset) {
     var sep = 50
+    xOffset = scale * xOffset
+    yOffset = scale * yOffset
 
     function transform(pos, offset, center, dimension) {
-        var new_pos = pos + offset // - (1 - scale) * (pos - center)
-        var border = Math.ceil(dimension / sep) * sep 
+        var new_pos = pos + offset
+        var border = Math.ceil(dimension / sep) * sep
 
         if (new_pos > border) {
             new_pos %= border
@@ -34,21 +36,21 @@ function drawGrid(ctx, width, height, scale, xOffset, yOffset) {
 
     ctx.fillRect(0, 0, width, height)
 
-    var z = Math.max(width, height) // / scale
+    var z = Math.max(width, height)
     for (var i = 0; i < z; i += sep) {
         var x = transform(i, xOffset, width / 2, width)
         var y = transform(i, yOffset, height / 2, height)
 
         // Vertical lines
-        if (i < width) { // / scale) {
+        if (i < width) {
             ctx.moveTo(x, 0)
             ctx.lineTo(x, height)
         }
 
         // Horizontal lines
-        if (i < height) { // / scale) {
+        if (i < height) {
             ctx.moveTo(0, y)
             ctx.lineTo(width, y)
-        } 
+        }
     }
 }

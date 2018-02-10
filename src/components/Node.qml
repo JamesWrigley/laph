@@ -27,9 +27,9 @@ import "../core"
 NodeItem {
     id: glode
 
+    z: root.z
     x: xDrag + xOffset
     y: yDrag + yOffset
-    z: root.z
 
     width: root.width
     height: root.height
@@ -43,6 +43,7 @@ NodeItem {
     property real xDrag
     property real yDrag
     property real rootZ
+    property real scaling
     property real xOffset
     property real yOffset
     default property Component uiComponent
@@ -195,7 +196,7 @@ NodeItem {
                                                                            "startOnLeft": parent.onLeft,
                                                                            "canvas": Qt.binding(function () { return canvas }),
                                                                            "startUpdateHook": Qt.binding(function () {
-                                                                               return glode.x + glode.y
+                                                                               return glode.x + glode.y + canvas.scaling
                                                                            }),
                                                                            "endUpdateHook": Qt.binding(function () {
                                                                                return ma.mouseX + ma.mouseY
