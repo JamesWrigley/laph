@@ -33,6 +33,8 @@ Node {
     })
 
     ScalarInput {
+        radius: 2
+
         onFocusChanged: {
             if (!focus) {
                 nodeChanged(root, ["k"])

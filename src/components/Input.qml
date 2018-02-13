@@ -29,11 +29,12 @@ TextField {
     style: TextFieldStyle {
         selectionColor: Qt.darker(root.bgColor, 2)
         background: Rectangle {
-            radius: 2
+            radius: root.radius
             color: root.hovered ? Qt.lighter(root.bgColor, 1.1) : root.bgColor
         }
     }
 
+    property var radius: 0
     property var bgColor: "lightgray"
 
     onFocusChanged: {
