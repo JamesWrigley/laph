@@ -41,6 +41,8 @@ Node {
         width: childrenRect.width
 
         ScalarInput {
+            id: si
+
             Layout.alignment: Qt.AlignTop
             Keys.onReturnPressed: {
                 if (text != "") {
@@ -58,7 +60,7 @@ Node {
             currentIndex: model.count - 1
 
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(contentHeight, 100)
+            Layout.preferredHeight: Math.min(contentHeight, 125)
             Layout.alignment: Qt.AlignBottom
 
             ScrollBar.vertical: ScrollBar {
@@ -76,7 +78,17 @@ Node {
             delegate: ScalarInput {
                 radius: 1
                 text: modelData
+
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.RightButton
+                    onClicked: root.elements.remove(index)
+                }
             }
+        }
+
+        Text {
+            text: "%1 rows".arg(root.elements.count)
         }
     }
 }
