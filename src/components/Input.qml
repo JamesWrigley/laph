@@ -25,6 +25,7 @@ import "../core"
 TextField {
     id: root
 
+    menu: null
     font: mono.name
     style: TextFieldStyle {
         selectionColor: Qt.darker(root.bgColor, 2)
