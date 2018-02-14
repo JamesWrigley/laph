@@ -68,6 +68,7 @@ public:
     void setOutputs(QVariantList const&);
 
     bool isInput(QString);
+    Socket getOutputType(QString const&);
     void evaluate(QString const&, std::unordered_set<WireItem*> const&);
 
     QVariantMap hooks;

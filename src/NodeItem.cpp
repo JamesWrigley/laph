@@ -30,10 +30,20 @@ NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent) { }
 NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
 
 void NodeItem::evaluate(QString const& output_socket_name,
-                            std::unordered_set<WireItem*> const& inputs)
+                        std::unordered_set<WireItem*> const& inputs)
 {
-    jl_function_t* output_function{this->functions.at(output_socket_name.toStdString())};
+    Socket type{this->getOutputType(output_socket_name)};
+
+    // If this is an input node, then we can add the values directly to
+    // output_values without having to call a Julia function.
+    if (type == ScalarInput || type == VectorInput) {
+        // Assume that there is only one element, which is the value to enter
+        this->output_values[output_socket_name] = this->hooks.value(output_socket_name);
+        return;
+    }
+
     QVariantList var_args(this->hooks.value(output_socket_name).toList());
+    jl_function_t* output_function{this->functions.at(output_socket_name.toStdString())};
     jl_value_t** args{};
     JL_GC_PUSHARGS(args, var_args.size());
 
@@ -81,7 +91,7 @@ void NodeItem::evaluate(QString const& output_socket_name,
     if (jl_exception_occurred()) {
         std::cout << "Error: " << jl_typeof_str(jl_exception_occurred()) << "\n";
         this->output_values[output_socket_name] = QVariant();
-    } else if (jl_typeis(result, jl_float64_type)) {
+    } else if (type == Scalar && jl_typeis(result, jl_float64_type)) {
         this->output_values[output_socket_name] = QVariant(jl_unbox_float64(result));
     }
 
@@ -94,6 +104,19 @@ bool NodeItem::isInput(QString socket_name)
     return std::any_of(inputs.begin(), inputs.end(), [&] (QVariant socket) {
             return socket_name == socket.toList().first().toString();
         });
+}
+
+NodeItem::Socket NodeItem::getOutputType(QString const& socket)
+{
+    auto output_it{std::find_if(this->outputs.begin(), this->outputs.end(),
+                                [&] (QVariant const& output) {
+                                    return output.toList().at(0).toString() == socket;
+                                })};
+    if (output_it != this->outputs.end()) {
+        return output_it->toList().at(1).value<NodeItem::Socket>();
+    } else {
+        throw std::runtime_error("Could not find " + socket.toStdString() + " in outputs");
+    }
 }
 
 void NodeItem::setIndex(int i)
