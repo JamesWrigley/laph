@@ -46,7 +46,7 @@ void Glaph::addNode(QString code_path, QObject* qobj_node)
     connect(node, &NodeItem::nodeChanged, this, &Glaph::evaluateFrom);
     QString node_name{QFileInfo(code_path).baseName()};
 
-    if (node->outputs_map.size() > 0) {
+    if (node->outputs.size() > 0) {
         if (this->functions.count(node_name.toStdString()) == 0) {
             std::smatch matches{};
             std::regex func_re{"^function\\s+(\\S+)\\s*\\("};

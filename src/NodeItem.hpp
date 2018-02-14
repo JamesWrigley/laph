@@ -72,8 +72,8 @@ public:
 
     QVariantMap hooks;
     unsigned int index;
-    QVariantList inputs_map;
-    QVariantList outputs_map;
+    QVariantList inputs;
+    QVariantList outputs;
     std::unordered_map<QString, QVariant> output_values;
     std::unordered_map<std::string, jl_function_t*> functions;
 

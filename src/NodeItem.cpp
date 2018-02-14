@@ -120,20 +120,20 @@ QVariantMap NodeItem::getHooks()
 
 void NodeItem::setOutputs(QVariantList const& outputs)
 {
-    this->outputs_map = outputs;
+    this->outputs = outputs;
 }
 
 QVariantList NodeItem::getOutputs()
 {
-    return this->outputs_map;
+    return this->outputs;
 }
 
 void NodeItem::setInputs(QVariantList const& inputs)
 {
-    this->inputs_map = inputs;
+    this->inputs = inputs;
 }
 
 QVariantList NodeItem::getInputs()
 {
-    return this->inputs_map;
+    return this->inputs;
 }
