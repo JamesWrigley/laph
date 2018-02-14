@@ -35,6 +35,7 @@ Node {
         "k̂": new Array()
     })
 
+    property var key: "k̂"
     property var elements: ListModel { }
 
     ColumnLayout {
@@ -43,10 +44,11 @@ Node {
         ScalarInput {
             id: si
 
-            Layout.alignment: Qt.AlignTop
             Keys.onReturnPressed: {
                 if (text != "") {
-                    root.elements.append({"data": parseFloat(text)})
+                    var num = parseFloat(text)
+                    root.elements.append({"data": num})
+                    hooks[key].push(num)
                     text = ""
                 }
             }
@@ -61,7 +63,6 @@ Node {
 
             Layout.fillWidth: true
             Layout.preferredHeight: Math.min(contentHeight, 125)
-            Layout.alignment: Qt.AlignBottom
 
             ScrollBar.vertical: ScrollBar {
                 parent: lv.parent
@@ -79,10 +80,21 @@ Node {
                 radius: 1
                 text: modelData
 
+                Keys.onReturnPressed: {
+                    if (text != "") {
+                        hooks[key][index] = parseFloat(text)
+                    }
+
+                    event.accepted = false
+                }
+
                 MouseArea {
                     anchors.fill: parent
                     acceptedButtons: Qt.RightButton
-                    onClicked: root.elements.remove(index)
+                    onClicked: {
+                        hooks[key].splice(index, 1)
+                        root.elements.remove(index)
+                    }
                 }
             }
         }
