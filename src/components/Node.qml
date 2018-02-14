@@ -134,9 +134,21 @@ NodeItem {
                             radius: width / 2
                             border.width: 1
                             border.color: Qt.darker(color, 2)
-                            color: modelData[1] == NodeItem.Scalar ? "purple" : "green"
+                            color: getColor()
 
+                            property bool isScalar: (modelData[1] == NodeItem.Scalar
+                                                     || modelData[1] == NodeItem.ScalarInput)
                             property alias onLeft: da.onLeft
+
+                            function getColor() {
+                                if (modelData[1] == NodeItem.Generic) {
+                                    return "teal"
+                                } else if (isScalar) {
+                                    return "purple"
+                                } else {
+                                    return "green"
+                                }
+                            }
 
                             DropArea {
                                 id: da

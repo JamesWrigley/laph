@@ -27,9 +27,9 @@ Node {
 
     title: "Constant"
     inputs: []
-    outputs: [["k", NodeItem.Scalar]]
+    outputs: [["k", NodeItem.ScalarInput]]
     hooks: ({
-        "k": [ parseFloat(ui.text) ]
+        "k": parseFloat(ui.text)
     })
 
     ScalarInput {

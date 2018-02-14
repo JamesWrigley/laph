@@ -55,6 +55,32 @@ WireItem {
     property var endType: end.item.socketType
     property var startType: start.item.socketType
 
+    Connections {
+        target: canvas
+
+        onPaint: {
+            var ctx = canvas.getContext("2d")
+            ctx.strokeStyle = getStrokeStyle()
+            ctx.lineWidth = 2
+            ctx.path = wire
+            ctx.stroke()
+        }
+    }
+
+    function getStrokeStyle() {
+        function isScalar(type) {
+            return type == NodeItem.Scalar || type == NodeItem.ScalarInput
+        }
+
+        if ((startType == null || endType == null) ||
+            (startType == NodeItem.Generic || endType == NodeItem.Generic) ||
+            (isScalar(startType) == isScalar(endType))) {
+            return "lightsteelblue"
+        } else {
+            return "red"
+        }
+    }
+
     function setParent(wireTip) {
         var target = wireTip.Drag.target
         wireTip.parent = target
@@ -87,19 +113,6 @@ WireItem {
             canvas.requestPaint()
         }
         root.dragging = (~startDragging) & (~endDragging)
-    }
-
-    Connections {
-        target: canvas
-
-        onPaint: {
-            var ctx = canvas.getContext("2d")
-            ctx.strokeStyle = ((startType == null || endType == null) ||
-                               (startType == endType)) ? "lightsteelblue" : "red"
-            ctx.lineWidth = 2
-            ctx.path = wire
-            ctx.stroke()
-        }
     }
 
     function computeCoord(wireTip, hook, x) {

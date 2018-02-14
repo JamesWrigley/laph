@@ -55,7 +55,7 @@ public:
     NodeItem(QQuickItem* = Q_NULLPTR);
     NodeItem(NodeItem const&, QQuickItem* = Q_NULLPTR);
 
-    enum Socket { Scalar, Vector, Generic };
+    enum Socket { Scalar, ScalarInput, Vector, VectorInput, Generic };
     Q_ENUM(Socket)
 
     int getIndex();

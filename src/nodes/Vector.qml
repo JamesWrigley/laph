@@ -30,10 +30,10 @@ Node {
 
     title: "Vector"
     inputs: []
-    outputs: [["k̂", NodeItem.Scalar]]
-    // hooks: ({
-    //     "k": [ parseFloat(ui.text) ]
-    // })
+    outputs: [[key, NodeItem.VectorInput]]
+    hooks: ({
+        "k̂": new Array()
+    })
 
     property var elements: ListModel { }
 
