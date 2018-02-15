@@ -30,9 +30,7 @@ Node {
     title: "Math"
     inputs: [["x", NodeItem.Scalar]]
     outputs: [["y", NodeItem.Scalar]]
-    hooks: ({
-        "y": [ "x", ui.expr.text ]
-    })
+    hooks: QtObject { property var y: [ "x", ui.expr.text ] }
 
     ColumnLayout {
         property var expr: exprItem

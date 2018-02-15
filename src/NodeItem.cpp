@@ -130,13 +130,13 @@ int NodeItem::getIndex()
     return this->index;
 }
 
-void NodeItem::setHooks(QVariantMap const& hooks)
+void NodeItem::setHooks(QObject* hooks)
 {
     this->hooks = hooks;
     emit this->hooksChanged();
 }
 
-QVariantMap NodeItem::getHooks()
+QObject* NodeItem::getHooks()
 {
     return this->hooks;
 }

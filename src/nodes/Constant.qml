@@ -28,9 +28,8 @@ Node {
     title: "Constant"
     inputs: []
     outputs: [["k", NodeItem.ScalarInput]]
-    hooks: ({
-        "k": parseFloat(ui.text)
-    })
+    hooks: QtObject { property var k: parseFloat(ui.text) }
+
 
     ScalarInput {
         radius: 2

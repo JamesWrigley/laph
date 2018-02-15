@@ -31,9 +31,9 @@ Node {
     title: "Vector"
     inputs: []
     outputs: [[key, NodeItem.VectorInput]]
-    hooks: ({
-        "k̂": new Array()
-    })
+    hooks: QtObject {
+        property var k̂: new Array()
+    }
 
     property var key: "k̂"
     property var elements: ListModel { }

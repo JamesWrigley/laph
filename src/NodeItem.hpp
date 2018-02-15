@@ -47,9 +47,10 @@ class NodeItem : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
-    Q_PROPERTY(QVariantMap hooks READ getHooks WRITE setHooks NOTIFY hooksChanged)
-    Q_PROPERTY(QVariantList outputs READ getOutputs WRITE setOutputs)
-    Q_PROPERTY(QVariantList inputs READ getInputs WRITE setInputs)
+    Q_PROPERTY(QObject* hooks READ getHooks WRITE setHooks NOTIFY hooksChanged)
+    Q_PROPERTY(QVariantList outputs READ getOutputs WRITE setOutputs NOTIFY outputsChanged)
+    Q_PROPERTY(QVariantList inputs READ getInputs WRITE setInputs NOTIFY inputsChanged)
+    Q_PROPERTY(QVariantMap inputTypes READ getInputTypes NOTIFY inputTypesChanged)
 
 public:
     NodeItem(QQuickItem* = Q_NULLPTR);
@@ -59,11 +60,11 @@ public:
     Q_ENUM(Socket)
 
     int getIndex();
-    QVariantMap getHooks();
+    QObject* getHooks();
     QVariantList getInputs();
     QVariantList getOutputs();
     void setIndex(int);
-    void setHooks(QVariantMap const&);
+    void setHooks(QObject*);
     void setInputs(QVariantList const&);
     void setOutputs(QVariantList const&);
 
@@ -71,8 +72,8 @@ public:
     Socket getOutputType(QString const&);
     void evaluate(QString const&, std::unordered_set<WireItem*> const&);
 
-    QVariantMap hooks;
     unsigned int index;
+    QObject* hooks{nullptr};
     QVariantList inputs;
     QVariantList outputs;
     std::unordered_map<QString, QVariant> output_values;
