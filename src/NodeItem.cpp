@@ -21,6 +21,7 @@
 #include <stdexcept>
 
 #include <QMetaType>
+#include <QMetaObject>
 #include <QVariantList>
 
 #include "NodeItem.hpp"
@@ -33,16 +34,25 @@ void NodeItem::evaluate(QString const& output_socket_name,
                         std::unordered_set<WireItem*> const& inputs)
 {
     Socket type{this->getOutputType(output_socket_name)};
+    char const* socket_name_char{output_socket_name.toStdString().c_str()};
 
-    // If this is an input node, then we can add the values directly to
+    // If this is a data input node, then we can add the values directly to
     // output_values without having to call a Julia function.
-    if (type == ScalarInput || type == VectorInput) {
-        // Assume that there is only one element, which is the value to enter
-        this->output_values[output_socket_name] = this->hooks.value(output_socket_name);
+    if (type == ScalarInput) {
+        this->output_values[output_socket_name] = this->hooks->property(socket_name_char);
+        return;
+    } else if (type == VectorInput) {
+        // For some reason when dealing with a JS array we can only access it
+        // through the hooks metaobject.
+        QVariant var{this->getHooksMap().value(output_socket_name)};
+        this->output_values[output_socket_name] = var;
+
         return;
     }
 
-    QVariantList var_args(this->hooks.value(output_socket_name).toList());
+    // We assume that if this is not an input node, then we are dealing with a
+    // list of arguments to the Julia function.
+    QVariantList var_args(this->hooks->property(socket_name_char).toList());
     jl_function_t* output_function{this->functions.at(output_socket_name.toStdString())};
     jl_value_t** args{};
     JL_GC_PUSHARGS(args, var_args.size());
@@ -106,16 +116,42 @@ bool NodeItem::isInput(QString socket_name)
         });
 }
 
+QVariantMap NodeItem::getHooksMap()
+{
+    if (this->hooks == nullptr) {
+        return QVariantMap{};
+    }
+
+    QVariantMap map{};
+    QMetaObject const* meta_obj{this->hooks->metaObject()};
+    for (auto i{meta_obj->propertyOffset()}; i < meta_obj->propertyCount(); ++i) {
+        map.insert(meta_obj->property(i).name(),
+                   meta_obj->property(i).read(this->hooks));
+    }
+
+    return map;
+}
+
+NodeItem::Socket NodeItem::getInputType(QString const& socket)
+{
+    return this->getSocketType(socket, this->inputs);
+}
+
 NodeItem::Socket NodeItem::getOutputType(QString const& socket)
 {
-    auto output_it{std::find_if(this->outputs.begin(), this->outputs.end(),
+    return this->getSocketType(socket, this->outputs);
+}
+
+NodeItem::Socket NodeItem::getSocketType(QString const& socket, QVariantList const& sockets)
+{
+    auto output_it{std::find_if(sockets.begin(), sockets.end(),
                                 [&] (QVariant const& output) {
                                     return output.toList().at(0).toString() == socket;
                                 })};
     if (output_it != this->outputs.end()) {
         return output_it->toList().at(1).value<NodeItem::Socket>();
     } else {
-        throw std::runtime_error("Could not find " + socket.toStdString() + " in outputs");
+        throw std::runtime_error("Could not find socket " + socket.toStdString());
     }
 }
 

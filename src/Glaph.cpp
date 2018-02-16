@@ -133,7 +133,7 @@ void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
     std::unordered_map<NodeItem*, QStringList> dirtied_outputs{};
     for (auto& wire : output_wires) {
         QString socket_name{wire->outputSocket};
-        QVariantMap other_hooks{wire->outputNode->hooks};
+        QVariantMap other_hooks{wire->outputNode->getHooksMap()};
         emit this->inputChanged(wire->outputNode->index);
 
         for (auto it{other_hooks.begin()}; it != other_hooks.end(); ++it) {

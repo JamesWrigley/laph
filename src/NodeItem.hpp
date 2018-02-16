@@ -70,6 +70,7 @@ public:
 
     bool isInput(QString);
     Socket getOutputType(QString const&);
+    QVariantMap getHooksMap();
     void evaluate(QString const&, std::unordered_set<WireItem*> const&);
 
     unsigned int index;
