@@ -50,6 +50,7 @@ Node {
                     root.elements.append({"data": num})
                     hooks[key].push(num)
                     text = ""
+                    nodeChanged(root, key)
                 }
             }
         }
@@ -83,6 +84,7 @@ Node {
                 Keys.onReturnPressed: {
                     if (text != "") {
                         hooks[key][index] = parseFloat(text)
+                        nodeChanged(root, key)
                     }
 
                     event.accepted = false
@@ -94,6 +96,7 @@ Node {
                     onClicked: {
                         hooks[key].splice(index, 1)
                         root.elements.remove(index)
+                        nodeChanged(root, key)
                     }
                 }
             }
