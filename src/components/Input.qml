@@ -28,6 +28,7 @@ TextField {
     menu: null
     font: mono.name
     style: TextFieldStyle {
+        renderType: Text.QtRendering
         selectionColor: Qt.darker(root.bgColor, 2)
         background: Rectangle {
             radius: root.radius
