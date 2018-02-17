@@ -37,6 +37,8 @@ NodeItem {
     // Public properties
     property string title
     property var ui: uiLoader.item
+    property bool generic: false
+    readonly property alias typeSwap: root.typeSwap
 
     // Private properties (subclassing nodes should not touch these)
     property var canvas
@@ -109,7 +111,9 @@ NodeItem {
 
             Keys.onPressed: {
                 if (event.key == Qt.Key_T && mainMa.containsMouse) {
-                    console.info("T")
+                    if (glode.generic) {
+                        typeSwap = ! typeSwap
+                    }
                 }
             }
 
