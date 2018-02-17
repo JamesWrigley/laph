@@ -120,6 +120,12 @@ ApplicationWindow {
         property real yOffset: 0
 
         Item {
+            id: dummyNode
+            enabled: false
+            z: 0
+        }
+
+        Item {
             id: nodesContainer
 
             z: 1
@@ -213,7 +219,10 @@ ApplicationWindow {
             acceptedButtons: Qt.AllButtons & ~Qt.MiddleButton
 
             onClicked: {
-                parent.focus = true
+                if (!parent.nodeHigherAt(Qt.point(mouse.x, mouse.y),
+                                         dummyNode)) {
+                    FocusSingleton.canvasFocus = true
+                }
             }
         }
 

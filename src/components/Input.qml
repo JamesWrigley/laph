@@ -39,10 +39,6 @@ TextField {
     property var radius: 0
     property var bgColor: "lightgray"
 
-    onFocusChanged: {
-        FocusSingleton.canvasFocus = !focus
-    }
-
     onEditingFinished: {
         root.focus = false
     }
