@@ -38,15 +38,8 @@ void NodeItem::evaluate(QString const& output_socket_name,
 
     // If this is a data input node, then we can add the values directly to
     // output_values without having to call a Julia function.
-    if (type == ScalarInput) {
-        this->output_values[output_socket_name] = this->hooks->property(socket_name_char);
-        return;
-    } else if (type == VectorInput) {
-        // For some reason when dealing with a JS array we can only access it
-        // through the hooks metaobject.
-        QVariant var{this->getHooksMap().value(output_socket_name)};
-        this->output_values[output_socket_name] = var;
-
+    if (type == ScalarInput || type == VectorInput) {
+        this->cache(socket_name_char, type);
         return;
     }
 
@@ -81,11 +74,18 @@ void NodeItem::evaluate(QString const& output_socket_name,
                         JL_GC_POP(); // Pop arguments
                         this->output_values[output_socket_name] = QVariant();
                         return;
-                    } else if (value.canConvert<double>()) {
+                    } else if (this->getInputType(arg_str) == Scalar) {
                         args[i] = jl_box_float64(value.value<double>());
+                    } else if (this->getInputType(arg_str) == Vector) {
+                        // For now, assume that this is a 1D vector
+                        dvector_ptr vec{value.value<dvector_ptr>()};
+                        jl_value_t* vec_type{jl_apply_array_type((jl_value_t*)jl_float64_type, 1)};
+                        args[i] = (jl_value_t*)jl_ptr_to_array_1d(vec_type, vec->data(),
+                                                                  vec->size(), 0);
                     } else {
                         throw std::runtime_error("Got non-double result from node");
                     }
+
                 } else { // Otherwise, set an invalid QVariant
                     JL_GC_POP(); // Pop arguments
                     this->output_values[output_socket_name] = QVariant();
@@ -106,6 +106,27 @@ void NodeItem::evaluate(QString const& output_socket_name,
     }
 
     JL_GC_POP(); // Pop arguments
+}
+
+void NodeItem::cache(char const* output_socket_name, Socket type)
+{
+    if (type == ScalarInput) {
+        this->output_values[output_socket_name] = this->hooks->property(output_socket_name);
+    } else if (type == VectorInput) {
+        QVariantList nums(this->hooks->property(output_socket_name).toList());
+
+        if (this->vector_cache.count(output_socket_name) == 0) {
+            this->vector_cache.insert({output_socket_name, std::make_shared<dvector>()});
+        }
+        dvector_ptr& vec{this->vector_cache.at(output_socket_name)};
+        vec->resize(nums.size());
+        std::transform(nums.begin(), nums.end(), vec->begin(),
+                       [] (QVariant const& num) {
+                           return num.toDouble();
+                       });
+
+        this->output_values[output_socket_name] = QVariant::fromValue(vec);
+    }
 }
 
 bool NodeItem::isInput(QString socket_name)

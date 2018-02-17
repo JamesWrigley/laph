@@ -19,6 +19,7 @@
 #ifndef GLODE_HPP
 #define GLODE_HPP
 
+#include <memory>
 #include <functional>
 #include <unordered_map>
 #include <unordered_set>
@@ -31,6 +32,10 @@
 #include <QVariantMap>
 
 #include "WireItem.hpp"
+
+using dvector = std::vector<double>;
+using dvector_ptr = std::shared_ptr<dvector>;
+Q_DECLARE_METATYPE(dvector_ptr);
 
 namespace std {
     template<>
@@ -69,16 +74,22 @@ public:
     void setOutputs(QVariantList const&);
 
     bool isInput(QString);
-    Socket getOutputType(QString const&);
     QVariantMap getHooksMap();
+    Socket getInputType(QString const&);
+    Socket getOutputType(QString const&);
     void evaluate(QString const&, std::unordered_set<WireItem*> const&);
+    void cache(char const*, Socket);
 
     unsigned int index;
     QObject* hooks{nullptr};
     QVariantList inputs;
     QVariantList outputs;
     std::unordered_map<QString, QVariant> output_values;
+    std::unordered_map<QString, dvector_ptr> vector_cache;
     std::unordered_map<std::string, jl_function_t*> functions;
+
+private:
+    Socket getSocketType(QString const&, QVariantList const&);
 
 signals:
     void hooksChanged();
