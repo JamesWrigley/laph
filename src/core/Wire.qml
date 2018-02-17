@@ -61,7 +61,7 @@ WireItem {
         onPaint: {
             var ctx = canvas.getContext("2d")
             ctx.strokeStyle = getStrokeStyle()
-            ctx.lineWidth = 2
+            ctx.lineWidth = 2 * canvas.scaling
             ctx.path = wire
             ctx.stroke()
         }
