@@ -97,8 +97,8 @@ QString Glaph::inputAsString(QObject* node_qobj, QString socket_name)
                               })};
 
     if (wire_it != inputs.end()) {
-        NodeItem* parent{(*wire_it)->inputNode};
-        QVariant result{parent->output_values.at((*wire_it)->inputSocket)};
+        NodeItem* input{(*wire_it)->inputNode};
+        QVariant result{input->output_values[(*wire_it)->inputSocket]};
 
         if (result.isValid() && result.canConvert<double>()) {
             return result.toString();
