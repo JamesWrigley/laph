@@ -53,21 +53,6 @@ NodeItem {
 
     signal inputChanged()
 
-    function attemptFocus(x, y) {
-        if (!canvas.nodeHigherAt(Qt.point(x, y), root)) {
-            if (FocusSingleton.selectedNode != index) {
-                FocusSingleton.selectedNode = index
-                root.z = FocusSingleton.maxZ
-            }
-
-            FocusSingleton.canvasFocus = false
-            scope.focus = true
-            return false
-        } else {
-            return true
-        }
-    }
-
     Connections {
         target: graphEngine
 
@@ -99,6 +84,20 @@ NodeItem {
             height: childrenRect.height
 
             property bool typeSwap: false
+            function attemptFocus(x, y) {
+                if (!glode.canvas.nodeHigherAt(Qt.point(x, y), root)) {
+                    if (FocusSingleton.selectedNode != index) {
+                        FocusSingleton.selectedNode = index
+                        root.z = FocusSingleton.maxZ
+                    }
+
+                    FocusSingleton.canvasFocus = false
+                    scope.focus = true
+                    return false
+                } else {
+                    return true
+                }
+            }
 
             function input(socketName) {
                 return glode.input(socketName)
@@ -126,7 +125,7 @@ NodeItem {
                 anchors.fill: mainLayout
 
                 onPressed: {
-                    mouse.accepted = attemptFocus(mouse.x, mouse.y)
+                    mouse.accepted = parent.attemptFocus(mouse.x, mouse.y)
                 }
 
                 onWheel: wheel.accepted = false
@@ -335,7 +334,7 @@ NodeItem {
                         onWheel: wheel.accepted = false
                         onClicked: mouse.accepted = false
                         onPressed: {
-                            glode.attemptFocus(mouse.x, mouse.y)
+                            root.attemptFocus(mouse.x, mouse.y)
                         }
                         onReleased: mouse.accepted = false
                         onDoubleClicked: mouse.accepted = false
