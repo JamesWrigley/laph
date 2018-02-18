@@ -101,6 +101,8 @@ private:
 signals:
     void hooksChanged();
     void indexChanged();
+    void inputsChanged();
+    void outputsChanged();
     void inputTypeSwapsChanged();
     void outputTypeSwapsChanged();
     void nodeChanged(NodeItem*, QStringList);

@@ -212,6 +212,7 @@ QObject* NodeItem::getHooks()
 void NodeItem::setOutputs(QVariantList const& outputs)
 {
     this->outputs = outputs;
+    emit this->outputsChanged();
 }
 
 QVariantList NodeItem::getOutputs()
@@ -222,6 +223,7 @@ QVariantList NodeItem::getOutputs()
 void NodeItem::setInputs(QVariantList const& inputs)
 {
     this->inputs = inputs;
+    emit this->inputsChanged();
 }
 
 QVariantList NodeItem::getInputs()
