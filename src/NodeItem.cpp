@@ -155,22 +155,33 @@ QVariantMap NodeItem::getHooksMap()
 
 NodeItem::Socket NodeItem::getInputType(QString const& socket)
 {
-    return this->getSocketType(socket, this->inputs);
+    return this->getSocketType(socket, this->inputs, this->inputTypeSwaps);
 }
 
 NodeItem::Socket NodeItem::getOutputType(QString const& socket)
 {
-    return this->getSocketType(socket, this->outputs);
+    return this->getSocketType(socket, this->outputs, this->outputTypeSwaps);
 }
 
-NodeItem::Socket NodeItem::getSocketType(QString const& socket, QVariantList const& sockets)
+NodeItem::Socket NodeItem::getSocketType(QString const& socket,
+                                         QVariantList const& sockets,
+                                         QList<bool> const& socketSwaps)
 {
     auto output_it{std::find_if(sockets.begin(), sockets.end(),
-                                [&] (QVariant const& output) {
-                                    return output.toList().at(0).toString() == socket;
+                                [&] (QVariant const& var) {
+                                    return var.toList().at(0).toString() == socket;
                                 })};
     if (output_it != this->outputs.end()) {
-        return output_it->toList().at(1).value<NodeItem::Socket>();
+        bool swap{socketSwaps.at(output_it - sockets.begin())};
+        Socket type{output_it->toList().at(1).value<NodeItem::Socket>()};
+
+        if (swap && type == Scalar) {
+            return Vector;
+        } else if (swap && type == Vector) {
+            return Scalar;
+        } else {
+            return type;
+        }
     } else {
         throw std::runtime_error("Could not find socket " + socket.toStdString());
     }
@@ -216,4 +227,26 @@ void NodeItem::setInputs(QVariantList const& inputs)
 QVariantList NodeItem::getInputs()
 {
     return this->inputs;
+}
+
+QList<bool> NodeItem::getInputTypeSwaps()
+{
+    return this->inputTypeSwaps;
+}
+
+void NodeItem::setInputTypeSwaps(QList<bool> const& swaps)
+{
+    this->inputTypeSwaps = swaps;
+    emit this->inputTypeSwapsChanged();
+}
+
+QList<bool> NodeItem::getOutputTypeSwaps()
+{
+    return this->outputTypeSwaps;
+}
+
+void NodeItem::setOutputTypeSwaps(QList<bool> const& swaps)
+{
+    this->outputTypeSwaps = swaps;
+    emit this->outputTypeSwapsChanged();
 }

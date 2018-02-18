@@ -55,7 +55,8 @@ class NodeItem : public QQuickItem
     Q_PROPERTY(QObject* hooks READ getHooks WRITE setHooks NOTIFY hooksChanged)
     Q_PROPERTY(QVariantList outputs READ getOutputs WRITE setOutputs NOTIFY outputsChanged)
     Q_PROPERTY(QVariantList inputs READ getInputs WRITE setInputs NOTIFY inputsChanged)
-    Q_PROPERTY(QVariantMap inputTypes READ getInputTypes NOTIFY inputTypesChanged)
+    Q_PROPERTY(QList<bool> inputTypeSwaps READ getInputTypeSwaps WRITE setInputTypeSwaps NOTIFY inputTypeSwapsChanged)
+    Q_PROPERTY(QList<bool> outputTypeSwaps READ getOutputTypeSwaps WRITE setOutputTypeSwaps NOTIFY outputTypeSwapsChanged)
 
 public:
     NodeItem(QQuickItem* = Q_NULLPTR);
@@ -68,10 +69,14 @@ public:
     QObject* getHooks();
     QVariantList getInputs();
     QVariantList getOutputs();
+    QList<bool> getInputTypeSwaps();
+    QList<bool> getOutputTypeSwaps();
     void setIndex(int);
     void setHooks(QObject*);
     void setInputs(QVariantList const&);
     void setOutputs(QVariantList const&);
+    void setInputTypeSwaps(QList<bool> const&);
+    void setOutputTypeSwaps(QList<bool> const&);
 
     bool isInput(QString);
     QVariantMap getHooksMap();
@@ -84,16 +89,20 @@ public:
     QObject* hooks{nullptr};
     QVariantList inputs;
     QVariantList outputs;
+    QList<bool> inputTypeSwaps;
+    QList<bool> outputTypeSwaps;
     std::unordered_map<QString, QVariant> output_values;
     std::unordered_map<QString, dvector_ptr> vector_cache;
     std::unordered_map<std::string, jl_function_t*> functions;
 
 private:
-    Socket getSocketType(QString const&, QVariantList const&);
+    Socket getSocketType(QString const&, QVariantList const&, QList<bool> const&);
 
 signals:
     void hooksChanged();
     void indexChanged();
+    void inputTypeSwapsChanged();
+    void outputTypeSwapsChanged();
     void nodeChanged(NodeItem*, QStringList);
 };
 

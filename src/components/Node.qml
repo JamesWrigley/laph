@@ -48,10 +48,23 @@ NodeItem {
     property real yOffset
     default property Component uiComponent
     property bool selected: scope.activeFocus
-    property var inputTypeSwaps: new Array(inputs.length)
-    property var outputTypeSwaps: new Array(outputs.length)
+    inputTypeSwaps: new Array(inputs.length)
+    outputTypeSwaps: new Array(outputs.length)
 
     signal inputChanged()
+
+    Component.onCompleted: {
+        function fillTypeSwap(sockets, fillInputs) {
+            for (var i = 0; i < sockets.length; ++i) {
+                if (sockets[i].length > 2) {
+                    (fillInputs ? inputTypeSwaps : outputTypeSwaps)[i] = false
+                }
+            }
+        }
+
+        fillTypeSwap(inputs, true)
+        fillTypeSwap(outputs, false)
+    }
 
     Connections {
         target: graphEngine
