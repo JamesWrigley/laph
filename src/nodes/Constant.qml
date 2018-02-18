@@ -30,7 +30,6 @@ Node {
     outputs: [["k", NodeItem.ScalarInput]]
     hooks: QtObject { property var k: parseFloat(ui.text) }
 
-
     ScalarInput {
         radius: 2
 

@@ -35,7 +35,7 @@ Node {
         property var k̂: new Array()
     }
 
-    property var key: "k̂"
+    property string key: "k̂"
     property var elements: ListModel { }
 
     ColumnLayout {
@@ -47,10 +47,12 @@ Node {
             Keys.onReturnPressed: {
                 if (text != "") {
                     var num = parseFloat(text)
+
                     root.elements.append({"data": num})
                     hooks[key].push(num)
+
                     text = ""
-                    nodeChanged(root, key)
+                    nodeChanged(root, [key])
                 }
             }
         }
@@ -81,10 +83,14 @@ Node {
                 radius: 1
                 text: modelData
 
+                // For some reason the MouseArea doesn't have root in it's
+                // scope, so we use this binding instead.
+                property var subRoot: root
+
                 Keys.onReturnPressed: {
                     if (text != "") {
                         hooks[key][index] = parseFloat(text)
-                        nodeChanged(root, key)
+                        nodeChanged(root, [key])
                     }
 
                     event.accepted = false
@@ -95,8 +101,8 @@ Node {
                     acceptedButtons: Qt.RightButton
                     onClicked: {
                         hooks[key].splice(index, 1)
-                        root.elements.remove(index)
-                        nodeChanged(root, key)
+                        subRoot.elements.remove(index)
+                        subRoot.nodeChanged(subRoot, [subRoot.key])
                     }
                 }
             }

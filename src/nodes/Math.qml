@@ -28,8 +28,8 @@ Node {
     id: root
 
     title: "Math"
-    inputs: [["x", NodeItem.Scalar]]
-    outputs: [["y", NodeItem.Scalar]]
+    inputs: [["x", NodeItem.Scalar, true]]
+    outputs: [["y", NodeItem.Scalar, true]]
     hooks: QtObject { property var y: [ "x", ui.expr.text ] }
 
     ColumnLayout {

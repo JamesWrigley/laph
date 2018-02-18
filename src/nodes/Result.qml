@@ -24,7 +24,7 @@ import "../components"
 
 Node {
     title: "Result"
-    inputs: [["y", NodeItem.Scalar]]
+    inputs: [["y", NodeItem.Generic]]
     outputs: []
 
     onInputChanged: {
