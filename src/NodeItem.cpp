@@ -187,16 +187,15 @@ NodeItem::Socket NodeItem::getSocketType(QString const& socket,
     }
 }
 
+int NodeItem::getIndex() { return this->index; }
+
 void NodeItem::setIndex(int i)
 {
     this->index = i;
     emit this->indexChanged();
 }
 
-int NodeItem::getIndex()
-{
-    return this->index;
-}
+QObject* NodeItem::getHooks() { return this->hooks; }
 
 void NodeItem::setHooks(QObject* hooks)
 {
@@ -204,10 +203,7 @@ void NodeItem::setHooks(QObject* hooks)
     emit this->hooksChanged();
 }
 
-QObject* NodeItem::getHooks()
-{
-    return this->hooks;
-}
+QVariantList NodeItem::getOutputs() { return this->outputs; }
 
 void NodeItem::setOutputs(QVariantList const& outputs)
 {
@@ -215,10 +211,7 @@ void NodeItem::setOutputs(QVariantList const& outputs)
     emit this->outputsChanged();
 }
 
-QVariantList NodeItem::getOutputs()
-{
-    return this->outputs;
-}
+QVariantList NodeItem::getInputs() { return this->inputs; }
 
 void NodeItem::setInputs(QVariantList const& inputs)
 {
@@ -226,15 +219,7 @@ void NodeItem::setInputs(QVariantList const& inputs)
     emit this->inputsChanged();
 }
 
-QVariantList NodeItem::getInputs()
-{
-    return this->inputs;
-}
-
-QList<bool> NodeItem::getInputTypeSwaps()
-{
-    return this->inputTypeSwaps;
-}
+QList<bool> NodeItem::getInputTypeSwaps() { return this->inputTypeSwaps; }
 
 void NodeItem::setInputTypeSwaps(QList<bool> const& swaps)
 {
@@ -242,10 +227,7 @@ void NodeItem::setInputTypeSwaps(QList<bool> const& swaps)
     emit this->inputTypeSwapsChanged();
 }
 
-QList<bool> NodeItem::getOutputTypeSwaps()
-{
-    return this->outputTypeSwaps;
-}
+QList<bool> NodeItem::getOutputTypeSwaps() { return this->outputTypeSwaps; }
 
 void NodeItem::setOutputTypeSwaps(QList<bool> const& swaps)
 {
