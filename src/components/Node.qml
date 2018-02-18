@@ -37,8 +37,6 @@ NodeItem {
     // Public properties
     property string title
     property var ui: uiLoader.item
-    property bool generic: false
-    readonly property alias typeSwap: root.typeSwap
 
     // Private properties (subclassing nodes should not touch these)
     property var canvas
@@ -50,6 +48,8 @@ NodeItem {
     property real yOffset
     default property Component uiComponent
     property bool selected: scope.activeFocus
+    property var inputTypeSwaps: new Array(inputs.length)
+    property var outputTypeSwaps: new Array(outputs.length)
 
     signal inputChanged()
 
@@ -83,7 +83,14 @@ NodeItem {
             width: childrenRect.width
             height: childrenRect.height
 
-            property bool typeSwap: false
+            signal swapType()
+
+            Keys.onPressed: {
+                if (event.key == Qt.Key_T) {
+                    swapType()
+                }
+            }
+
             function attemptFocus(x, y) {
                 if (!glode.canvas.nodeHigherAt(Qt.point(x, y), root)) {
                     if (FocusSingleton.selectedNode != index) {
@@ -108,20 +115,11 @@ NodeItem {
                 source: "../fonts/FiraSans-Regular.otf"
             }
 
-            Keys.onPressed: {
-                if (event.key == Qt.Key_T && mainMa.containsMouse) {
-                    if (glode.generic) {
-                        typeSwap = ! typeSwap
-                    }
-                }
-            }
-
             MouseArea {
                 id: mainMa
 
                 // Ugly hack to make sure that this overlays all other MouseArea's
                 z: 1 + parent.z
-                hoverEnabled: true
                 anchors.fill: mainLayout
 
                 onPressed: {
@@ -160,19 +158,32 @@ NodeItem {
                                 radius: width / 2
                                 border.width: 1
                                 border.color: Qt.darker(color, 2)
-                                color: getColor()
-
-                                property bool isScalar: (modelData[1] == NodeItem.Scalar
-                                                         || modelData[1] == NodeItem.ScalarInput)
-                                property alias onLeft: da.onLeft
-
-                                function getColor() {
+                                color: {
                                     if (modelData[1] == NodeItem.Generic) {
                                         return "teal"
                                     } else if (isScalar) {
                                         return "purple"
                                     } else {
                                         return "green"
+                                    }
+                                }
+
+                                property bool isScalar: (modelData[1] == NodeItem.Scalar
+                                                         || modelData[1] == NodeItem.ScalarInput)
+                                property alias onLeft: da.onLeft
+
+                                Connections {
+                                    target: root
+                                    onSwapType: {
+                                        if (modelData.length > 2 && modelData[2] == true && ma.containsMouse) {
+                                            socket.isScalar = !socket.isScalar
+
+                                            if (socket.onLeft) {
+                                                glode.outputTypeSwaps[index] = !glode.outputTypeSwaps[index]
+                                            } else {
+                                                glode.inputTypeSwaps[index] = !glode.inputTypeSwaps[index]
+                                            }
+                                        }
                                     }
                                 }
 
@@ -183,7 +194,7 @@ NodeItem {
                                     property var node: glode
                                     property bool onLeft: !floatRight
                                     property int wires: children.length
-                                    property var socketType: modelData[1]
+                                    property var socketType: parent.isScalar ? NodeItem.Scalar : NodeItem.Vector
                                     property string socketName: modelData[0]
 
                                     function disconnectWire(wire) {
@@ -217,34 +228,37 @@ NodeItem {
                                 MouseArea {
                                     id: ma
 
-                                    width: parent.width
-                                    height: parent.height
+                                    anchors.fill: parent
+                                    hoverEnabled: true
 
                                     drag.target: wire == null ? undefined : wire.endTip
                                     drag.threshold: 0
                                     drag.axis: Drag.XAndYAxis
-                                    enabled: wire == null && da.wires == 0
 
                                     property var wire: null
 
                                     onPressed: {
-                                        var component = Qt.createComponent("../core/Wire.qml")
-                                        if (component.status == Component.Ready) {
-                                            wire = component.createObject(da, {"startIndex": glode.index,
-                                                                               "startOnLeft": parent.onLeft,
-                                                                               "canvas": Qt.binding(function () { return canvas }),
-                                                                               "startUpdateHook": Qt.binding(function () {
-                                                                                   return glode.x + glode.y + canvas.scaling
-                                                                               }),
-                                                                               "endUpdateHook": Qt.binding(function () {
-                                                                                   return ma.mouseX + ma.mouseY
-                                                                               })})
+                                        if (wire == null && da.wires == 0) {
+                                            var component = Qt.createComponent("../core/Wire.qml")
+                                            if (component.status == Component.Ready) {
+                                                wire = component.createObject(da, {"startIndex": glode.index,
+                                                                                   "startOnLeft": parent.onLeft,
+                                                                                   "canvas": Qt.binding(function () { return canvas }),
+                                                                                   "startUpdateHook": Qt.binding(function () {
+                                                                                       return glode.x + glode.y + canvas.scaling
+                                                                                   }),
+                                                                                   "endUpdateHook": Qt.binding(function () {
+                                                                                       return ma.mouseX + ma.mouseY
+                                                                                   })})
 
-                                            if (wire == null) {
-                                                console.error("Object 'Wire.qml' could not be created")
+                                                if (wire == null) {
+                                                    console.error("Object 'Wire.qml' could not be created")
+                                                }
+                                            } else {
+                                                console.error("Component 'Wire.qml' is not ready:", component.errorString())
                                             }
                                         } else {
-                                            console.error("Component 'Wire.qml' is not ready:", component.errorString())
+                                            mouse.accepted = false
                                         }
                                     }
 
@@ -313,8 +327,8 @@ NodeItem {
                     MouseArea {
                         id: ma
 
-                        parent: mainMa
                         anchors.fill: titleBar
+                        parent: mainMa
                         hoverEnabled: true
 
                         drag.target: glode

@@ -55,6 +55,9 @@ WireItem {
     property var endType: end.item.socketType
     property var startType: start.item.socketType
 
+    onEndTypeChanged: canvas.requestPaint()
+    onStartTypeChanged: canvas.requestPaint()
+
     Connections {
         target: canvas
 
