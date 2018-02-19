@@ -83,7 +83,8 @@ public:
     Socket getInputType(QString const&);
     Socket getOutputType(QString const&);
     void evaluate(QString const&, std::unordered_set<WireItem*> const&);
-    void cache(char const*, Socket);
+    void cacheInput(char const*, Socket);
+    void cacheComputation(jl_value_t*, Socket, QString const&);
 
     unsigned int index;
     QObject* hooks{nullptr};

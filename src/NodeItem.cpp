@@ -39,7 +39,7 @@ void NodeItem::evaluate(QString const& output_socket_name,
     // If this is a data input node, then we can add the values directly to
     // output_values without having to call a Julia function.
     if (type == ScalarInput || type == VectorInput) {
-        this->cache(socket_name_char, type);
+        this->cacheInput(socket_name_char, type);
         return;
     }
 
@@ -83,7 +83,7 @@ void NodeItem::evaluate(QString const& output_socket_name,
                         args[i] = (jl_value_t*)jl_ptr_to_array_1d(vec_type, vec->data(),
                                                                   vec->size(), 0);
                     } else {
-                        throw std::runtime_error("Got non-double result from node");
+                        throw std::runtime_error("Got unknown result from node");
                     }
 
                 } else { // Otherwise, set an invalid QVariant
@@ -102,13 +102,15 @@ void NodeItem::evaluate(QString const& output_socket_name,
         std::cout << "Error: " << jl_typeof_str(jl_exception_occurred()) << "\n";
         this->output_values[output_socket_name] = QVariant();
     } else if (type == Scalar && jl_typeis(result, jl_float64_type)) {
-        this->output_values[output_socket_name] = QVariant(jl_unbox_float64(result));
+        this->cacheComputation(result, Scalar, output_socket_name);
+    } else if (type == Vector && jl_is_array(result)) {
+        this->cacheComputation(result, Vector, output_socket_name);
     }
 
     JL_GC_POP(); // Pop arguments
 }
 
-void NodeItem::cache(char const* output_socket_name, Socket type)
+void NodeItem::cacheInput(char const* output_socket_name, Socket type)
 {
     if (type == ScalarInput) {
         this->output_values[output_socket_name] = this->hooks->property(output_socket_name);
@@ -126,6 +128,27 @@ void NodeItem::cache(char const* output_socket_name, Socket type)
                        });
 
         this->output_values[output_socket_name] = QVariant::fromValue(vec);
+    }
+}
+
+void NodeItem::cacheComputation(jl_value_t* result, Socket type, QString const& key)
+{
+    if (type == Vector) {
+        if (this->vector_cache.count(key) == 0) {
+            this->vector_cache.insert({key, std::make_shared<dvector>()});
+        }
+
+        double* array{(double*)jl_array_data(result)};
+        dvector_ptr& vec{this->vector_cache.at(key)};
+        vec->resize(jl_array_len(result));
+
+        for (auto i{0u}; i < vec->size(); ++i) {
+            vec->at(i) = array[i];
+        }
+
+        this->output_values[key] = QVariant::fromValue(vec);
+    } else if (type == Scalar) {
+        this->output_values[key] = QVariant(jl_unbox_float64(result));
     }
 }
 
