@@ -77,7 +77,12 @@ NodeItem {
     }
 
     function input(socketName) {
-        return graphEngine.inputAsString(glode, socketName)
+        var type = graphEngine.getInputValueType(glode, socketName)
+        if (type == NodeItem.Scalar) {
+            return graphEngine.inputToString(glode, socketName)
+        } else if (type == NodeItem.Vector) {
+            return graphEngine.inputToList(glode, socketName)
+        }
     }
 
     FocusScope {
