@@ -41,14 +41,17 @@ public:
 
     Q_INVOKABLE void addNode(QString, QObject*);
     Q_INVOKABLE void addWire(QObject*);
-    Q_INVOKABLE QString inputAsString(QObject*, QString);
     Q_INVOKABLE void evaluateFrom(NodeItem*, QStringList);
+    Q_INVOKABLE QString inputToString(QObject*, QString const&);
+    Q_INVOKABLE QList<double> inputToList(QObject*, QString const&);
 
 private:
     jl_value_t* safe_eval(std::string);
 
     std::unordered_set<WireItem*> getInputs(NodeItem*);
     std::unordered_set<WireItem*> getOutputs(NodeItem*);
+    template<typename T>
+    T inputToType(QObject*, QString const&, std::function<T(QVariant const&)>);
 
     std::unordered_set<WireItem*> wires;
     std::unordered_map<unsigned int, NodeItem*> nodes;

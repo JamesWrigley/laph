@@ -22,6 +22,7 @@
 #include <stdexcept>
 
 #include <QString>
+#include <QtGlobal>
 #include <QFileInfo>
 
 #include "Glaph.hpp"
@@ -87,7 +88,38 @@ void Glaph::addWire(QObject* wire_qobj)
     this->wires.insert(wire);
 }
 
-QString Glaph::inputAsString(QObject* node_qobj, QString socket_name)
+QString Glaph::inputToString(QObject* node_qobj, QString const& socket_name)
+{
+    return this->inputToType<QString>(node_qobj, socket_name,
+                             [] (QVariant const& var) {
+                                 if (var.canConvert<double>()) {
+                                     return var.toString();
+                                 } else {
+                                     return QString("ERROR");
+                                 }
+                             });
+}
+
+QList<qreal> Glaph::inputToList(QObject* node_qobj, QString const& socket_name)
+{
+    return this->inputToType<QList<qreal>>(node_qobj, socket_name,
+                                           [] (QVariant const& var) {
+                                               QList<qreal> list{};
+
+                                               if (var.canConvert<dvector_ptr>()) {
+                                                   dvector_ptr vec{var.value<dvector_ptr>()};
+                                                   for (auto& num : *vec) {
+                                                       list.append(num);
+                                                   }
+                                               }
+
+                                               return list;
+                                           });
+}
+
+template<typename T>
+T Glaph::inputToType(QObject* node_qobj, QString const& socket_name,
+                     std::function<T(QVariant const&)> func)
 {
     NodeItem* node{static_cast<NodeItem*>(node_qobj)};
     std::unordered_set<WireItem*> inputs{this->getInputs(node)};
@@ -100,13 +132,9 @@ QString Glaph::inputAsString(QObject* node_qobj, QString socket_name)
         NodeItem* input{(*wire_it)->inputNode};
         QVariant result{input->output_values[(*wire_it)->inputSocket]};
 
-        if (result.isValid() && result.canConvert<double>()) {
-            return result.toString();
-        } else {
-            return "ERROR";
-        }
+        return func(result); 
     } else {
-        return "";
+        throw std::runtime_error("Could not find socket: " + socket_name.toStdString());
     }
 }
 
