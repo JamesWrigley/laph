@@ -182,6 +182,24 @@ void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
     }
 }
 
+NodeItem::Socket Glaph::getInputValueType(NodeItem* node, QString const& socket)
+{
+    auto inputs{this->getInputs(node)};
+    auto wire_it{std::find_if(inputs.begin(), inputs.end(),
+                              [&socket] (WireItem* wire) {
+                                  return wire->outputSocket == socket;
+                              })};
+
+    if (wire_it != inputs.end()) {
+        WireItem* wire{*wire_it};
+        bool isVector{wire->inputNode->output_values.at(wire->inputSocket).canConvert<dvector_ptr>()};
+        return isVector ? NodeItem::Vector : NodeItem::Scalar;
+    } else {
+        throw std::runtime_error("Could not find wire with outputSocket: '"
+                                 + socket.toStdString() + "'");
+    }
+}
+
 std::unordered_set<WireItem*> Glaph::getInputs(NodeItem* node)
 {
     std::unordered_set<WireItem*> inputs{};
