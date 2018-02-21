@@ -177,7 +177,7 @@ NodeItem {
                                 border.width: 1
                                 border.color: Qt.darker(color, 2)
                                 color: {
-                                    if (modelData[1] == NodeItem.Generic) {
+                                    if (type == NodeItem.Generic) {
                                         return "teal"
                                     } else if (isScalar) {
                                         return "purple"
@@ -186,14 +186,14 @@ NodeItem {
                                     }
                                 }
 
-                                property bool isScalar: (modelData[1] == NodeItem.Scalar
-                                                         || modelData[1] == NodeItem.ScalarInput)
+                                property bool isScalar: (type == NodeItem.Scalar ||
+                                                         type == NodeItem.ScalarInput)
                                 property alias onLeft: da.onLeft
 
                                 Connections {
                                     target: root
                                     onSwapType: {
-                                        if (modelData.length > 2 && modelData[2] == true && ma.containsMouse) {
+                                        if (generic == true && ma.containsMouse) {
                                             socket.isScalar = !socket.isScalar
 
                                             if (socket.onLeft) {
@@ -213,7 +213,7 @@ NodeItem {
                                     property bool onLeft: !floatRight
                                     property int wires: children.length
                                     property var socketType: parent.isScalar ? NodeItem.Scalar : NodeItem.Vector
-                                    property string socketName: modelData[0]
+                                    property string socketName: name
 
                                     function disconnectWire(wire) {
                                         if (wire == ma.wire) {
@@ -291,7 +291,7 @@ NodeItem {
                                 height: contentHeight
 
                                 color: "#202020"
-                                text: modelData[0]
+                                text: name
                                 font.family: sans.name
                                 validator: RegExpValidator { regExp: /^([a-zA-Z]|_)+\S*$/ }
 
@@ -378,6 +378,19 @@ NodeItem {
                     spacing: 10
                     property real margin: 15
 
+                    function createModel(dict) {
+                        var keys = Object.keys(dict)
+                        var model = Qt.createQmlObject("import QtQuick 2.2; ListModel { }",
+                                                       parent)
+                        for (var i = 0; i < keys.length; ++i) {
+                            var element = dict[keys[i]]
+                            element["name"] = keys[i]
+                            model.append(element)
+                        }
+
+                        return model
+                    }
+
                     Loader {
                         id: inputSockets
 
@@ -388,7 +401,7 @@ NodeItem {
 
                         sourceComponent: socketColumn
                         onLoaded: {
-                            item.sockets = glode.inputs
+                            item.sockets = parent.createModel(glode.inputs)
                             item.floatRight = true
                         }
                     }
@@ -412,7 +425,7 @@ NodeItem {
 
                         sourceComponent: socketColumn
                         onLoaded: {
-                            item.sockets = glode.outputs
+                            item.sockets = parent.createModel(glode.outputs)
                             item.floatRight = false
                         }
                     }

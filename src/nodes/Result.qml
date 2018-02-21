@@ -26,8 +26,8 @@ import "../components"
 
 Node {
     title: "Result"
-    inputs: [["y", NodeItem.Generic]]
-    outputs: []
+    inputs: ({y: { type: NodeItem.Generic }})
+    outputs: ({ })
 
     property var inputValueType: NodeItem.Scalar
 

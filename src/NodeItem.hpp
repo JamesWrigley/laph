@@ -53,8 +53,8 @@ class NodeItem : public QQuickItem
     Q_OBJECT
     Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
     Q_PROPERTY(QObject* hooks READ getHooks WRITE setHooks NOTIFY hooksChanged)
-    Q_PROPERTY(QVariantList outputs READ getOutputs WRITE setOutputs NOTIFY outputsChanged)
-    Q_PROPERTY(QVariantList inputs READ getInputs WRITE setInputs NOTIFY inputsChanged)
+    Q_PROPERTY(QVariantMap inputs READ getInputs WRITE setInputs NOTIFY inputsChanged)
+    Q_PROPERTY(QVariantMap outputs READ getOutputs WRITE setOutputs NOTIFY outputsChanged)
     Q_PROPERTY(QList<bool> inputTypeSwaps READ getInputTypeSwaps WRITE setInputTypeSwaps NOTIFY inputTypeSwapsChanged)
     Q_PROPERTY(QList<bool> outputTypeSwaps READ getOutputTypeSwaps WRITE setOutputTypeSwaps NOTIFY outputTypeSwapsChanged)
 
@@ -67,14 +67,14 @@ public:
 
     int getIndex();
     QObject* getHooks();
-    QVariantList getInputs();
-    QVariantList getOutputs();
+    QVariantMap getInputs();
+    QVariantMap getOutputs();
     QList<bool> getInputTypeSwaps();
     QList<bool> getOutputTypeSwaps();
     void setIndex(int);
     void setHooks(QObject*);
-    void setInputs(QVariantList const&);
-    void setOutputs(QVariantList const&);
+    void setInputs(QVariantMap const&);
+    void setOutputs(QVariantMap const&);
     void setInputTypeSwaps(QList<bool> const&);
     void setOutputTypeSwaps(QList<bool> const&);
 
@@ -88,8 +88,8 @@ public:
 
     unsigned int index;
     QObject* hooks{nullptr};
-    QVariantList inputs;
-    QVariantList outputs;
+    QVariantMap inputs;
+    QVariantMap outputs;
     QList<bool> inputTypeSwaps;
     QList<bool> outputTypeSwaps;
     std::unordered_map<QString, QVariant> output_values;
@@ -97,7 +97,7 @@ public:
     std::unordered_map<std::string, jl_function_t*> functions;
 
 private:
-    Socket getSocketType(QString const&, QVariantList const&, QList<bool> const&);
+    Socket getSocketType(QString const&, QVariantMap const&, QList<bool> const&);
 
 signals:
     void hooksChanged();

@@ -154,10 +154,11 @@ void NodeItem::cacheComputation(jl_value_t* result, Socket type, QString const& 
 
 bool NodeItem::isInput(QString socket_name)
 {
-    QVariantList inputs(this->getInputs());
-    return std::any_of(inputs.begin(), inputs.end(), [&] (QVariant socket) {
-            return socket_name == socket.toList().first().toString();
-        });
+    QVariantMap inputs(this->getInputs());
+    return std::any_of(inputs.keyBegin(), inputs.keyEnd(),
+                       [&] (QVariant const& socket_key) {
+                           return socket_name == socket_key.toString();
+                       });
 }
 
 QVariantMap NodeItem::getHooksMap()
@@ -187,16 +188,16 @@ NodeItem::Socket NodeItem::getOutputType(QString const& socket)
 }
 
 NodeItem::Socket NodeItem::getSocketType(QString const& socket,
-                                         QVariantList const& sockets,
+                                         QVariantMap const& sockets,
                                          QList<bool> const& socketSwaps)
 {
-    auto output_it{std::find_if(sockets.begin(), sockets.end(),
-                                [&] (QVariant const& var) {
-                                    return var.toList().at(0).toString() == socket;
+    auto output_it{std::find_if(sockets.keyBegin(), sockets.keyEnd(),
+                                [&] (auto& var) {
+                                    return var == socket;
                                 })};
-    if (output_it != this->outputs.end()) {
-        bool swap{socketSwaps.at(output_it - sockets.begin())};
-        Socket type{output_it->toList().at(1).value<NodeItem::Socket>()};
+    if (output_it != this->outputs.keyEnd()) {
+        bool swap{socketSwaps.at(std::distance(output_it, sockets.keyBegin()))};
+        Socket type{sockets[*output_it].toMap()["type"].value<Socket>()};
 
         if (swap && type == Scalar) {
             return Vector;
@@ -226,17 +227,17 @@ void NodeItem::setHooks(QObject* hooks)
     emit this->hooksChanged();
 }
 
-QVariantList NodeItem::getOutputs() { return this->outputs; }
+QVariantMap NodeItem::getOutputs() { return this->outputs; }
 
-void NodeItem::setOutputs(QVariantList const& outputs)
+void NodeItem::setOutputs(QVariantMap const& outputs)
 {
     this->outputs = outputs;
     emit this->outputsChanged();
 }
 
-QVariantList NodeItem::getInputs() { return this->inputs; }
+QVariantMap NodeItem::getInputs() { return this->inputs; }
 
-void NodeItem::setInputs(QVariantList const& inputs)
+void NodeItem::setInputs(QVariantMap const& inputs)
 {
     this->inputs = inputs;
     emit this->inputsChanged();
