@@ -132,7 +132,7 @@ T Glaph::inputToType(QObject* node_qobj, QString const& socket_name,
         NodeItem* input{(*wire_it)->inputNode};
         QVariant result{input->output_values[(*wire_it)->inputSocket]};
 
-        return func(result); 
+        return func(result);
     } else {
         throw std::runtime_error("Could not find socket: " + socket_name.toStdString());
     }

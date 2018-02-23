@@ -101,10 +101,11 @@ void NodeItem::evaluate(QString const& output_socket_name,
     if (jl_exception_occurred()) {
         std::cout << "Error: " << jl_typeof_str(jl_exception_occurred()) << "\n";
         this->output_values[output_socket_name] = QVariant();
-    } else if (type == Scalar && jl_typeis(result, jl_float64_type)) {
-        this->cacheComputation(result, Scalar, output_socket_name);
-    } else if (type == Vector && jl_is_array(result)) {
-        this->cacheComputation(result, Vector, output_socket_name);
+    } else if ((type == Scalar && jl_typeis(result, jl_float64_type)) ||
+               (type == Vector && jl_is_array(result))) {
+        this->cacheComputation(result, type, output_socket_name);
+    } else {
+        this->cacheComputation(nullptr, type, output_socket_name);
     }
 
     JL_GC_POP(); // Pop arguments
@@ -133,7 +134,9 @@ void NodeItem::cacheInput(char const* output_socket_name, Socket type)
 
 void NodeItem::cacheComputation(jl_value_t* result, Socket type, QString const& key)
 {
-    if (type == Vector) {
+    if (result == nullptr) {
+        this->output_values[key] = QVariant();
+    } else if (type == Vector) {
         if (this->vector_cache.count(key) == 0) {
             this->vector_cache.insert({key, std::make_shared<dvector>()});
         }
