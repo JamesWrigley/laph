@@ -62,8 +62,27 @@ NodeItem {
             }
         }
 
+        function initializeSockets(socketMap) {
+            var sockets = Object.keys(socketMap)
+
+            for (var i = 0; i < sockets.length; ++i) {
+                var socketField = socketMap[sockets[i]]
+                if (!("generic" in socketField)) {
+                    socketMap[sockets[i]]["generic"] = false
+                }
+                if (!("repeating" in socketField)) {
+                    socketMap[sockets[i]]["repeating"] = false
+                }
+            }
+
+            return socketMap
+        }
+
         fillTypeSwap(inputs, true)
         fillTypeSwap(outputs, false)
+
+        inputs = initializeSockets(inputs)
+        outputs = initializeSockets(outputs)
     }
 
     Connections {
