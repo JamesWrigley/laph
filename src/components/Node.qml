@@ -62,27 +62,8 @@ NodeItem {
             }
         }
 
-        function initializeSockets(socketMap) {
-            var sockets = Object.keys(socketMap)
-
-            for (var i = 0; i < sockets.length; ++i) {
-                var socketField = socketMap[sockets[i]]
-                if (!("generic" in socketField)) {
-                    socketMap[sockets[i]]["generic"] = false
-                }
-                if (!("repeating" in socketField)) {
-                    socketMap[sockets[i]]["repeating"] = false
-                }
-            }
-
-            return socketMap
-        }
-
         fillTypeSwap(inputs, true)
         fillTypeSwap(outputs, false)
-
-        inputs = initializeSockets(inputs)
-        outputs = initializeSockets(outputs)
     }
 
     Connections {
@@ -93,6 +74,22 @@ NodeItem {
                 inputChanged()
             }
         }
+    }
+
+    function initializeSockets(socketMap) {
+        var sockets = Object.keys(socketMap)
+
+        for (var i = 0; i < sockets.length; ++i) {
+            var socketField = socketMap[sockets[i]]
+            if (!("generic" in socketField)) {
+                socketMap[sockets[i]]["generic"] = false
+            }
+            if (!("repeating" in socketField)) {
+                socketMap[sockets[i]]["repeating"] = false
+            }
+        }
+
+        return socketMap
     }
 
     function input(socketName) {
@@ -196,7 +193,7 @@ NodeItem {
                                 border.width: 1
                                 border.color: Qt.darker(color, 2)
                                 color: {
-                                    if (type == NodeItem.Generic) {
+                                    if (parent.generic) {
                                         return "teal"
                                     } else if (isScalar) {
                                         return "purple"
@@ -212,7 +209,7 @@ NodeItem {
                                 Connections {
                                     target: root
                                     onSwapType: {
-                                        if (generic == true && ma.containsMouse) {
+                                        if (generic && ma.containsMouse) {
                                             socket.isScalar = !socket.isScalar
 
                                             if (socket.onLeft) {
@@ -231,7 +228,7 @@ NodeItem {
                                     property var node: glode
                                     property bool onLeft: !floatRight
                                     property int wires: children.length
-                                    property var socketType: parent.isScalar ? NodeItem.Scalar : NodeItem.Vector
+                                    property var socketType: type
                                     property string socketName: name
 
                                     function disconnectWire(wire) {
@@ -420,6 +417,7 @@ NodeItem {
 
                         sourceComponent: socketColumn
                         onLoaded: {
+                            glode.inputs = glode.initializeSockets(glode.inputs)
                             item.sockets = parent.createModel(glode.inputs)
                             item.floatRight = true
                         }
@@ -444,6 +442,7 @@ NodeItem {
 
                         sourceComponent: socketColumn
                         onLoaded: {
+                            glode.outputs = glode.initializeSockets(glode.outputs)
                             item.sockets = parent.createModel(glode.outputs)
                             item.floatRight = false
                         }
