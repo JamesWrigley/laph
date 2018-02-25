@@ -192,15 +192,7 @@ NodeItem {
                                 radius: width / 2
                                 border.width: 1
                                 border.color: Qt.darker(color, 2)
-                                color: {
-                                    if (parent.generic) {
-                                        return "teal"
-                                    } else if (isScalar) {
-                                        return "purple"
-                                    } else {
-                                        return "green"
-                                    }
-                                }
+                                color: type == NodeItem.Generic ? "teal" : isScalar ? "purple" : "green"
 
                                 property bool isScalar: (type == NodeItem.Scalar ||
                                                          type == NodeItem.ScalarInput)
@@ -228,7 +220,15 @@ NodeItem {
                                     property var node: glode
                                     property bool onLeft: !floatRight
                                     property int wires: children.length
-                                    property var socketType: type
+                                    property var socketType: {
+                                        if (type == NodeItem.Generic) {
+                                            return type
+                                        } else if (parent.isScalar) {
+                                            return NodeItem.Scalar
+                                        } else {
+                                            return NodeItem.Vector
+                                        }
+                                    }
                                     property string socketName: name
 
                                     function disconnectWire(wire) {
