@@ -81,7 +81,6 @@ WireItem {
 
     function evaluateInput() {
         if (valid) {
-            console.info(outputNode.inputTypeSwaps[0])
             graphEngine.evaluateFrom(inputNode, [inputSocket])
         }
     }
