@@ -189,8 +189,8 @@ NodeItem {
                                 width: 14
                                 height: width
                                 radius: width / 2
-                                border.width: 1
-                                border.color: Qt.darker(color, 2)
+                                border.width: generic ? 1.25 : 1
+                                border.color: generic ? "black" : Qt.darker(color, 2)
                                 color: type == NodeItem.Generic ? "teal" : isScalar ? "purple" : "green"
 
                                 property alias onLeft: da.onLeft
