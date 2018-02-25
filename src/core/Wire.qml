@@ -25,6 +25,9 @@ import "../components"
 WireItem {
     id: root
 
+    valid: ((startType == null || endType == null) ||
+            (startType == NodeItem.Generic || endType == NodeItem.Generic) ||
+            (isScalar(startType) == isScalar(endType)))
     inputNode: endParent == null ? null : choose(endParent.onLeft, endParent.node, startParent.node, null)
     outputNode: endParent == null ? null : choose(endParent.onLeft, startParent.node, endParent.node, null)
     inputSocket: endParent == null ? "" : choose(inputNode == endParent.node, endParent.socketName, startParent.socketName, "")
@@ -58,29 +61,28 @@ WireItem {
     onEndTypeChanged: canvas.requestPaint()
     onStartTypeChanged: canvas.requestPaint()
 
+    onValidChanged: evaluateInput()
+
     Connections {
         target: canvas
 
         onPaint: {
             var ctx = canvas.getContext("2d")
-            ctx.strokeStyle = getStrokeStyle()
+            ctx.strokeStyle = valid ? "lightsteelblue" : "red"
             ctx.lineWidth = 2 * canvas.scaling
             ctx.path = wire
             ctx.stroke()
         }
     }
 
-    function getStrokeStyle() {
-        function isScalar(type) {
-            return type == NodeItem.Scalar || type == NodeItem.ScalarInput
-        }
+    function isScalar(type) {
+        return type == NodeItem.Scalar || type == NodeItem.ScalarInput
+    }
 
-        if ((startType == null || endType == null) ||
-            (startType == NodeItem.Generic || endType == NodeItem.Generic) ||
-            (isScalar(startType) == isScalar(endType))) {
-            return "lightsteelblue"
-        } else {
-            return "red"
+    function evaluateInput() {
+        if (valid) {
+            console.info(outputNode.inputTypeSwaps[0])
+            graphEngine.evaluateFrom(inputNode, [inputSocket])
         }
     }
 
@@ -110,7 +112,7 @@ WireItem {
                 graphEngine.addWire(this)
             }
 
-            graphEngine.evaluateFrom(inputNode, [inputSocket])
+            evaluateInput()
         } else {
             root.destroy()
             canvas.requestPaint()

@@ -201,13 +201,13 @@ NodeItem {
                                     target: root
                                     onSwapType: {
                                         if (generic && ma.containsMouse) {
-                                            socket.isScalar = !socket.isScalar
-
                                             if (socket.onLeft) {
                                                 glode.outputTypeSwaps[index] = !glode.outputTypeSwaps[index]
                                             } else {
                                                 glode.inputTypeSwaps[index] = !glode.inputTypeSwaps[index]
                                             }
+
+                                            socket.isScalar = !socket.isScalar
                                         }
                                     }
                                 }

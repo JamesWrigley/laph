@@ -147,7 +147,7 @@ void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
 {
     std::unordered_set<WireItem*> output_wires{};
     for (auto& wire : this->getOutputs(node)) {
-        if (outputs.contains(wire->inputSocket)) {
+        if (wire->valid && outputs.contains(wire->inputSocket)) {
             output_wires.insert(wire);
         }
     }

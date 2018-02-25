@@ -22,6 +22,11 @@
 
 WireItem::WireItem(QQuickItem* parent) : QQuickItem(parent) { }
 
+bool WireItem::getValid()
+{
+    return this->valid;
+}
+
 QString WireItem::getInputSocket()
 {
     return this->inputSocket;
@@ -40,6 +45,12 @@ QQuickItem* WireItem::getInputNode()
 QQuickItem* WireItem::getOutputNode()
 {
     return reinterpret_cast<QQuickItem*>(this->outputNode);
+}
+
+void WireItem::setValid(bool valid)
+{
+    this->valid = valid;
+    emit this->validChanged();
 }
 
 void WireItem::setInputSocket(QString& socketName)

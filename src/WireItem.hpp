@@ -26,6 +26,8 @@ class NodeItem;
 class WireItem : public QQuickItem
 {
     Q_OBJECT
+
+    Q_PROPERTY(bool valid READ getValid WRITE setValid NOTIFY validChanged)
     Q_PROPERTY(QQuickItem* inputNode READ getInputNode WRITE setInputNode NOTIFY inputNodeChanged)
     Q_PROPERTY(QQuickItem* outputNode READ getOutputNode WRITE setOutputNode NOTIFY outputNodeChanged)
     Q_PROPERTY(QString inputSocket READ getInputSocket WRITE setInputSocket NOTIFY inputSocketChanged)
@@ -34,10 +36,13 @@ class WireItem : public QQuickItem
 public:
     WireItem(QQuickItem* = Q_NULLPTR);
 
+    bool getValid();
     QString getInputSocket();
     QString getOutputSocket();
     QQuickItem* getInputNode();
     QQuickItem* getOutputNode();
+
+    void setValid(bool);
     void setInputSocket(QString&);
     void setOutputSocket(QString&);
     void setInputNode(QQuickItem*);
@@ -48,12 +53,14 @@ public:
             return one.inputNode == two.inputNode && one.inputSocket == two.inputSocket;
         }
 
+    bool valid;
     NodeItem* inputNode;
     NodeItem* outputNode;
     QString inputSocket;
     QString outputSocket;
 
 signals:
+    void validChanged();
     void inputNodeChanged();
     void outputNodeChanged();
     void inputSocketChanged();
