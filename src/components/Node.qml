@@ -110,8 +110,7 @@ NodeItem {
             focus: true
             z: rootZ
             radius: 10
-            opacity: 0.8
-            color: "#555555"
+            color: Qt.rgba(0.33, 0.33, 0.33, 0.8)
             border.width: 4
             border.color: selected ? Qt.lighter("gray", 1.5) : "gray"
             width: childrenRect.width
