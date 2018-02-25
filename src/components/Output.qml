@@ -18,4 +18,6 @@
 
 Input {
     readOnly: true
+    onTextChanged: cursorPosition = 0
 }
+
