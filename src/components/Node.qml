@@ -107,9 +107,9 @@ NodeItem {
         Rectangle {
             id: root
 
-            focus: true
             z: rootZ
             radius: 10
+            focus: true
             color: Qt.rgba(0.33, 0.33, 0.33, 0.8)
             border.width: 4
             border.color: selected ? Qt.lighter("gray", 1.5) : "gray"
@@ -193,9 +193,9 @@ NodeItem {
                                 border.color: Qt.darker(color, 2)
                                 color: type == NodeItem.Generic ? "teal" : isScalar ? "purple" : "green"
 
+                                property alias onLeft: da.onLeft
                                 property bool isScalar: (type == NodeItem.Scalar ||
                                                          type == NodeItem.ScalarInput)
-                                property alias onLeft: da.onLeft
 
                                 Connections {
                                     target: root
