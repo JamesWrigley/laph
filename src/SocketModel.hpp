@@ -16,40 +16,41 @@
  *                                                                                *
  *********************************************************************************/
 
-#ifndef SOCKET_HPP
-#define SOCKET_HPP
+#ifndef SOCKETMODEL_HPP
+#define SOCKETMODEL_HPP
 
-#include <QObject>
+#include <vector>
 
-class Socket : public QObject
+#include <QHash>
+#include <QVariant>
+#include <QByteArray>
+#include <QModelIndex>
+#include <QAbstractListModel>
+
+#include "Socket.hpp"
+
+class SocketModel : public QAbstractListModel
 {
     Q_OBJECT
 
 public:
-    enum SocketType { Scalar, ScalarInput, Vector, VectorInput, Generic };
-    Q_ENUM(SocketType)
+    SocketModel(QObject* = Q_NULLPTR);
 
-    Socket(QObject* parent = Q_NULLPTR) : QObject(parent) { }
-    Socket(Socket const& other, QObject* parent = Q_NULLPTR) : QObject(parent), name(other.name), type(other.type),
-                                                               repeating(other.repeating), generic(other.generic) { }
-    Socket(QString const& name, SocketType type,
-           bool repeating, bool generic) : name(name), type(type),
-                                           repeating(repeating), generic(generic) { }
+    enum SocketRoles { NameRole = Qt::UserRole + 1, TypeRole, GenericRole, RepeatingRole };
 
-    Socket& operator=(Socket const& other)
-        {
-            this->name = other.name;
-            this->type = other.type;
-            this->repeating = other.repeating;
-            this->generic = other.generic;
+    bool addSocket(Socket&, int = -1);
+    bool removeSocket(int);
 
-            return *this;
-        }
+    Qt::ItemFlags flags(QModelIndex const&) const;
+    int rowCount(QModelIndex const& = QModelIndex()) const;
+    QVariant data(QModelIndex const&, int = Qt::DisplayRole) const;
+    bool setData(QModelIndex const&, QVariant const&, int = Qt::EditRole);
 
-    QString name;
-    SocketType type;
-    bool repeating;
-    bool generic;
+protected:
+    QHash<int, QByteArray> roleNames() const;
+
+private:
+    std::vector<Socket> sockets;
 };
 
 #endif
