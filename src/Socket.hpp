@@ -16,34 +16,25 @@
  *                                                                                *
  *********************************************************************************/
 
-import Laph 0.1
+#ifndef SOCKET_HPP
+#define SOCKET_HPP
 
-import QtQuick 2.7
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 1.4
+#include <QObject>
 
-import "../components"
+class Socket : public QObject
+{
+    Q_OBJECT
 
-Node {
-    id: root
+public:
+    enum SocketType { Scalar, ScalarInput, Vector, VectorInput, Generic };
+    Q_ENUM(SocketType)
 
-    title: "Math"
-    inputs: ({x: { type: Socket.Scalar, generic: true, repeating: true }})
-    outputs: ({y: { type: Socket.Scalar, generic: true, repeating: true }})
-    hooks: QtObject { property var y: [ "x", ui.expr.text ] }
+    Socket(QObject* parent = Q_NULLPTR) : QObject(parent) { }
+    Socket(QString const& name, SocketType type, bool repeating) : name(name), type(type), repeating(repeating) { }
 
-    ColumnLayout {
-        property var expr: exprItem
+    QString name;
+    SocketType type;
+    bool repeating;
+};
 
-        Text { text: "Expression:" }
-        Input {
-            id: exprItem
-
-            onFocusChanged: {
-                if (!focus) {
-                    nodeChanged(root, ["y"])
-                }
-            }
-        }
-    }
-}
+#endif

@@ -30,7 +30,7 @@ Node {
 
     title: "Vector"
     inputs: []
-    outputs: ({k̂: { type: NodeItem.VectorInput }})
+    outputs: ({k̂: { type: Socket.VectorInput }})
     hooks: QtObject {
         property var k̂: new Array()
     }

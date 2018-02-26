@@ -94,9 +94,9 @@ NodeItem {
 
     function input(socketName) {
         var type = graphEngine.getInputValueType(glode, socketName)
-        if (type == NodeItem.Scalar) {
+        if (type == Socket.Scalar) {
             return graphEngine.inputToString(glode, socketName)
-        } else if (type == NodeItem.Vector) {
+        } else if (type == Socket.Vector) {
             return graphEngine.inputToList(glode, socketName)
         }
     }
@@ -191,11 +191,11 @@ NodeItem {
                                 radius: width / 2
                                 border.width: generic ? 1.25 : 1
                                 border.color: generic ? "black" : Qt.darker(color, 2)
-                                color: type == NodeItem.Generic ? "teal" : isScalar ? "purple" : "green"
+                                color: type == Socket.Generic ? "teal" : isScalar ? "purple" : "green"
 
                                 property alias onLeft: da.onLeft
-                                property bool isScalar: (type == NodeItem.Scalar ||
-                                                         type == NodeItem.ScalarInput)
+                                property bool isScalar: (type == Socket.Scalar ||
+                                                         type == Socket.ScalarInput)
 
                                 Connections {
                                     target: root
@@ -220,12 +220,12 @@ NodeItem {
                                     property bool onLeft: !floatRight
                                     property int wires: children.length
                                     property var socketType: {
-                                        if (type == NodeItem.Generic) {
+                                        if (type == Socket.Generic) {
                                             return type
                                         } else if (parent.isScalar) {
-                                            return NodeItem.Scalar
+                                            return Socket.Scalar
                                         } else {
-                                            return NodeItem.Vector
+                                            return Socket.Vector
                                         }
                                     }
                                     property string socketName: name

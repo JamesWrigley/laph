@@ -33,12 +33,12 @@ NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
 void NodeItem::evaluate(QString const& output_socket_name,
                         std::unordered_set<WireItem*> const& inputs)
 {
-    Socket type{this->getOutputType(output_socket_name)};
+    Socket::SocketType type{this->getOutputType(output_socket_name)};
     char const* socket_name_char{output_socket_name.toStdString().c_str()};
 
     // If this is a data input node, then we can add the values directly to
     // output_values without having to call a Julia function.
-    if (type == ScalarInput || type == VectorInput) {
+    if (type == Socket::ScalarInput || type == Socket::VectorInput) {
         this->cacheInput(socket_name_char, type);
         return;
     }
@@ -74,9 +74,9 @@ void NodeItem::evaluate(QString const& output_socket_name,
                         JL_GC_POP(); // Pop arguments
                         this->output_values[output_socket_name] = QVariant();
                         return;
-                    } else if (this->getInputType(arg_str) == Scalar) {
+                    } else if (this->getInputType(arg_str) == Socket::Scalar) {
                         args[i] = jl_box_float64(value.value<double>());
-                    } else if (this->getInputType(arg_str) == Vector) {
+                    } else if (this->getInputType(arg_str) == Socket::Vector) {
                         // For now, assume that this is a 1D vector
                         dvector_ptr vec{value.value<dvector_ptr>()};
                         jl_value_t* vec_type{jl_apply_array_type((jl_value_t*)jl_float64_type, 1)};
@@ -101,8 +101,8 @@ void NodeItem::evaluate(QString const& output_socket_name,
     if (jl_exception_occurred()) {
         std::cout << "Error: " << jl_typeof_str(jl_exception_occurred()) << "\n";
         this->output_values[output_socket_name] = QVariant();
-    } else if ((type == Scalar && jl_typeis(result, jl_float64_type)) ||
-               (type == Vector && jl_is_array(result))) {
+    } else if ((type == Socket::Scalar && jl_typeis(result, jl_float64_type)) ||
+               (type == Socket::Vector && jl_is_array(result))) {
         this->cacheComputation(result, type, output_socket_name);
     } else {
         this->cacheComputation(nullptr, type, output_socket_name);
@@ -111,11 +111,11 @@ void NodeItem::evaluate(QString const& output_socket_name,
     JL_GC_POP(); // Pop arguments
 }
 
-void NodeItem::cacheInput(char const* output_socket_name, Socket type)
+void NodeItem::cacheInput(char const* output_socket_name, Socket::SocketType type)
 {
-    if (type == ScalarInput) {
+    if (type == Socket::ScalarInput) {
         this->output_values[output_socket_name] = this->hooks->property(output_socket_name);
-    } else if (type == VectorInput) {
+    } else if (type == Socket::VectorInput) {
         QVariantList nums(this->hooks->property(output_socket_name).toList());
 
         if (this->vector_cache.count(output_socket_name) == 0) {
@@ -132,11 +132,11 @@ void NodeItem::cacheInput(char const* output_socket_name, Socket type)
     }
 }
 
-void NodeItem::cacheComputation(jl_value_t* result, Socket type, QString const& key)
+void NodeItem::cacheComputation(jl_value_t* result, Socket::SocketType type, QString const& key)
 {
     if (result == nullptr) {
         this->output_values[key] = QVariant();
-    } else if (type == Vector) {
+    } else if (type == Socket::Vector) {
         if (this->vector_cache.count(key) == 0) {
             this->vector_cache.insert({key, std::make_shared<dvector>()});
         }
@@ -150,7 +150,7 @@ void NodeItem::cacheComputation(jl_value_t* result, Socket type, QString const& 
         }
 
         this->output_values[key] = QVariant::fromValue(vec);
-    } else if (type == Scalar) {
+    } else if (type == Socket::Scalar) {
         this->output_values[key] = QVariant(jl_unbox_float64(result));
     }
 }
@@ -180,17 +180,17 @@ QVariantMap NodeItem::getHooksMap()
     return map;
 }
 
-NodeItem::Socket NodeItem::getInputType(QString const& socket)
+Socket::SocketType NodeItem::getInputType(QString const& socket)
 {
     return this->getSocketType(socket, this->inputs, this->inputTypeSwaps);
 }
 
-NodeItem::Socket NodeItem::getOutputType(QString const& socket)
+Socket::SocketType NodeItem::getOutputType(QString const& socket)
 {
     return this->getSocketType(socket, this->outputs, this->outputTypeSwaps);
 }
 
-NodeItem::Socket NodeItem::getSocketType(QString const& socket,
+Socket::SocketType NodeItem::getSocketType(QString const& socket,
                                          QVariantMap const& sockets,
                                          QList<bool> const& socketSwaps)
 {
@@ -200,12 +200,12 @@ NodeItem::Socket NodeItem::getSocketType(QString const& socket,
                                 })};
     if (output_it != this->outputs.keyEnd()) {
         bool swap{socketSwaps.at(std::distance(output_it, sockets.keyBegin()))};
-        Socket type{sockets[*output_it].toMap()["type"].value<Socket>()};
+        Socket::SocketType type{sockets[*output_it].toMap()["type"].value<Socket::SocketType>()};
 
-        if (swap && type == Scalar) {
-            return Vector;
-        } else if (swap && type == Vector) {
-            return Scalar;
+        if (swap && type == Socket::Scalar) {
+            return Socket::Vector;
+        } else if (swap && type == Socket::Vector) {
+            return Socket::Scalar;
         } else {
             return type;
         }

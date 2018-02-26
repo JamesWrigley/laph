@@ -31,6 +31,7 @@
 #include <QStringList>
 #include <QVariantMap>
 
+#include "Socket.hpp"
 #include "WireItem.hpp"
 
 using dvector = std::vector<double>;
@@ -62,9 +63,6 @@ public:
     NodeItem(QQuickItem* = Q_NULLPTR);
     NodeItem(NodeItem const&, QQuickItem* = Q_NULLPTR);
 
-    enum Socket { Scalar, ScalarInput, Vector, VectorInput, Generic };
-    Q_ENUM(Socket)
-
     int getIndex();
     QObject* getHooks();
     QVariantMap getInputs();
@@ -80,11 +78,11 @@ public:
 
     bool isInput(QString);
     QVariantMap getHooksMap();
-    Socket getInputType(QString const&);
-    Socket getOutputType(QString const&);
+    Socket::SocketType getInputType(QString const&);
+    Socket::SocketType getOutputType(QString const&);
     void evaluate(QString const&, std::unordered_set<WireItem*> const&);
-    void cacheInput(char const*, Socket);
-    void cacheComputation(jl_value_t*, Socket, QString const&);
+    void cacheInput(char const*, Socket::SocketType);
+    void cacheComputation(jl_value_t*, Socket::SocketType, QString const&);
 
     unsigned int index;
     QObject* hooks{nullptr};
@@ -97,7 +95,7 @@ public:
     std::unordered_map<std::string, jl_function_t*> functions;
 
 private:
-    Socket getSocketType(QString const&, QVariantMap const&, QList<bool> const&);
+    Socket::SocketType getSocketType(QString const&, QVariantMap const&, QList<bool> const&);
 
 signals:
     void hooksChanged();

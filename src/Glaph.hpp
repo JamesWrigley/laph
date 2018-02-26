@@ -28,6 +28,7 @@
 #include <QObject>
 #include <QStringList>
 
+#include "Socket.hpp"
 #include "NodeItem.hpp"
 #include "WireItem.hpp"
 
@@ -44,7 +45,7 @@ public:
     Q_INVOKABLE void evaluateFrom(NodeItem*, QStringList);
     Q_INVOKABLE QString inputToString(QObject*, QString const&);
     Q_INVOKABLE QList<double> inputToList(QObject*, QString const&);
-    Q_INVOKABLE NodeItem::Socket getInputValueType(NodeItem*, QString const&);
+    Q_INVOKABLE Socket::SocketType getInputValueType(NodeItem*, QString const&);
 
 private:
     jl_value_t* safe_eval(std::string);

@@ -26,7 +26,7 @@ WireItem {
     id: root
 
     valid: ((startType == null || endType == null) ||
-            (startType == NodeItem.Generic || endType == NodeItem.Generic) ||
+            (startType == Socket.Generic || endType == Socket.Generic) ||
             (isScalar(startType) == isScalar(endType)))
     inputNode: endParent == null ? null : choose(endParent.onLeft, endParent.node, startParent.node, null)
     outputNode: endParent == null ? null : choose(endParent.onLeft, startParent.node, endParent.node, null)
@@ -76,7 +76,7 @@ WireItem {
     }
 
     function isScalar(type) {
-        return type == NodeItem.Scalar || type == NodeItem.ScalarInput
+        return type == Socket.Scalar || type == Socket.ScalarInput
     }
 
     function evaluateInput() {

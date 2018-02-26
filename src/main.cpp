@@ -36,6 +36,7 @@ int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
 
+    registerLaphType<Socket>("Socket");
     registerLaphType<NodeItem>("NodeItem");
     registerLaphType<WireItem>("WireItem");
     registerLaphType<NodeMonitor>("NodeMonitor");

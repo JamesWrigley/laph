@@ -20,4 +20,5 @@ SOURCES += src/main.cpp        \
 HEADERS += src/NodeMonitor.hpp \
            src/Glaph.hpp       \
            src/NodeItem.hpp    \
-           src/WireItem.hpp
+           src/WireItem.hpp    \
+           src/Socket.hpp

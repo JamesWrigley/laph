@@ -27,7 +27,7 @@ Node {
 
     title: "Constant"
     inputs: []
-    outputs: ({k: { type: NodeItem.ScalarInput }})
+    outputs: ({k: { type: Socket.ScalarInput }})
     hooks: QtObject { property var k: parseFloat(ui.text) }
 
     ScalarInput {
