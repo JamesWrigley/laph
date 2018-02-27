@@ -27,9 +27,9 @@
 #include "NodeMonitor.hpp"
 
 template<typename T>
-void registerLaphType(std::string name)
+void registerLaphType(char const* name)
 {
-    qmlRegisterType<T>("Laph", 0, 1, name.c_str());
+    qmlRegisterType<T>("Laph", 0, 1, name);
 }
 
 int main(int argc, char* argv[])
