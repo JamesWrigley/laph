@@ -204,7 +204,7 @@ std::unordered_set<WireItem*> Glaph::getInputs(NodeItem* node)
 {
     std::unordered_set<WireItem*> inputs{};
     for (auto& wire : this->wires) {
-        if (wire->outputNode->index == node->index) {
+        if (wire->valid && wire->outputNode->index == node->index) {
             inputs.insert(wire);
         }
     }
@@ -216,7 +216,7 @@ std::unordered_set<WireItem*> Glaph::getOutputs(NodeItem* node)
 {
     std::unordered_set<WireItem*> outputs{};
     for (auto& wire : this->wires) {
-        if (wire->inputNode == node) {
+        if (wire->valid && wire->inputNode == node) {
             outputs.insert(wire);
         }
     }
