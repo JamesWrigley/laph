@@ -279,8 +279,18 @@ NodeItem {
                                 font.family: sans.name
                                 validator: RegExpValidator { regExp: /^([a-zA-Z]|_)+\S*$/ }
 
-                                onEditingFinished: focus = false
-                                Keys.onEscapePressed: focus = false
+                                onEditingFinished: {
+                                    if (text.length == 0) {
+                                        text = name
+                                    } else {
+                                        name = text
+                                    }
+                                    focus = false
+                                }
+                                Keys.onEscapePressed: {
+                                    text = name
+                                    focus = false
+                                }
                             }
                         }
                     }
