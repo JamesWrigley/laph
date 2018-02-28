@@ -33,6 +33,7 @@
 
 #include "Socket.hpp"
 #include "WireItem.hpp"
+#include "SocketModel.hpp"
 
 using dvector = std::vector<double>;
 using dvector_ptr = std::shared_ptr<dvector>;
@@ -56,8 +57,6 @@ class NodeItem : public QQuickItem
     Q_PROPERTY(QObject* hooks READ getHooks WRITE setHooks NOTIFY hooksChanged)
     Q_PROPERTY(QVariantMap inputs READ getInputs WRITE setInputs NOTIFY inputsChanged)
     Q_PROPERTY(QVariantMap outputs READ getOutputs WRITE setOutputs NOTIFY outputsChanged)
-    Q_PROPERTY(QList<bool> inputTypeSwaps READ getInputTypeSwaps WRITE setInputTypeSwaps NOTIFY inputTypeSwapsChanged)
-    Q_PROPERTY(QList<bool> outputTypeSwaps READ getOutputTypeSwaps WRITE setOutputTypeSwaps NOTIFY outputTypeSwapsChanged)
 
 public:
     NodeItem(QQuickItem* = Q_NULLPTR);
@@ -67,14 +66,10 @@ public:
     QObject* getHooks();
     QVariantMap getInputs();
     QVariantMap getOutputs();
-    QList<bool> getInputTypeSwaps();
-    QList<bool> getOutputTypeSwaps();
     void setIndex(int);
     void setHooks(QObject*);
     void setInputs(QVariantMap const&);
     void setOutputs(QVariantMap const&);
-    void setInputTypeSwaps(QList<bool> const&);
-    void setOutputTypeSwaps(QList<bool> const&);
 
     bool isInput(QString);
     QVariantMap getHooksMap();
@@ -86,24 +81,24 @@ public:
 
     unsigned int index;
     QObject* hooks{nullptr};
+
     QVariantMap inputs;
     QVariantMap outputs;
-    QList<bool> inputTypeSwaps;
-    QList<bool> outputTypeSwaps;
+    SocketModel* inputsModel{nullptr};
+    SocketModel* outputsModel{nullptr};
+
     std::unordered_map<QString, QVariant> output_values;
     std::unordered_map<QString, dvector_ptr> vector_cache;
     std::unordered_map<std::string, jl_function_t*> functions;
 
 private:
-    Socket::SocketType getSocketType(QString const&, QVariantMap const&, QList<bool> const&);
+    Socket::SocketType getSocketType(QString const&, SocketModel const*);
 
 signals:
     void hooksChanged();
     void indexChanged();
     void inputsChanged();
     void outputsChanged();
-    void inputTypeSwapsChanged();
-    void outputTypeSwapsChanged();
     void nodeChanged(NodeItem*, QStringList);
 };
 

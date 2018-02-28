@@ -22,9 +22,9 @@
 #include <vector>
 
 #include <QHash>
-#include <QVariant>
 #include <QByteArray>
 #include <QModelIndex>
+#include <QVariantMap>
 #include <QAbstractListModel>
 
 #include "Socket.hpp"
@@ -33,13 +33,30 @@ class SocketModel : public QAbstractListModel
 {
     Q_OBJECT
 
+    Q_PROPERTY(QVariantMap socketsTemplate READ getSocketsTemplate WRITE setSocketsTemplate NOTIFY socketsTemplateChanged)
+
 public:
-    SocketModel(QObject* = Q_NULLPTR);
+    SocketModel(SocketModel const&);
+    SocketModel(QObject* = Q_NULLPTR,
+                QVariantMap = { },
+                std::vector<Socket> = { });
 
     enum SocketRoles { NameRole = Qt::UserRole + 1, TypeRole, GenericRole, RepeatingRole };
 
+    SocketModel& operator=(SocketModel const& other)
+        {
+            this->sockets = other.sockets;
+            return *this;
+        }
+
     bool addSocket(Socket&, int = -1);
     bool removeSocket(int);
+
+    std::vector<Socket>::const_iterator begin() const;
+    std::vector<Socket>::const_iterator end() const;
+
+    QVariantMap getSocketsTemplate();
+    void setSocketsTemplate(QVariantMap const&);
 
     Qt::ItemFlags flags(QModelIndex const&) const;
     int rowCount(QModelIndex const& = QModelIndex()) const;
@@ -50,7 +67,14 @@ protected:
     QHash<int, QByteArray> roleNames() const;
 
 private:
-    std::vector<Socket> sockets;
+    QVariantMap socketsTemplate;
+    std::vector<Socket> sockets{};
+
+signals:
+    void socketsTemplateChanged();
+
+private slots:
+    void refreshSockets();
 };
 
 #endif

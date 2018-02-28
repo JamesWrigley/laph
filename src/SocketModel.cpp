@@ -18,7 +18,21 @@
 
 #include "SocketModel.hpp"
 
-SocketModel::SocketModel(QObject* parent) : QAbstractListModel(parent) { }
+#ifdef QT_DEBUG
+#include <iostream>
+#endif
+
+SocketModel::SocketModel(SocketModel const& other) : SocketModel(other.parent(), other.socketsTemplate, other.sockets) { }
+
+SocketModel::SocketModel(QObject* parent,
+                         QVariantMap socketsTemplate,
+                         std::vector<Socket> sockets) : QAbstractListModel(parent)
+{
+    this->socketsTemplate = socketsTemplate;
+    this->sockets = sockets;
+    connect(this, &SocketModel::socketsTemplateChanged,
+            this, &SocketModel::refreshSockets);
+}
 
 bool SocketModel::addSocket(Socket& socket, int index)
 {
@@ -50,6 +64,41 @@ bool SocketModel::removeSocket(int index)
 
     this->endRemoveRows();
     return result;
+}
+
+std::vector<Socket>::const_iterator SocketModel::begin() const
+{
+    return this->sockets.cbegin();
+}
+
+std::vector<Socket>::const_iterator SocketModel::end() const
+{
+    return this->sockets.cend();
+}
+
+void SocketModel::refreshSockets()
+{
+    this->sockets.clear();
+
+    for (auto socket_it{this->socketsTemplate.begin()}; socket_it != this->socketsTemplate.end(); ++socket_it) {
+        Socket socket;
+        socket.name = socket_it.key();
+
+        QVariantMap properties{socket_it.value().toMap()};
+        socket.type = properties.value("type").value<Socket::SocketType>();
+        socket.generic = properties.value("generic", false).toBool();
+        socket.repeating = properties.value("repeating", false).toBool();
+
+        this->sockets.push_back(socket);
+    }
+}
+
+QVariantMap SocketModel::getSocketsTemplate() { return this->socketsTemplate; }
+
+void SocketModel::setSocketsTemplate(QVariantMap const& socketsTemplate)
+{
+    this->socketsTemplate = socketsTemplate;
+    emit this->socketsTemplateChanged();
 }
 
 Qt::ItemFlags SocketModel::flags(QModelIndex const&) const

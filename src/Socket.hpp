@@ -20,6 +20,7 @@
 #define SOCKET_HPP
 
 #include <QObject>
+#include <QString>
 
 class Socket : public QObject
 {

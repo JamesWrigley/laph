@@ -26,6 +26,10 @@
 
 #include "NodeItem.hpp"
 
+#ifdef QT_DEBUG
+#include <iostream>
+#endif
+
 NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent) { }
 
 NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
@@ -182,35 +186,33 @@ QVariantMap NodeItem::getHooksMap()
 
 Socket::SocketType NodeItem::getInputType(QString const& socket)
 {
-    return this->getSocketType(socket, this->inputs, this->inputTypeSwaps);
+    if (this->inputsModel == nullptr) {
+        this->inputsModel = this->findChild<SocketModel*>("inputsModel");
+    }
+
+    return this->getSocketType(socket, this->inputsModel);
 }
 
 Socket::SocketType NodeItem::getOutputType(QString const& socket)
 {
-    return this->getSocketType(socket, this->outputs, this->outputTypeSwaps);
+    if (this->outputsModel == nullptr) {
+        this->outputsModel = this->findChild<SocketModel*>("outputsModel");
+    }
+
+    return this->getSocketType(socket, this->outputsModel);
 }
 
-Socket::SocketType NodeItem::getSocketType(QString const& socket,
-                                         QVariantMap const& sockets,
-                                         QList<bool> const& socketSwaps)
+Socket::SocketType NodeItem::getSocketType(QString const& socket_name,
+                                           SocketModel const* sockets)
 {
-    auto output_it{std::find_if(sockets.keyBegin(), sockets.keyEnd(),
-                                [&] (auto& var) {
-                                    return var == socket;
+    auto socket_it{std::find_if(sockets->begin(), sockets->end(),
+                                [&] (Socket const& socket) {
+                                    return socket.name == socket_name;
                                 })};
-    if (output_it != this->outputs.keyEnd()) {
-        bool swap{socketSwaps.at(std::distance(output_it, sockets.keyBegin()))};
-        Socket::SocketType type{sockets[*output_it].toMap()["type"].value<Socket::SocketType>()};
-
-        if (swap && type == Socket::Scalar) {
-            return Socket::Vector;
-        } else if (swap && type == Socket::Vector) {
-            return Socket::Scalar;
-        } else {
-            return type;
-        }
+    if (socket_it != sockets->end()) {
+        return socket_it->type;
     } else {
-        throw std::runtime_error("Could not find socket " + socket.toStdString());
+        throw std::runtime_error("Could not find socket " + socket_name.toStdString());
     }
 }
 
@@ -244,20 +246,4 @@ void NodeItem::setInputs(QVariantMap const& inputs)
 {
     this->inputs = inputs;
     emit this->inputsChanged();
-}
-
-QList<bool> NodeItem::getInputTypeSwaps() { return this->inputTypeSwaps; }
-
-void NodeItem::setInputTypeSwaps(QList<bool> const& swaps)
-{
-    this->inputTypeSwaps = swaps;
-    emit this->inputTypeSwapsChanged();
-}
-
-QList<bool> NodeItem::getOutputTypeSwaps() { return this->outputTypeSwaps; }
-
-void NodeItem::setOutputTypeSwaps(QList<bool> const& swaps)
-{
-    this->outputTypeSwaps = swaps;
-    emit this->outputTypeSwapsChanged();
 }

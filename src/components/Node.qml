@@ -48,22 +48,21 @@ NodeItem {
     property real yOffset
     default property Component uiComponent
     property bool selected: scope.activeFocus
-    inputTypeSwaps: new Array(inputs.length)
-    outputTypeSwaps: new Array(outputs.length)
 
     signal inputChanged()
 
-    Component.onCompleted: {
-        function fillTypeSwap(sockets, fillInputs) {
-            for (var i = 0; i < sockets.length; ++i) {
-                if (sockets[i].length > 2) {
-                    (fillInputs ? inputTypeSwaps : outputTypeSwaps)[i] = false
-                }
-            }
-        }
+    SocketModel {
+        id: inputsModel
+        objectName: "inputsModel"
 
-        fillTypeSwap(inputs, true)
-        fillTypeSwap(outputs, false)
+        socketsTemplate: inputs
+    }
+
+    SocketModel {
+        id: outputsModel
+        objectName: "outputsModel"
+
+        socketsTemplate: outputs
     }
 
     Connections {
@@ -74,22 +73,6 @@ NodeItem {
                 inputChanged()
             }
         }
-    }
-
-    function initializeSockets(socketMap) {
-        var sockets = Object.keys(socketMap)
-
-        for (var i = 0; i < sockets.length; ++i) {
-            var socketField = socketMap[sockets[i]]
-            if (!("generic" in socketField)) {
-                socketMap[sockets[i]]["generic"] = false
-            }
-            if (!("repeating" in socketField)) {
-                socketMap[sockets[i]]["repeating"] = false
-            }
-        }
-
-        return socketMap
     }
 
     function input(socketName) {
@@ -201,13 +184,7 @@ NodeItem {
                                     target: root
                                     onSwapType: {
                                         if (generic && ma.containsMouse) {
-                                            if (socket.onLeft) {
-                                                glode.outputTypeSwaps[index] = !glode.outputTypeSwaps[index]
-                                            } else {
-                                                glode.inputTypeSwaps[index] = !glode.inputTypeSwaps[index]
-                                            }
-
-                                            socket.isScalar = !socket.isScalar
+                                            type = type == Socket.Scalar ? Socket.Vector : Socket.Scalar
                                         }
                                     }
                                 }
@@ -219,15 +196,7 @@ NodeItem {
                                     property var node: glode
                                     property bool onLeft: !floatRight
                                     property int wires: children.length
-                                    property var socketType: {
-                                        if (type == Socket.Generic) {
-                                            return type
-                                        } else if (parent.isScalar) {
-                                            return Socket.Scalar
-                                        } else {
-                                            return Socket.Vector
-                                        }
-                                    }
+                                    property var socketType: type
                                     property string socketName: name
 
                                     function disconnectWire(wire) {
@@ -393,19 +362,6 @@ NodeItem {
                     spacing: 10
                     property real margin: 15
 
-                    function createModel(dict) {
-                        var keys = Object.keys(dict)
-                        var model = Qt.createQmlObject("import QtQuick 2.2; ListModel { }",
-                                                       parent)
-                        for (var i = 0; i < keys.length; ++i) {
-                            var element = dict[keys[i]]
-                            element["name"] = keys[i]
-                            model.append(element)
-                        }
-
-                        return model
-                    }
-
                     Loader {
                         id: inputSockets
 
@@ -416,8 +372,7 @@ NodeItem {
 
                         sourceComponent: socketColumn
                         onLoaded: {
-                            glode.inputs = glode.initializeSockets(glode.inputs)
-                            item.sockets = parent.createModel(glode.inputs)
+                            item.sockets = Qt.binding(function() { return inputsModel })
                             item.floatRight = true
                         }
                     }
@@ -441,8 +396,7 @@ NodeItem {
 
                         sourceComponent: socketColumn
                         onLoaded: {
-                            glode.outputs = glode.initializeSockets(glode.outputs)
-                            item.sockets = parent.createModel(glode.outputs)
+                            item.sockets = Qt.binding(function() { return outputsModel })
                             item.floatRight = false
                         }
                     }

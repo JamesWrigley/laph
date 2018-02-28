@@ -22,9 +22,11 @@
 #include <QQmlApplicationEngine>
 
 #include "Glaph.hpp"
+#include "Socket.hpp"
 #include "NodeItem.hpp"
 #include "WireItem.hpp"
 #include "NodeMonitor.hpp"
+#include "SocketModel.hpp"
 
 template<typename T>
 void registerLaphType(char const* name)
@@ -40,6 +42,7 @@ int main(int argc, char* argv[])
     registerLaphType<NodeItem>("NodeItem");
     registerLaphType<WireItem>("WireItem");
     registerLaphType<NodeMonitor>("NodeMonitor");
+    registerLaphType<SocketModel>("SocketModel");
 
     QDir basePath{app.applicationDirPath()};
     QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
