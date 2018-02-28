@@ -113,6 +113,7 @@ ApplicationWindow {
 
         property var nodes: new Array()
         property int nodeCount: 0
+        property bool shiftPressed: false
         property bool controlPressed: false
 
         property real scaling: 1
@@ -194,6 +195,9 @@ ApplicationWindow {
             if (event.modifiers & Qt.ControlModifier) {
                 controlPressed = true
             }
+            if (event.modifiers & Qt.ShiftModifier) {
+                shiftPressed = true
+            }
 
             // Home key: center canvas
             if (event.key == Qt.Key_Home) {
@@ -210,6 +214,9 @@ ApplicationWindow {
         Keys.onReleased: {
             if (event.key & Qt.Key_Control) {
                 controlPressed = false
+            }
+            if (event.key & Qt.Key_Shift) {
+                shiftPressed = false
             }
         }
 
@@ -249,10 +256,21 @@ ApplicationWindow {
             }
 
             onWheel: {
-                if (parent.controlPressed) {
-                    var delta = wheel.angleDelta
-                    var maxDelta = Math.abs(delta.x) > Math.abs(delta.y) ? delta.x : delta.y
+                if (parent.controlPressed && parent.shiftPressed) {
+                    return
+                }
 
+                var delta = wheel.angleDelta
+                var maxDelta = Math.abs(delta.x) > Math.abs(delta.y) ? delta.x : delta.y
+
+                if (parent.controlPressed) {
+                    parent.xOffset += maxDelta
+                }
+                if (parent.shiftPressed) {
+                    parent.yOffset += maxDelta
+                }
+
+                if (!parent.shiftPressed && !parent.controlPressed) {
                     if (Math.abs(maxDelta) > 0) {
                         if (maxDelta < 0 && parent.scaling > 0.4) {
                             parent.scaling -= step
@@ -260,9 +278,6 @@ ApplicationWindow {
                             parent.scaling += step
                         }
                     }
-                } else {
-                    parent.xOffset += wheel.pixelDelta.x
-                    parent.yOffset += wheel.pixelDelta.y
                 }
 
                 parent.requestPaint()
