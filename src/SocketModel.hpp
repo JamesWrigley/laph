@@ -41,7 +41,11 @@ public:
                 QVariantMap = { },
                 std::vector<Socket> = { });
 
-    enum SocketRoles { NameRole = Qt::UserRole + 1, TypeRole, GenericRole, RepeatingRole };
+    enum SocketRoles { NameRole = Qt::UserRole + 1,
+                       TypeRole,
+                       GenericRole,
+                       RepeatingRole,
+                       ConnectedRole };
 
     SocketModel& operator=(SocketModel const& other)
         {

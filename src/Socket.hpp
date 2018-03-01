@@ -31,11 +31,17 @@ public:
     Q_ENUM(SocketType)
 
     Socket(QObject* parent = Q_NULLPTR) : QObject(parent) { }
-    Socket(Socket const& other, QObject* parent = Q_NULLPTR) : QObject(parent), name(other.name), type(other.type),
-                                                               repeating(other.repeating), generic(other.generic) { }
+    Socket(Socket const& other, QObject* parent = Q_NULLPTR) : Socket(other.name, other.type,
+                                                                      other.repeating, other.generic,
+                                                                      other.connected, parent) { }
     Socket(QString const& name, SocketType type,
-           bool repeating, bool generic) : name(name), type(type),
-                                           repeating(repeating), generic(generic) { }
+           bool repeating, bool generic,
+           bool connected, QObject* parent = Q_NULLPTR) : QObject(parent),
+                                                          name(name),
+                                                          type(type),
+                                                          repeating(repeating),
+                                                          generic(generic),
+                                                          connected(connected) { }
 
     Socket& operator=(Socket const& other)
         {
@@ -43,6 +49,7 @@ public:
             this->type = other.type;
             this->repeating = other.repeating;
             this->generic = other.generic;
+            this->connected = other.connected;
 
             return *this;
         }
@@ -51,6 +58,7 @@ public:
     SocketType type;
     bool repeating;
     bool generic;
+    bool connected;
 };
 
 #endif
