@@ -50,6 +50,7 @@ public:
     SocketModel& operator=(SocketModel const& other)
         {
             this->sockets = other.sockets;
+            this->socketsTemplate = other.socketsTemplate;
             return *this;
         }
 
