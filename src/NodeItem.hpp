@@ -31,6 +31,7 @@
 #include <QStringList>
 #include <QVariantMap>
 
+#include "util.hpp"
 #include "Socket.hpp"
 #include "WireItem.hpp"
 #include "SocketModel.hpp"
@@ -38,17 +39,6 @@
 using dvector = std::vector<double>;
 using dvector_ptr = std::shared_ptr<dvector>;
 Q_DECLARE_METATYPE(dvector_ptr);
-
-namespace std {
-    template<>
-    struct hash<QString>
-    {
-        std::size_t operator()(QString const& str) const
-            {
-                return qHash(str);
-            }
-    };
-}
 
 class NodeItem : public QQuickItem
 {
