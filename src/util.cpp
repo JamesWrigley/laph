@@ -16,25 +16,10 @@
  *                                                                                *
  *********************************************************************************/
 
-#ifndef UTIL_HPP
-#define UTIL_HPP
+#include "util.hpp"
 
-#include <ostream>
-
-#include <QHash>
-#include <QString>
-
-std::ostream& operator<<(std::ostream&, QString const&);
-
-namespace std {
-    template<>
-    struct hash<QString>
-    {
-        std::size_t operator()(QString const& str) const
-            {
-                return qHash(str);
-            }
-    };
+std::ostream& operator<<(std::ostream& os, QString const& str)
+{
+    os << str.toStdString();
+    return os;
 }
-
-#endif

@@ -16,11 +16,13 @@ SOURCES += src/main.cpp        \
            src/Glaph.cpp       \
            src/NodeItem.cpp    \
            src/WireItem.cpp    \
-           src/SocketModel.cpp
+           src/SocketModel.cpp \
+           src/util.cpp
 
 HEADERS += src/NodeMonitor.hpp \
            src/Glaph.hpp       \
            src/NodeItem.hpp    \
            src/WireItem.hpp    \
            src/Socket.hpp      \
-           src/SocketModel.hpp
+           src/SocketModel.hpp \
+           src/util.hpp
