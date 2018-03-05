@@ -69,6 +69,9 @@ public:
     void cacheInput(char const*, Socket::SocketType);
     void cacheComputation(jl_value_t*, Socket::SocketType, QString const&);
 
+    void connecting(QString const&);
+    void disconnecting(QString const&);
+
     unsigned int index;
     QObject* hooks{nullptr};
 
@@ -90,6 +93,13 @@ signals:
     void inputsChanged();
     void outputsChanged();
     void nodeChanged(NodeItem*, QStringList);
+
+    void wireConnectedTo(QString const&);
+    void wireDisconnectedFrom(QString const&);
+
+private slots:
+    void onInputsChanged();
+    void onOutputsChanged();
 };
 
 #endif

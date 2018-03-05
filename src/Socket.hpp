@@ -31,34 +31,34 @@ public:
     Q_ENUM(SocketType)
 
     Socket(QObject* parent = Q_NULLPTR) : QObject(parent) { }
-    Socket(Socket const& other, QObject* parent = Q_NULLPTR) : Socket(other.name, other.type,
-                                                                      other.repeating, other.generic,
-                                                                      other.connected, parent) { }
-    Socket(QString const& name, SocketType type,
-           bool repeating, bool generic,
-           bool connected, QObject* parent = Q_NULLPTR) : QObject(parent),
-                                                          name(name),
-                                                          type(type),
-                                                          repeating(repeating),
-                                                          generic(generic),
-                                                          connected(connected) { }
+    Socket(Socket const& other, QObject* parent = Q_NULLPTR) : Socket(other.name, other.prefix,
+                                                                      other.type, other.repeating,
+                                                                      other.generic, parent) { }
+    Socket(QString const& name, QString const& prefix,
+           SocketType type, bool repeating,
+           bool generic, QObject* parent = Q_NULLPTR) : QObject(parent),
+                                                        prefix(prefix),
+                                                        name(name),
+                                                        type(type),
+                                                        repeating(repeating),
+                                                        generic(generic) { }
 
     Socket& operator=(Socket const& other)
         {
+            this->prefix = prefix;
             this->name = other.name;
             this->type = other.type;
             this->repeating = other.repeating;
             this->generic = other.generic;
-            this->connected = other.connected;
 
             return *this;
         }
 
+    QString prefix;
     QString name;
     SocketType type;
     bool repeating;
     bool generic;
-    bool connected;
 };
 
 #endif

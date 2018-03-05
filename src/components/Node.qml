@@ -180,12 +180,6 @@ NodeItem {
                                 property bool isScalar: (type == Socket.Scalar ||
                                                          type == Socket.ScalarInput)
 
-                                Component.onCompleted: {
-                                    connected = Qt.binding(function () {
-                                        return ma.wire != null || da.wires > 0
-                                    })
-                                }
-
                                 Connections {
                                     target: root
                                     onSwapType: {
@@ -207,6 +201,7 @@ NodeItem {
 
                                     function disconnectWire(wire) {
                                         if (wire == ma.wire) {
+                                            wire.disconnect()
                                             wire.destroy()
                                         } else {
                                             wire.destroyWire()

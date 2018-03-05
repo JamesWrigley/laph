@@ -22,7 +22,9 @@
 #include <iostream>
 #endif
 
-SocketModel::SocketModel(SocketModel const& other) : SocketModel(other.parent(), other.socketsTemplate, other.sockets) { }
+SocketModel::SocketModel(SocketModel const& other) : SocketModel(other.parent(),
+                                                                 other.socketsTemplate,
+                                                                 other.sockets) { }
 
 SocketModel::SocketModel(QObject* parent,
                          QVariantMap socketsTemplate,
@@ -30,40 +32,38 @@ SocketModel::SocketModel(QObject* parent,
 {
     this->socketsTemplate = socketsTemplate;
     this->sockets = sockets;
+
     connect(this, &SocketModel::socketsTemplateChanged,
             this, &SocketModel::refreshSockets);
 }
 
-bool SocketModel::addSocket(Socket& socket, int index)
+void SocketModel::addSocket(Socket& socket, std::vector<Socket>::iterator pos)
 {
-    int first{index == -1 ? (int)this->sockets.size() : index};
+    int first{pos == this->sockets.end() ?
+            this->sockets.size() : pos - this->sockets.begin()};
     this->beginInsertRows(QModelIndex(), first, first);
 
-    bool result{true};
-    if (index == -1) {
-        this->sockets.push_back(socket);
-    } else if (index >= 0 && index < (int)this->sockets.size()) {
-        this->sockets.insert(this->sockets.begin() + index, socket);
-    } else {
-        result = false;
-    }
+    this->sockets.insert(pos, socket);
 
     this->endInsertRows();
-    return result;
 }
 
-bool SocketModel::removeSocket(int index)
+void SocketModel::removeSocket(std::vector<Socket>::iterator pos)
 {
+    unsigned int index{pos - this->sockets.begin()};
     this->beginRemoveRows(QModelIndex(), index, index);
 
-    bool result{false};
-    if (index >= 0 && index < (int)this->sockets.size()) {
-        this->sockets.erase(this->sockets.begin() + index);
-        result = true;
-    }
+    this->sockets.erase(pos);
 
     this->endRemoveRows();
-    return result;
+}
+
+std::vector<Socket>::iterator SocketModel::findSocket(QString const& socket_name)
+{
+    return std::find_if(this->sockets.begin(), this->sockets.end(),
+                        [&socket_name] (Socket const& socket) {
+                            return socket.name == socket_name;
+                        });
 }
 
 std::vector<Socket>::const_iterator SocketModel::begin() const
@@ -84,14 +84,38 @@ void SocketModel::refreshSockets()
     for (auto socket_it{this->socketsTemplate.begin()}; socket_it != end_it; ++socket_it) {
         Socket socket{};
         socket.name = socket_it.key();
+        socket.prefix = socket.name;
 
         QVariantMap properties{socket_it.value().toMap()};
         socket.type = properties.value("type").value<Socket::SocketType>();
         socket.generic = properties.value("generic", false).toBool();
         socket.repeating = properties.value("repeating", false).toBool();
-        socket.connected = false;
 
-        this->sockets.push_back(socket);
+        this->addSocket(socket, this->sockets.end());
+        this->socket_counts.insert({socket.name, 1});
+    }
+}
+
+void SocketModel::onSocketConnected(QString const& socket_name)
+{
+    auto socket_it{this->findSocket(socket_name)};
+    unsigned int& count{this->socket_counts.at(socket_it->prefix)};
+    ++count;
+
+    if (socket_it->repeating) {
+        Socket new_socket{*socket_it};
+        new_socket.name = socket_it->prefix + QString::number(count);
+        this->addSocket(new_socket, socket_it + 1);
+    }
+}
+
+void SocketModel::onSocketDisconnected(QString const& socket_name)
+{
+    auto socket_it{this->findSocket(socket_name)};
+    unsigned int count{this->socket_counts.at(socket_it->prefix)};
+
+    if (count > 1) {
+        this->removeSocket(socket_it);
     }
 }
 
@@ -128,8 +152,6 @@ QVariant SocketModel::data(QModelIndex const& index, int role) const
         return socket.generic;
     } else if (role == RepeatingRole) {
         return socket.repeating;
-    } else if (role == ConnectedRole) {
-        return socket.connected;
     } else {
         return QVariant{};
     }
@@ -150,8 +172,6 @@ bool SocketModel::setData(QModelIndex const& index, QVariant const& value, int r
         socket.repeating = value.toBool();
     } else if (role == GenericRole) {
         socket.generic = value.toBool();
-    } else if (role == ConnectedRole) {
-        socket.connected = value.toBool();
     } else {
         return false;
     }
@@ -165,6 +185,5 @@ QHash<int, QByteArray> SocketModel::roleNames() const
     return QHash<int, QByteArray>{{NameRole, "name"},
                                   {TypeRole, "type"},
                                   {GenericRole, "generic"},
-                                  {RepeatingRole, "repeating"},
-                                  {ConnectedRole, "connected"}};
+                                  {RepeatingRole, "repeating"}};
 }

@@ -25,6 +25,7 @@
 #include <QtGlobal>
 #include <QFileInfo>
 
+#include "util.hpp"
 #include "Glaph.hpp"
 
 #ifdef QT_DEBUG
@@ -34,6 +35,9 @@
 Glaph::Glaph(QObject* parent) : QObject(parent)
 {
     jl_init();
+
+    connect(this, &Glaph::wireConnected, this, &Glaph::onWireConnected);
+    connect(this, &Glaph::wireDisconnected, this, &Glaph::onWireDisconnected);
 }
 
 Glaph::~Glaph()

@@ -45,6 +45,7 @@ WireItem {
     property real endX
     property real endY
     property var canvas
+    property var outputTip
     property bool startOnLeft
     property real endUpdateHook
     property real startUpdateHook
@@ -58,10 +59,25 @@ WireItem {
     property var endType: end.item.socketType
     property var startType: start.item.socketType
 
+    onValidChanged: {
+        if (startType != null && endType != null) {
+            evaluateInput()
+        }
+    }
     onEndTypeChanged: canvas.requestPaint()
     onStartTypeChanged: canvas.requestPaint()
 
-    onValidChanged: evaluateInput()
+    states: [
+        State {
+            name: "setOutputTip"
+            when: endParent != null
+
+            PropertyChanges {
+                target: root
+                outputTip: endParent.onLeft ? start.item : end.item
+            }
+        }
+    ]
 
     Connections {
         target: canvas
@@ -77,6 +93,16 @@ WireItem {
 
     function isScalar(type) {
         return type == Socket.Scalar || type == Socket.ScalarInput
+    }
+
+    function disconnect() {
+        if (outputNode != null && graphEngine != null) {
+            graphEngine.wireDisconnected(outputNode.index, outputTip.socketName)
+        }
+    }
+
+    function connect() {
+        graphEngine.wireConnected(outputNode.index, outputTip.socketName)
     }
 
     function evaluateInput() {
@@ -100,11 +126,17 @@ WireItem {
         } else {
             root.endUpdateHook = hook
         }
+
+        connect()
     }
 
     function handleRelease(wireTip) {
         if (wireTip.Drag.target != null && wireTip.Drag.drop() == Qt.MoveAction) {
             var justCreated = endParent == end
+            if (!justCreated && wireTip == end.item) {
+                disconnect()
+            }
+
             root.setParent(wireTip)
 
             if (justCreated) {
@@ -113,6 +145,10 @@ WireItem {
 
             evaluateInput()
         } else {
+            if (outputNode != null) {
+                disconnect()
+            }
+
             root.destroy()
             canvas.requestPaint()
         }

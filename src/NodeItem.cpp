@@ -30,7 +30,11 @@
 #include <iostream>
 #endif
 
-NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent) { }
+NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent)
+{
+    connect(this, &NodeItem::inputsChanged, this, &NodeItem::onInputsChanged);
+    connect(this, &NodeItem::outputsChanged, this, &NodeItem::onOutputsChanged);
+}
 
 NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
 
@@ -159,6 +163,16 @@ void NodeItem::cacheComputation(jl_value_t* result, Socket::SocketType type, QSt
     }
 }
 
+void NodeItem::disconnecting(QString const& socket_name)
+{
+    emit this->wireDisconnectedFrom(socket_name);
+}
+
+void NodeItem::connecting(QString const& socket_name)
+{
+    emit this->wireConnectedTo(socket_name);
+}
+
 bool NodeItem::isInput(QString socket_name)
 {
     QVariantMap inputs(this->getInputs());
@@ -167,6 +181,31 @@ bool NodeItem::isInput(QString socket_name)
                            return socket_name == socket_key.toString();
                        });
 }
+
+void NodeItem::onInputsChanged()
+{
+    this->inputsModel = this->findChild<SocketModel*>("inputsModel");
+
+    connect(this, &NodeItem::wireConnectedTo,
+            this->inputsModel, &SocketModel::onSocketConnected);
+    connect(this, &NodeItem::wireDisconnectedFrom,
+            this->inputsModel, &SocketModel::onSocketDisconnected);    
+}
+
+void NodeItem::onOutputsChanged()
+{
+    this->outputsModel = this->findChild<SocketModel*>("outputsModel");
+}
+
+// void wireConnectedTo(QString const& socket_name)
+// {
+//     inputsModel.onSocketConnected(socket_name);
+// }
+
+// void wireDisconnectedFrom(QString const& socket_name)
+// {
+//     inputsModel.onSocketDisconnected(socket_name);
+// }
 
 QVariantMap NodeItem::getHooksMap()
 {
@@ -186,19 +225,11 @@ QVariantMap NodeItem::getHooksMap()
 
 Socket::SocketType NodeItem::getInputType(QString const& socket)
 {
-    if (this->inputsModel == nullptr) {
-        this->inputsModel = this->findChild<SocketModel*>("inputsModel");
-    }
-
     return this->getSocketType(socket, this->inputsModel);
 }
 
 Socket::SocketType NodeItem::getOutputType(QString const& socket)
 {
-    if (this->outputsModel == nullptr) {
-        this->outputsModel = this->findChild<SocketModel*>("outputsModel");
-    }
-
     return this->getSocketType(socket, this->outputsModel);
 }
 
