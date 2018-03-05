@@ -26,10 +26,6 @@
 
 #include "NodeItem.hpp"
 
-#ifdef QT_DEBUG
-#include <iostream>
-#endif
-
 NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent)
 {
     connect(this, &NodeItem::inputsChanged, this, &NodeItem::onInputsChanged);
