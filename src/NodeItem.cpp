@@ -197,16 +197,6 @@ void NodeItem::onOutputsChanged()
     this->outputsModel = this->findChild<SocketModel*>("outputsModel");
 }
 
-// void wireConnectedTo(QString const& socket_name)
-// {
-//     inputsModel.onSocketConnected(socket_name);
-// }
-
-// void wireDisconnectedFrom(QString const& socket_name)
-// {
-//     inputsModel.onSocketDisconnected(socket_name);
-// }
-
 QVariantMap NodeItem::getHooksMap()
 {
     if (this->hooks == nullptr) {
