@@ -19,6 +19,7 @@
 #ifndef GLAPH_HPP
 #define GLAPH_HPP
 
+#include <memory>
 #include <string>
 #include <functional>
 #include <unordered_set>
@@ -32,6 +33,8 @@
 #include "NodeItem.hpp"
 #include "WireItem.hpp"
 
+using NodeItemPtr = std::unique_ptr<NodeItem>;
+
 class Glaph : public QObject
 {
     Q_OBJECT
@@ -40,8 +43,9 @@ public:
     Glaph(QObject* = Q_NULLPTR);
     ~Glaph();
 
-    Q_INVOKABLE void addNode(QString, QObject*);
     Q_INVOKABLE void addWire(QObject*);
+    Q_INVOKABLE void removeNode(unsigned int);
+    Q_INVOKABLE void addNode(QString, QObject*);
     Q_INVOKABLE void evaluateFrom(NodeItem*, QStringList);
     Q_INVOKABLE QString inputToString(QObject*, QString const&);
     Q_INVOKABLE QList<double> inputToList(QObject*, QString const&);
@@ -56,7 +60,7 @@ private:
     T inputToType(QObject*, QString const&, std::function<T(QVariant const&)>);
 
     std::unordered_set<WireItem*> wires;
-    std::unordered_map<unsigned int, NodeItem*> nodes;
+    std::unordered_map<unsigned int, NodeItemPtr> nodes;
     std::unordered_map<std::string, std::unordered_map<std::string, jl_function_t*>> functions;
 
 signals:

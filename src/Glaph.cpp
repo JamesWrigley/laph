@@ -24,6 +24,7 @@
 #include <QString>
 #include <QtGlobal>
 #include <QFileInfo>
+#include <QQmlEngine>
 
 #include "util.hpp"
 #include "Glaph.hpp"
@@ -48,6 +49,7 @@ Glaph::~Glaph()
 void Glaph::addNode(QString code_path, QObject* qobj_node)
 {
     NodeItem* node{static_cast<NodeItem*>(qobj_node)};
+    QQmlEngine::setObjectOwnership(node, QQmlEngine::CppOwnership);
     connect(node, &NodeItem::nodeChanged, this, &Glaph::evaluateFrom);
     QString node_name{QFileInfo(code_path).baseName()};
 
@@ -82,7 +84,7 @@ void Glaph::addNode(QString code_path, QObject* qobj_node)
         node->functions = this->functions.at(node_name.toStdString());
     }
 
-    this->nodes.insert({node->index, node});
+    this->nodes.insert({node->index, std::unique_ptr<NodeItem>(node)});
 }
 
 void Glaph::addWire(QObject* wire_qobj)
@@ -145,6 +147,11 @@ T Glaph::inputToType(QObject* node_qobj, QString const& socket_name,
 void Glaph::removeWire(QObject* wire_qobj)
 {
     this->wires.erase(static_cast<WireItem*>(wire_qobj));
+}
+
+void Glaph::removeNode(unsigned int index)
+{
+    this->nodes.erase(index);
 }
 
 void Glaph::onWireConnected(unsigned int index, QString const& socket_name)

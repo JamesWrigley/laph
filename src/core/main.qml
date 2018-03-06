@@ -156,7 +156,7 @@ ApplicationWindow {
                 for (var i = 0; i < nodes.length; ++i) {
                     if (nodes[i].index == FocusSingleton.selectedNode) {
                         FocusSingleton.selectedNode = -1
-                        nodes[i].destroy()
+                        graphEngine.removeNode(nodes[i].index)
                         nodes.splice(i, 1)
                         canvas.requestPaint()
                         FocusSingleton.canvasFocus = true
