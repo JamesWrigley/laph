@@ -147,6 +147,16 @@ void Glaph::removeWire(QObject* wire_qobj)
     this->wires.erase(static_cast<WireItem*>(wire_qobj));
 }
 
+void Glaph::onWireConnected(unsigned int index, QString const& socket_name)
+{
+    this->nodes.at(index)->connecting(socket_name);
+}
+
+void Glaph::onWireDisconnected(unsigned int index, QString const& socket_name)
+{
+    this->nodes.at(index)->disconnecting(socket_name);
+}
+
 void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
 {
     std::unordered_set<WireItem*> output_wires{};
