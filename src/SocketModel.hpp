@@ -31,6 +31,10 @@
 #include "util.hpp"
 #include "Socket.hpp"
 
+using SocketVector = std::vector<Socket>;
+using SocketIterator = SocketVector::iterator;
+using SocketConstIterator = SocketVector::const_iterator;
+
 class SocketModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -41,7 +45,7 @@ public:
     SocketModel(SocketModel const&);
     SocketModel(QObject* = Q_NULLPTR,
                 QVariantMap = { },
-                std::vector<Socket> = { });
+                SocketVector = { });
 
     enum SocketRoles { NameRole = Qt::UserRole + 1,
                        TypeRole,
@@ -55,16 +59,16 @@ public:
             return *this;
         }
 
-    std::vector<Socket>::const_iterator begin() const;
-    std::vector<Socket>::const_iterator end() const;
+    SocketConstIterator begin() const;
+    SocketConstIterator end() const;
 
 protected:
     QHash<int, QByteArray> roleNames() const;
 
 private:
-    void addSocket(Socket&, std::vector<Socket>::iterator);
-    void removeSocket(std::vector<Socket>::iterator);
-    std::vector<Socket>::iterator findSocket(QString const&);
+    void addSocket(Socket&, SocketIterator);
+    void removeSocket(SocketIterator);
+    SocketIterator findSocket(QString const&);
 
     QVariantMap getSocketsTemplate();
     void setSocketsTemplate(QVariantMap const&);
@@ -75,7 +79,7 @@ private:
     bool setData(QModelIndex const&, QVariant const&, int = Qt::EditRole);
 
     QVariantMap socketsTemplate;
-    std::vector<Socket> sockets{};
+    SocketVector sockets{};
     std::unordered_map<QString, unsigned int> socket_counts{};
 
 signals:

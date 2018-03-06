@@ -16,6 +16,8 @@
  *                                                                                *
  *********************************************************************************/
 
+#include <algorithm>
+
 #include "SocketModel.hpp"
 
 #ifdef QT_DEBUG
@@ -28,7 +30,7 @@ SocketModel::SocketModel(SocketModel const& other) : SocketModel(other.parent(),
 
 SocketModel::SocketModel(QObject* parent,
                          QVariantMap socketsTemplate,
-                         std::vector<Socket> sockets) : QAbstractListModel(parent)
+                         SocketVector sockets) : QAbstractListModel(parent)
 {
     this->socketsTemplate = socketsTemplate;
     this->sockets = sockets;
@@ -37,7 +39,7 @@ SocketModel::SocketModel(QObject* parent,
             this, &SocketModel::refreshSockets);
 }
 
-void SocketModel::addSocket(Socket& socket, std::vector<Socket>::iterator pos)
+void SocketModel::addSocket(Socket& socket, SocketIterator pos)
 {
     int first{pos == this->sockets.end() ?
             this->sockets.size() : pos - this->sockets.begin()};
@@ -48,7 +50,7 @@ void SocketModel::addSocket(Socket& socket, std::vector<Socket>::iterator pos)
     this->endInsertRows();
 }
 
-void SocketModel::removeSocket(std::vector<Socket>::iterator pos)
+void SocketModel::removeSocket(SocketIterator pos)
 {
     unsigned int index{pos - this->sockets.begin()};
     this->beginRemoveRows(QModelIndex(), index, index);
@@ -58,7 +60,7 @@ void SocketModel::removeSocket(std::vector<Socket>::iterator pos)
     this->endRemoveRows();
 }
 
-std::vector<Socket>::iterator SocketModel::findSocket(QString const& socket_name)
+SocketIterator SocketModel::findSocket(QString const& socket_name)
 {
     return std::find_if(this->sockets.begin(), this->sockets.end(),
                         [&socket_name] (Socket const& socket) {
@@ -66,12 +68,12 @@ std::vector<Socket>::iterator SocketModel::findSocket(QString const& socket_name
                         });
 }
 
-std::vector<Socket>::const_iterator SocketModel::begin() const
+SocketConstIterator SocketModel::begin() const
 {
     return this->sockets.cbegin();
 }
 
-std::vector<Socket>::const_iterator SocketModel::end() const
+SocketConstIterator SocketModel::end() const
 {
     return this->sockets.cend();
 }
