@@ -41,7 +41,7 @@ SocketModel::SocketModel(QObject* parent,
 
 void SocketModel::addSocket(Socket& socket, SocketIterator pos)
 {
-    int first{pos == this->sockets.end() ?
+    auto first{pos == this->sockets.end() ?
             this->sockets.size() : pos - this->sockets.begin()};
     this->beginInsertRows(QModelIndex(), first, first);
 
@@ -52,7 +52,7 @@ void SocketModel::addSocket(Socket& socket, SocketIterator pos)
 
 void SocketModel::removeSocket(SocketIterator pos)
 {
-    unsigned int index{pos - this->sockets.begin()};
+    auto index{pos - this->sockets.begin()};
     this->beginRemoveRows(QModelIndex(), index, index);
 
     this->sockets.erase(pos);
@@ -114,10 +114,12 @@ void SocketModel::onSocketConnected(QString const& socket_name)
 void SocketModel::onSocketDisconnected(QString const& socket_name)
 {
     auto socket_it{this->findSocket(socket_name)};
-    unsigned int count{this->socket_counts.at(socket_it->prefix)};
+    if (socket_it->repeating) {
+        unsigned int count{this->socket_counts.at(socket_it->prefix)};
 
-    if (count > 1) {
-        this->removeSocket(socket_it);
+        if (count > 1) {
+            this->removeSocket(socket_it);
+        }
     }
 }
 

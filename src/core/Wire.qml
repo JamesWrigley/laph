@@ -60,7 +60,7 @@ WireItem {
     property var startType: start.item.socketType
 
     onValidChanged: {
-        if (startType != null && endType != null) {
+        if (inputNode != null && outputNode != null) {
             evaluateInput()
         }
     }
@@ -89,6 +89,10 @@ WireItem {
             ctx.path = wire
             ctx.stroke()
         }
+    }
+
+    function removeSelf() {
+        graphEngine.removeWire(root)
     }
 
     function isScalar(type) {
@@ -138,20 +142,17 @@ WireItem {
             }
 
             root.setParent(wireTip)
-
-            if (justCreated) {
-                graphEngine.addWire(this)
-            }
-
             evaluateInput()
+            root.dragging = (~startDragging) & (~endDragging)
         } else {
+            removeSelf()
+            canvas.requestPaint()
+
             if (outputNode != null) {
                 disconnect()
             }
-
-            root.destroy()
-            canvas.requestPaint()
         }
+
         root.dragging = (~startDragging) & (~endDragging)
     }
 
@@ -211,10 +212,6 @@ WireItem {
             property var mouseArea: ma
             property var socketType: parent == null ? undefined : parent.socketType
             property var socketName: parent == null ? undefined : parent.socketName
-
-            function destroyWire() {
-                root.destroy()
-            }
 
             MouseArea {
                 id: ma

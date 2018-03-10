@@ -199,28 +199,13 @@ NodeItem {
                                     property var socketType: type
                                     property string socketName: name
 
-                                    function disconnectWire(wire) {
-                                        if (wire == ma.wire) {
-                                            wire.disconnect()
-                                            wire.destroy()
-                                        } else {
-                                            wire.destroyWire()
-                                        }
-                                    }
-
-                                    Component.onDestruction: {
-                                        for (var i = 0; i < wires; ++i) {
-                                            disconnectWire(children[i])
-                                        }
-                                    }
-
                                     onDropped: {
                                         if (drop.source.twinIndex != glode.index &&
                                             drop.source.twinSide == !onLeft) {
                                             if (!onLeft && wires != 0) {
                                                 // If this is an input, replace the old
                                                 // wire with the new one.
-                                                disconnectWire(children[0])
+                                                graphEngine.removeWire(children[0])
                                             }
 
                                             drop.accept(Qt.MoveAction)
@@ -256,6 +241,8 @@ NodeItem {
 
                                                 if (wire == null) {
                                                     console.error("Object 'Wire.qml' could not be created")
+                                                } else {
+                                                    graphEngine.addWire(wire)
                                                 }
                                             } else {
                                                 console.error("Component 'Wire.qml' is not ready:", component.errorString())

@@ -43,6 +43,11 @@ Glaph::Glaph(QObject* parent) : QObject(parent)
 
 Glaph::~Glaph()
 {
+    // The wires need to be cleared before the nodes, or some kind of
+    // double-free occurs.
+    this->wires.clear();
+    this->nodes.clear();
+
     jl_atexit_hook(0);
 }
 
@@ -84,14 +89,14 @@ void Glaph::addNode(QString code_path, QObject* qobj_node)
         node->functions = this->functions.at(node_name.toStdString());
     }
 
-    this->nodes.insert({node->index, std::unique_ptr<NodeItem>(node)});
+    this->nodes.insert({node->index, NodeItemPtr(node)});
 }
 
 void Glaph::addWire(QObject* wire_qobj)
 {
     WireItem* wire{static_cast<WireItem*>(wire_qobj)};
-    connect(wire, &QObject::destroyed, this, &Glaph::removeWire);
-    this->wires.insert(wire);
+    QQmlEngine::setObjectOwnership(wire, QQmlEngine::CppOwnership);
+    this->wires.emplace(wire, [] (WireItem* wire) { wire->deleteLater(); });
 }
 
 QString Glaph::inputToString(QObject* node_qobj, QString const& socket_name)
@@ -146,11 +151,23 @@ T Glaph::inputToType(QObject* node_qobj, QString const& socket_name,
 
 void Glaph::removeWire(QObject* wire_qobj)
 {
-    this->wires.erase(static_cast<WireItem*>(wire_qobj));
+    WireItem* wire{static_cast<WireItem*>(wire_qobj)};
+    this->wires.erase(std::find_if(this->wires.begin(), this->wires.end(),
+                                   [&wire] (WireItemPtr const& wire_ptr) {
+                                       return wire_ptr.get() == wire;
+                                   }));
 }
 
 void Glaph::removeNode(unsigned int index)
 {
+    NodeItem* node{this->nodes.at(index).get()};
+    auto remove_wrapper{[this] (auto&& wires) {
+            std::for_each(wires.begin(), wires.end(),
+                          [this] (auto& wire) { this->removeWire(wire); });
+        }};
+    remove_wrapper(this->getInputs(node));
+    remove_wrapper(this->getOutputs(node));
+
     this->nodes.erase(index);
 }
 
@@ -226,7 +243,7 @@ std::unordered_set<WireItem*> Glaph::getInputs(NodeItem* node)
     std::unordered_set<WireItem*> inputs{};
     for (auto& wire : this->wires) {
         if (wire->valid && wire->outputNode->index == node->index) {
-            inputs.insert(wire);
+            inputs.insert(wire.get());
         }
     }
 
@@ -238,7 +255,7 @@ std::unordered_set<WireItem*> Glaph::getOutputs(NodeItem* node)
     std::unordered_set<WireItem*> outputs{};
     for (auto& wire : this->wires) {
         if (wire->valid && wire->inputNode == node) {
-            outputs.insert(wire);
+            outputs.insert(wire.get());
         }
     }
 

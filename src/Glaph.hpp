@@ -34,6 +34,7 @@
 #include "WireItem.hpp"
 
 using NodeItemPtr = std::unique_ptr<NodeItem>;
+using WireItemPtr = std::unique_ptr<WireItem, std::function<void(WireItem*)>>;
 
 class Glaph : public QObject
 {
@@ -59,7 +60,7 @@ private:
     template<typename T>
     T inputToType(QObject*, QString const&, std::function<T(QVariant const&)>);
 
-    std::unordered_set<WireItem*> wires;
+    std::unordered_set<WireItemPtr> wires;
     std::unordered_map<unsigned int, NodeItemPtr> nodes;
     std::unordered_map<std::string, std::unordered_map<std::string, jl_function_t*>> functions;
 
@@ -69,7 +70,7 @@ signals:
     void wireDisconnected(unsigned int, QString const&);
 
 public slots:
-    void removeWire(QObject*);
+    Q_INVOKABLE void removeWire(QObject*);
     void onWireConnected(unsigned int, QString const&);
     void onWireDisconnected(unsigned int, QString const&);
 };
