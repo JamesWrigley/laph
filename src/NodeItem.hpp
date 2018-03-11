@@ -32,6 +32,7 @@
 #include <QVariantMap>
 
 #include "util.hpp"
+#include "XCom.hpp"
 #include "Socket.hpp"
 #include "WireItem.hpp"
 #include "SocketModel.hpp"
@@ -69,9 +70,6 @@ public:
     void cacheInput(char const*, Socket::SocketType);
     void cacheComputation(jl_value_t*, Socket::SocketType, QString const&);
 
-    void connecting(QString const&);
-    void disconnecting(QString const&);
-
     unsigned int index;
     QObject* hooks{nullptr};
 
@@ -85,6 +83,7 @@ public:
     std::unordered_map<std::string, jl_function_t*> functions;
 
 private:
+    XCom& xcom;
     Socket::SocketType getSocketType(QString const&, SocketModel const*);
 
 signals:
@@ -100,6 +99,9 @@ signals:
 private slots:
     void onInputsChanged();
     void onOutputsChanged();
+
+    void onWireConnected(unsigned int, QString const&);
+    void onWireDisconnected(unsigned int, QString const&);
 };
 
 #endif

@@ -66,13 +66,9 @@ private:
 
 signals:
     void inputChanged(unsigned int nodeIndex);
-    void wireConnected(unsigned int, QString const&);
-    void wireDisconnected(unsigned int, QString const&);
 
 public slots:
     Q_INVOKABLE void removeWire(QObject*);
-    void onWireConnected(unsigned int, QString const&);
-    void onWireDisconnected(unsigned int, QString const&);
 };
 
 #endif

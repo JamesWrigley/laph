@@ -25,4 +25,5 @@ HEADERS += src/NodeMonitor.hpp \
            src/WireItem.hpp    \
            src/Socket.hpp      \
            src/SocketModel.hpp \
-           src/util.hpp
+           src/util.hpp        \
+           src/XCom.hpp

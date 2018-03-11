@@ -101,12 +101,12 @@ WireItem {
 
     function disconnect() {
         if (outputNode != null && graphEngine != null) {
-            graphEngine.wireDisconnected(outputNode.index, outputTip.socketName)
+            xcom.wireDisconnected(outputNode.index, outputSocket)
         }
     }
 
     function connect() {
-        graphEngine.wireConnected(outputNode.index, outputTip.socketName)
+        xcom.wireConnected(outputNode.index, outputSocket)
     }
 
     function evaluateInput() {

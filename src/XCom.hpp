@@ -16,43 +16,31 @@
  *                                                                                *
  *********************************************************************************/
 
-#include <QDir>
-#include <QQmlContext>
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#ifndef XCOM_HPP
+#define XCOM_HPP
 
-#include "XCom.hpp"
-#include "Glaph.hpp"
-#include "Socket.hpp"
-#include "NodeItem.hpp"
-#include "WireItem.hpp"
-#include "NodeMonitor.hpp"
-#include "SocketModel.hpp"
+#include <QObject>
 
-template<typename T>
-void registerLaphType(char const* name)
+class XCom : public QObject
 {
-    qmlRegisterType<T>("Laph", 0, 1, name);
-}
+    Q_OBJECT
 
-int main(int argc, char* argv[])
-{
-    QGuiApplication app(argc, argv);
+public:
+    XCom(QObject*) = delete;
+    XCom(XCom const&) = delete;
+    void operator=(XCom const&) = delete;
+    static XCom& get()
+        {
+            static XCom xcom;
+            return xcom;
+        }
 
-    registerLaphType<Socket>("Socket");
-    registerLaphType<NodeItem>("NodeItem");
-    registerLaphType<WireItem>("WireItem");
-    registerLaphType<NodeMonitor>("NodeMonitor");
-    registerLaphType<SocketModel>("SocketModel");
+signals:
+    void wireConnected(unsigned int, QString const&);
+    void wireDisconnected(unsigned int, QString const&);
 
-    QDir basePath{app.applicationDirPath()};
-    QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
+private:
+    XCom() { }
+};
 
-    XCom& xcom{XCom::get()};
-    engine.rootContext()->setContextProperty("xcom", &xcom);
-
-    Glaph graph{};
-    engine.rootContext()->setContextProperty("graphEngine", &graph);
-
-    return app.exec();
-}
+#endif

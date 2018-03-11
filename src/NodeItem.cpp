@@ -26,8 +26,10 @@
 
 #include "NodeItem.hpp"
 
-NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent)
+NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent), xcom(XCom::get())
 {
+    connect(&(this->xcom), &XCom::wireDisconnected, this, &NodeItem::onWireDisconnected);
+    connect(&(this->xcom), &XCom::wireConnected, this, &NodeItem::onWireConnected);
     connect(this, &NodeItem::inputsChanged, this, &NodeItem::onInputsChanged);
     connect(this, &NodeItem::outputsChanged, this, &NodeItem::onOutputsChanged);
 }
@@ -159,14 +161,18 @@ void NodeItem::cacheComputation(jl_value_t* result, Socket::SocketType type, QSt
     }
 }
 
-void NodeItem::disconnecting(QString const& socket_name)
+void NodeItem::onWireDisconnected(unsigned int index, QString const& socket_name)
 {
-    emit this->wireDisconnectedFrom(socket_name);
+    if (index == this->index) {
+        emit this->wireDisconnectedFrom(socket_name);
+    }
 }
 
-void NodeItem::connecting(QString const& socket_name)
+void NodeItem::onWireConnected(unsigned int index, QString const& socket_name)
 {
-    emit this->wireConnectedTo(socket_name);
+    if (index == this->index) {
+        emit this->wireConnectedTo(socket_name);
+    }
 }
 
 bool NodeItem::isInput(QString socket_name)

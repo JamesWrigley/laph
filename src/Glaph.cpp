@@ -36,9 +36,6 @@
 Glaph::Glaph(QObject* parent) : QObject(parent)
 {
     jl_init();
-
-    connect(this, &Glaph::wireConnected, this, &Glaph::onWireConnected);
-    connect(this, &Glaph::wireDisconnected, this, &Glaph::onWireDisconnected);
 }
 
 Glaph::~Glaph()
@@ -158,25 +155,20 @@ void Glaph::removeWire(QObject* wire_qobj)
 
 void Glaph::removeNode(unsigned int index)
 {
+    XCom& xcom{XCom::get()};
     NodeItem* node{this->nodes.at(index).get()};
-    auto remove_wrapper{[this] (auto&& wires) {
+    auto remove_wrapper{[this, &xcom] (auto&& wires) {
             std::for_each(wires.begin(), wires.end(),
-                          [this] (auto& wire) { this->removeWire(wire); });
+                          [this, &xcom] (auto& wire) {
+                              xcom.wireDisconnected(wire->outputNode->index,
+                                                    wire->outputSocket);
+                              this->removeWire(wire);
+                          });
         }};
     remove_wrapper(this->getInputs(node));
     remove_wrapper(this->getOutputs(node));
 
     this->nodes.erase(index);
-}
-
-void Glaph::onWireConnected(unsigned int index, QString const& socket_name)
-{
-    this->nodes.at(index)->connecting(socket_name);
-}
-
-void Glaph::onWireDisconnected(unsigned int index, QString const& socket_name)
-{
-    this->nodes.at(index)->disconnecting(socket_name);
 }
 
 void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
