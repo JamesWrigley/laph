@@ -33,7 +33,7 @@
 #include "NodeItem.hpp"
 #include "WireItem.hpp"
 
-using NodeItemPtr = std::unique_ptr<NodeItem>;
+using NodeItemPtr = std::unique_ptr<NodeItem, std::function<void(NodeItem*)>>;
 using WireItemPtr = std::unique_ptr<WireItem, std::function<void(WireItem*)>>;
 
 class Glaph : public QObject

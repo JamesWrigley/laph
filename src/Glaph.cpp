@@ -43,11 +43,6 @@ Glaph::Glaph(QObject* parent) : QObject(parent)
 
 Glaph::~Glaph()
 {
-    // The wires need to be cleared before the nodes, or some kind of
-    // double-free occurs.
-    this->wires.clear();
-    this->nodes.clear();
-
     jl_atexit_hook(0);
 }
 
@@ -89,7 +84,10 @@ void Glaph::addNode(QString code_path, QObject* qobj_node)
         node->functions = this->functions.at(node_name.toStdString());
     }
 
-    this->nodes.insert({node->index, NodeItemPtr(node)});
+    this->nodes.insert({node->index, NodeItemPtr(node,
+                                                 [] (NodeItem* node) {
+                                                     node->deleteLater();
+                                                 })});
 }
 
 void Glaph::addWire(QObject* wire_qobj)
