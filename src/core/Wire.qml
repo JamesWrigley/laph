@@ -143,10 +143,11 @@ WireItem {
 
             root.setParent(wireTip)
             evaluateInput()
-            root.dragging = (~startDragging) & (~endDragging)
         } else {
-            removeSelf()
+            var inputTip = outputTip == start.item ? end.item : start.item
+            inputTip.parent = this
             canvas.requestPaint()
+            removeSelf()
 
             if (outputNode != null) {
                 disconnect()
