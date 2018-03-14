@@ -144,8 +144,12 @@ WireItem {
             root.setParent(wireTip)
             evaluateInput()
         } else {
+            // We found that disconnecting wires from the output tip would for
+            // some reason disable the DropArea on the inputTip socket, which we
+            // fix by resetting the inputTip parent before the wire is deleted.
             var inputTip = outputTip == start.item ? end.item : start.item
             inputTip.parent = this
+
             canvas.requestPaint()
             removeSelf()
 
