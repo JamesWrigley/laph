@@ -99,9 +99,12 @@ WireItem {
         return type == Socket.Scalar || type == Socket.ScalarInput
     }
 
-    function disconnect() {
-        if (outputNode != null) {
-            xcom.wireDisconnected(outputNode.index, outputSocket)
+    function disconnect(oN, oS) {
+        oN = oN == undefined ? outputNode : oN
+        oS = oS == undefined ? outputSocket : oS
+
+        if (oN != null) {
+            xcom.wireDisconnected(oN.index, oS)
         }
     }
 
@@ -144,6 +147,11 @@ WireItem {
             root.setParent(wireTip)
             evaluateInput()
         } else {
+            // We need to store the current output node index and output socket
+            // because they may be overwritten by the next couple of lines.
+            var oldOutputSocket = outputSocket
+            var oldOutputNode = outputNode
+
             // We found that disconnecting wires from the output tip would for
             // some reason disable the DropArea on the inputTip socket, which we
             // fix by resetting the inputTip parent before the wire is deleted.
@@ -153,8 +161,8 @@ WireItem {
             canvas.requestPaint()
             removeSelf()
 
-            if (outputNode != null) {
-                disconnect()
+            if (oldOutputNode != null) {
+                disconnect(oldOutputNode, oldOutputSocket)
             }
         }
 
