@@ -100,7 +100,7 @@ WireItem {
     }
 
     function disconnect() {
-        if (outputNode != null && graphEngine != null) {
+        if (outputNode != null) {
             xcom.wireDisconnected(outputNode.index, outputSocket)
         }
     }
