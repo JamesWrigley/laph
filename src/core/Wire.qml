@@ -120,6 +120,7 @@ WireItem {
 
     function setParent(wireTip) {
         var target = wireTip.Drag.target
+        var reconnect = wireTip.parent == target
         wireTip.parent = target
         wireTip.x = 0
         wireTip.y = 0
@@ -134,13 +135,16 @@ WireItem {
             root.endUpdateHook = hook
         }
 
-        connect()
+        if (!reconnect) {
+            connect()
+        }
     }
 
     function handleRelease(wireTip) {
         if (wireTip.Drag.target != null && wireTip.Drag.drop() == Qt.MoveAction) {
             var justCreated = endParent == end
-            if (!justCreated && wireTip == end.item) {
+            var reconnect = wireTip.parent == wireTip.Drag.target
+            if (!justCreated && wireTip == end.item && !reconnect) {
                 disconnect()
             }
 

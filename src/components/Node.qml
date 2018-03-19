@@ -202,7 +202,8 @@ NodeItem {
                                     onDropped: {
                                         if (drop.source.twinIndex != glode.index &&
                                             drop.source.twinSide == !onLeft) {
-                                            if (!onLeft && wires != 0) {
+                                            if (!onLeft && wires != 0
+                                                && drop.source.parent != da) {
                                                 // If this is an input, replace the old
                                                 // wire with the new one.
                                                 graphEngine.removeWire(children[0])
