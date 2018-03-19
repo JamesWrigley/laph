@@ -227,7 +227,6 @@ WireItem {
             property int dragMask
             property int twinIndex
             property bool twinSide
-            property var mouseArea: ma
             property var socketType: parent == null ? undefined : parent.socketType
             property var socketName: parent == null ? undefined : parent.socketName
 
