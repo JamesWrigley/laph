@@ -206,7 +206,7 @@ NodeItem {
                                                 && drop.source.parent != da) {
                                                 // If this is an input, replace the old
                                                 // wire with the new one.
-                                                graphEngine.removeWire(children[0])
+                                                    graphEngine.removeWire(children[0].index)
                                             }
 
                                             drop.accept(Qt.MoveAction)

@@ -92,7 +92,7 @@ WireItem {
     }
 
     function removeSelf() {
-        graphEngine.removeWire(root)
+        graphEngine.removeWire(index)
     }
 
     function isScalar(type) {
@@ -227,6 +227,7 @@ WireItem {
             property int dragMask
             property int twinIndex
             property bool twinSide
+            property int index: root.index
             property var socketType: parent == null ? undefined : parent.socketType
             property var socketName: parent == null ? undefined : parent.socketName
 

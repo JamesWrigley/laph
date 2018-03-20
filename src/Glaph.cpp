@@ -144,12 +144,11 @@ T Glaph::inputToType(QObject* node_qobj, QString const& socket_name,
     }
 }
 
-void Glaph::removeWire(QObject* wire_qobj)
+void Glaph::removeWire(int index)
 {
-    WireItem* wire{static_cast<WireItem*>(wire_qobj)};
     this->wires.erase(std::find_if(this->wires.begin(), this->wires.end(),
-                                   [&wire] (WireItemPtr const& wire_ptr) {
-                                       return wire_ptr.get() == wire;
+                                   [&index] (WireItemPtr const& wire_ptr) {
+                                       return wire_ptr->index == index;
                                    }));
 }
 
@@ -162,7 +161,7 @@ void Glaph::removeNode(unsigned int index)
                           [this, &xcom] (auto& wire) {
                               xcom.wireDisconnected(wire->outputNode->index,
                                                     wire->outputSocket);
-                              this->removeWire(wire);
+                              this->removeWire(wire->index);
                           });
         }};
     remove_wrapper(this->getInputs(node));

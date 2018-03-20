@@ -20,7 +20,19 @@
 
 #include "WireItem.hpp"
 
-WireItem::WireItem(QQuickItem* parent) : QQuickItem(parent) { }
+WireItem::WireItem(QQuickItem* parent) : QQuickItem(parent)
+{
+    static int wire_count{0};
+
+    this->index = wire_count;
+    emit this->indexChanged();
+    ++wire_count;
+}
+
+int WireItem::getIndex()
+{
+    return this->index;
+}
 
 bool WireItem::getValid()
 {

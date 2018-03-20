@@ -68,7 +68,7 @@ signals:
     void inputChanged(unsigned int nodeIndex);
 
 public slots:
-    Q_INVOKABLE void removeWire(QObject*);
+    Q_INVOKABLE void removeWire(int);
 };
 
 #endif
