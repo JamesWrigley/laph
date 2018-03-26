@@ -204,9 +204,13 @@ NodeItem {
                                             drop.source.twinSide == !onLeft) {
                                             if (!onLeft && wires != 0
                                                 && drop.source.parent != da) {
-                                                // If this is an input, replace the old
-                                                // wire with the new one.
+                                                if (drop.source.parent.index != undefined) {
+                                                    children[0].parent = drop.source.parent
+                                                } else {
+                                                    // If this is an input, replace the old
+                                                    // wire with the new one.
                                                     graphEngine.removeWire(children[0].index)
+                                                }
                                             }
 
                                             drop.accept(Qt.MoveAction)
