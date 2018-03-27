@@ -151,6 +151,19 @@ ApplicationWindow {
             return false
         }
 
+        function getSocket(point) {
+            for (var i = 0; i < nodes.length; ++i) {
+                var node = nodes[i];
+                var socket = node.getSocketAt(point)
+
+                if (socket != null) {
+                    return socket
+                }
+            }
+
+            return null
+        }
+
         function deleteSelectedNode() {
             if (FocusSingleton.selectedNode != -1) {
                 for (var i = 0; i < nodes.length; ++i) {

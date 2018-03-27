@@ -84,6 +84,10 @@ NodeItem {
         }
     }
 
+    function getSocketAt(point) {
+        for
+    }
+
     FocusScope {
         id: scope
 
