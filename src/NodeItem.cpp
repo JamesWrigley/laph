@@ -164,14 +164,14 @@ void NodeItem::cacheComputation(jl_value_t* result, Socket::SocketType type, QSt
 void NodeItem::onWireDisconnected(unsigned int index, QString const& socket_name)
 {
     if (index == this->index) {
-        emit this->wireDisconnectedFrom(socket_name);
+        this->outputsModel->disconnectSocket(socket_name);
     }
 }
 
 void NodeItem::onWireConnected(unsigned int index, QString const& socket_name)
 {
     if (index == this->index) {
-        emit this->wireConnectedTo(socket_name);
+        this->inputsModel->connectSocket(socket_name);
     }
 }
 
@@ -187,11 +187,6 @@ bool NodeItem::isInput(QString socket_name)
 void NodeItem::onInputsChanged()
 {
     this->inputsModel = this->findChild<SocketModel*>("inputsModel");
-
-    connect(this, &NodeItem::wireConnectedTo,
-            this->inputsModel, &SocketModel::onSocketConnected);
-    connect(this, &NodeItem::wireDisconnectedFrom,
-            this->inputsModel, &SocketModel::onSocketDisconnected);    
 }
 
 void NodeItem::onOutputsChanged()

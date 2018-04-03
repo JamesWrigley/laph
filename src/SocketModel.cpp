@@ -98,7 +98,7 @@ void SocketModel::refreshSockets()
     }
 }
 
-void SocketModel::onSocketConnected(QString const& socket_name)
+void SocketModel::connectSocket(QString const& socket_name)
 {
     auto socket_it{this->findSocket(socket_name)};
     unsigned int& count{this->socket_counts.at(socket_it->prefix)};
@@ -111,7 +111,7 @@ void SocketModel::onSocketConnected(QString const& socket_name)
     }
 }
 
-void SocketModel::onSocketDisconnected(QString const& socket_name)
+void SocketModel::disconnectSocket(QString const& socket_name)
 {
     auto socket_it{this->findSocket(socket_name)};
     if (socket_it->repeating) {
@@ -120,6 +120,8 @@ void SocketModel::onSocketDisconnected(QString const& socket_name)
         if (count > 1) {
             this->removeSocket(socket_it);
         }
+    } else {
+        this->removeSocket(socket_it);
     }
 }
 

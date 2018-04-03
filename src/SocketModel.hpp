@@ -59,6 +59,9 @@ public:
             return *this;
         }
 
+    void connectSocket(QString const&);
+    void disconnectSocket(QString const&);
+
     SocketConstIterator begin() const;
     SocketConstIterator end() const;
 
@@ -87,10 +90,6 @@ signals:
 
 private slots:
     void refreshSockets();
-
-public slots:
-    void onSocketConnected(QString const&);
-    void onSocketDisconnected(QString const&);
 };
 
 #endif
