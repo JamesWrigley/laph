@@ -220,7 +220,7 @@ WireItem {
             color: "green"
             opacity: 0
 
-            Drag.active: dragMask & root.dragging > 0
+            Drag.active: root.dragging > 0
             Drag.hotSpot.x: width / 2
             Drag.hotSpot.y: height / 2
 
