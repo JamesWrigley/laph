@@ -16,8 +16,8 @@
  *                                                                                *
  *********************************************************************************/
 
-#ifndef GLODE_HPP
-#define GLODE_HPP
+#ifndef NODEITEM_HPP
+#define NODEITEM_HPP
 
 #include <memory>
 #include <functional>
