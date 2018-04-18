@@ -39,7 +39,7 @@ SocketModel::SocketModel(QObject* parent,
             this, &SocketModel::refreshSockets);
 }
 
-void SocketModel::addSocket(Socket& socket, SocketIterator pos)
+void SocketModel::addSocket(Socket& socket, SocketConstIterator pos)
 {
     auto first{pos == this->sockets.end() ?
             this->sockets.size() : pos - this->sockets.begin()};
@@ -50,7 +50,7 @@ void SocketModel::addSocket(Socket& socket, SocketIterator pos)
     this->endInsertRows();
 }
 
-void SocketModel::removeSocket(SocketIterator pos)
+void SocketModel::removeSocket(SocketConstIterator pos)
 {
     auto index{pos - this->sockets.begin()};
     this->beginRemoveRows(QModelIndex(), index, index);
@@ -60,9 +60,9 @@ void SocketModel::removeSocket(SocketIterator pos)
     this->endRemoveRows();
 }
 
-SocketIterator SocketModel::findSocket(QString const& socket_name)
+SocketConstIterator SocketModel::findSocket(QString const& socket_name)
 {
-    return std::find_if(this->sockets.begin(), this->sockets.end(),
+    return std::find_if(this->sockets.cbegin(), this->sockets.cend(),
                         [&socket_name] (Socket const& socket) {
                             return socket.name == socket_name;
                         });

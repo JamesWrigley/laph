@@ -32,7 +32,6 @@
 #include "Socket.hpp"
 
 using SocketVector = std::vector<Socket>;
-using SocketIterator = SocketVector::iterator;
 using SocketConstIterator = SocketVector::const_iterator;
 
 class SocketModel : public QAbstractListModel
@@ -69,9 +68,9 @@ protected:
     QHash<int, QByteArray> roleNames() const;
 
 private:
-    void addSocket(Socket&, SocketIterator);
-    void removeSocket(SocketIterator);
-    SocketIterator findSocket(QString const&);
+    void addSocket(Socket&, SocketConstIterator);
+    void removeSocket(SocketConstIterator);
+    SocketConstIterator findSocket(QString const&);
 
     QVariantMap getSocketsTemplate();
     void setSocketsTemplate(QVariantMap const&);
