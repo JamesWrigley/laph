@@ -62,8 +62,8 @@ public:
     void connectSocket(QString const&);
     void disconnectSocket(QString const&);
 
-    SocketConstIterator begin() const;
-    SocketConstIterator end() const;
+    SocketConstIterator cbegin() const;
+    SocketConstIterator cend() const;
 
 protected:
     QHash<int, QByteArray> roleNames() const;

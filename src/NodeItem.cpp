@@ -223,11 +223,11 @@ Socket::SocketType NodeItem::getOutputType(QString const& socket)
 Socket::SocketType NodeItem::getSocketType(QString const& socket_name,
                                            SocketModel const* sockets)
 {
-    auto socket_it{std::find_if(sockets->begin(), sockets->end(),
+    auto socket_it{std::find_if(sockets->cbegin(), sockets->cend(),
                                 [&] (Socket const& socket) {
                                     return socket.name == socket_name;
                                 })};
-    if (socket_it != sockets->end()) {
+    if (socket_it != sockets->cend()) {
         return socket_it->type;
     } else {
         throw std::runtime_error("Could not find socket " + socket_name.toStdString());
