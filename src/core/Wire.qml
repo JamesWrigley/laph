@@ -120,7 +120,6 @@ WireItem {
 
     function setParent(wireTip) {
         var target = wireTip.Drag.target
-        var reconnect = wireTip.parent == target
         wireTip.parent = target
         wireTip.x = 0
         wireTip.y = 0
@@ -134,18 +133,28 @@ WireItem {
         } else {
             root.endUpdateHook = hook
         }
-
-        if (!reconnect) {
-            connect()
-        }
     }
 
     function handleRelease(wireTip) {
-        if (wireTip.Drag.target != null && wireTip.Drag.drop() == Qt.MoveAction) {
-            var justCreated = endParent == end
-            var reconnect = wireTip.parent == wireTip.Drag.target
-            if (!justCreated && wireTip == end.item && !reconnect) {
-                disconnect()
+        var target = wireTip.Drag.target
+        if (target != null && wireTip.Drag.drop() == Qt.MoveAction) {
+            if (endParent == end) {
+                // If the wire has just been created
+                xcom.wireConnected(target.node.index,
+                                   wireTip.twinSide ? XCom.Output : XCom.Input,
+                                   target.socketName)
+
+                // var otherTip = wireTip == endTip ? start.item : endTip
+                // console.info(otherTip.index,
+                //              wireTip.twinSide ? XCom.Input : XCom.Output,
+                //              otherTip.socketName)
+                // xcom.wireConnected(otherTip.index,
+                //                    wireTip.twinSide ? XCom.Input : XCom.Output,
+                //                    otherTip.socketName)
+            } else if (wireTip.parent != target) {
+                // Emit signals if connecting to a different socket
+                xcom.wireDisconnected(wireTip.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
+                xcom.wireConnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, target.socketName)
             }
 
             root.setParent(wireTip)
@@ -166,6 +175,7 @@ WireItem {
             removeSelf()
 
             if (oldOutputNode != null) {
+                console.info("Disconnecting")
                 disconnect(oldOutputNode, oldOutputSocket)
             }
         }
@@ -220,7 +230,7 @@ WireItem {
             color: "green"
             opacity: 0
 
-            Drag.active: dragMask & root.dragging > 0
+            Drag.active: root.dragging > 0
             Drag.hotSpot.x: width / 2
             Drag.hotSpot.y: height / 2
 

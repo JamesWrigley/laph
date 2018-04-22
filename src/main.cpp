@@ -39,6 +39,8 @@ int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
 
+    qmlRegisterUncreatableType<XCom>("Laph", 0, 1, "XCom",
+                                     "XCom is not instantiable");
     registerLaphType<Socket>("Socket");
     registerLaphType<NodeItem>("NodeItem");
     registerLaphType<WireItem>("WireItem");

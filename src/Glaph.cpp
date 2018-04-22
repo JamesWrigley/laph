@@ -160,7 +160,11 @@ void Glaph::removeNode(unsigned int index)
             std::for_each(wires.begin(), wires.end(),
                           [this, &xcom] (auto& wire) {
                               xcom.wireDisconnected(wire->outputNode->index,
+                                                    XCom::TipType::Input,
                                                     wire->outputSocket);
+                              xcom.wireDisconnected(wire->inputNode->index,
+                                                    XCom::TipType::Output,
+                                                    wire->inputSocket);
                               this->removeWire(wire->index);
                           });
         }};
