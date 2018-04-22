@@ -101,6 +101,8 @@ void SocketModel::refreshSockets()
 void SocketModel::connectSocket(QString const& socket_name)
 {
     auto socket_it{this->findSocket(socket_name)};
+    auto dist{std::distance(this->cbegin(), socket_it)};
+    std::cout << "Connecting " << socket_name << " " << dist << "\n";
     unsigned int& count{this->socket_counts.at(socket_it->prefix)};
     ++count;
 
@@ -121,7 +123,7 @@ void SocketModel::disconnectSocket(QString const& socket_name)
             this->removeSocket(socket_it);
         }
     } else {
-        this->removeSocket(socket_it);
+        this->socket_counts.at(socket_it->prefix) -= 1;
     }
 }
 

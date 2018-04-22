@@ -161,17 +161,27 @@ void NodeItem::cacheComputation(jl_value_t* result, Socket::SocketType type, QSt
     }
 }
 
-void NodeItem::onWireDisconnected(unsigned int index, QString const& socket_name)
+void NodeItem::onWireDisconnected(unsigned int index, XCom::TipType type,
+                                  QString const& socket_name)
 {
     if (index == this->index) {
-        this->outputsModel->disconnectSocket(socket_name);
+        if (type == XCom::TipType::Input) {
+            this->inputsModel->disconnectSocket(socket_name);
+        } else {
+            this->outputsModel->disconnectSocket(socket_name);
+        }
     }
 }
 
-void NodeItem::onWireConnected(unsigned int index, QString const& socket_name)
+void NodeItem::onWireConnected(unsigned int index, XCom::TipType type,
+                               QString const& socket_name)
 {
     if (index == this->index) {
-        this->inputsModel->connectSocket(socket_name);
+        if (type == XCom::TipType::Input) {
+            this->outputsModel->connectSocket(socket_name);
+        } else {
+            this->inputsModel->connectSocket(socket_name);
+        }
     }
 }
 

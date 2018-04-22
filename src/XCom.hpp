@@ -21,11 +21,19 @@
 
 #include <QObject>
 
+#include "WireItem.hpp"
+
 class XCom : public QObject
 {
     Q_OBJECT
 
 public:
+    // It'd be nicer if this was defined in WireItem.hpp, but enums that are
+    // used as signal parameters from QML need to be declared in the same class
+    // as the signal (i.e. wireConnected() and wireDisconnected()).
+    enum class TipType { Input, Output };
+    Q_ENUM(TipType)
+
     XCom(QObject*) = delete;
     XCom(XCom const&) = delete;
     void operator=(XCom const&) = delete;
@@ -36,8 +44,8 @@ public:
         }
 
 signals:
-    void wireConnected(unsigned int, QString const&);
-    void wireDisconnected(unsigned int, QString const&);
+    void wireConnected(unsigned int, TipType, QString const&);
+    void wireDisconnected(unsigned int, TipType, QString const&);
 
 private:
     XCom() { }

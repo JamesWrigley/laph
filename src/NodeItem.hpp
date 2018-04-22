@@ -100,8 +100,8 @@ private slots:
     void onInputsChanged();
     void onOutputsChanged();
 
-    void onWireConnected(unsigned int, QString const&);
-    void onWireDisconnected(unsigned int, QString const&);
+    void onWireConnected(unsigned int, XCom::TipType, QString const&);
+    void onWireDisconnected(unsigned int, XCom::TipType, QString const&);
 };
 
 #endif
