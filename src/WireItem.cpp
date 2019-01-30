@@ -40,7 +40,7 @@ WireItem::WireItem(QQuickItem* parent) : QQuickItem(parent)
                           << ", outputSocket: " << this->outputSocket << "\n";
             }
         }};
-    connect(this, &WireItem::inputSocketChanged, printer);
+    // connect(this, &WireItem::inputSocketChanged, printer);
     connect(this, &WireItem::outputSocketChanged, printer);
 }
 
@@ -82,14 +82,18 @@ void WireItem::setValid(bool valid)
 
 void WireItem::setInputSocket(QString& socketName)
 {
-    this->inputSocket = socketName;
-    emit this->inputSocketChanged();
+    if (&socketName != &(this->inputSocket)) {
+        this->inputSocket = socketName;
+        emit this->inputSocketChanged();
+    }
 }
 
 void WireItem::setOutputSocket(QString& socketName)
 {
-    this->outputSocket = socketName;
-    emit this->outputSocketChanged();
+    if (&socketName != &(this->outputSocket)) {
+        this->outputSocket = socketName;
+        emit this->outputSocketChanged();
+    }
 }
 
 void WireItem::setInputNode(QQuickItem* node)
