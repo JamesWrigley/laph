@@ -28,10 +28,10 @@ WireItem {
     valid: ((startType == null || endType == null) ||
             (startType == Socket.Generic || endType == Socket.Generic) ||
             (isScalar(startType) == isScalar(endType)))
-    inputNode: endParent == null ? null : choose(endParent.onLeft, endParent.node, startParent.node, null)
-    outputNode: endParent == null ? null : choose(endParent.onLeft, startParent.node, endParent.node, null)
+    inputNode: endParent == null ? null : choose(endParent.isInput, endParent.node, startParent.node, null)
+    outputNode: endParent == null ? null : choose(endParent.isInput, startParent.node, endParent.node, null)
     inputSocket: endParent == null ? "" : choose(inputNode == endParent.node, endParent.socketName, startParent.socketName, "")
-    outputSocket: endParent == null ? "" : choose(endParent.onLeft, startParent.socketName, endParent.socketName, "")
+    outputSocket: endParent == null ? "" : choose(endParent.isInput, startParent.socketName, endParent.socketName, "")
 
     function choose(condition, option1, option2, unity) {
         var choice = condition ? option1 : option2
@@ -74,7 +74,7 @@ WireItem {
 
             PropertyChanges {
                 target: root
-                outputTip: endParent.onLeft ? start.item : end.item
+                outputTip: endParent.isInput ? start.item : end.item
             }
         }
     ]
@@ -213,7 +213,7 @@ WireItem {
             property int curvature: 2
             property real relative1X: (x - wire.startX) / curvature
             property real relative2X: x - wire.startX
-            property bool startOnLeft: start.item.parent.onLeft == undefined ? false : start.item.parent.onLeft
+            property bool startOnLeft: start.item.parent.isInput == undefined ? false : start.item.parent.isInput
             property real sturdiness: Math.abs(wire.startX - x) / curvature
 
             onXChanged: canvas.requestPaint()

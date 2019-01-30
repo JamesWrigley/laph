@@ -176,7 +176,7 @@ NodeItem {
                                 border.color: generic ? "black" : Qt.darker(color, 2)
                                 color: type == Socket.Generic ? "teal" : isScalar ? "purple" : "green"
 
-                                property alias onLeft: da.onLeft
+                                property alias isInput: da.isInput
                                 property bool isScalar: (type == Socket.Scalar ||
                                                          type == Socket.ScalarInput)
 
@@ -194,15 +194,15 @@ NodeItem {
                                     anchors.fill: parent
 
                                     property var node: glode
-                                    property bool onLeft: !floatRight
+                                    property bool isInput: !floatRight
                                     property int wires: children.length
                                     property var socketType: type
                                     property string socketName: name
 
                                     onDropped: {
                                         if (drop.source.twinIndex != glode.index &&
-                                            drop.source.twinSide == !onLeft) {
-                                            if (!onLeft && wires != 0
+                                            drop.source.twinSide == !isInput) {
+                                            if (!isInput && wires != 0
                                                 && drop.source.parent != da) {
                                                 if (drop.source.parent.index != undefined) {
                                                     children[0].parent = drop.source.parent
@@ -235,7 +235,7 @@ NodeItem {
                                             var component = Qt.createComponent("../core/Wire.qml")
                                             if (component.status == Component.Ready) {
                                                 wire = component.createObject(da, {"startIndex": glode.index,
-                                                                                   "startOnLeft": parent.onLeft,
+                                                                                   "startOnLeft": parent.isInput,
                                                                                    "canvas": Qt.binding(function () { return canvas }),
                                                                                    "startUpdateHook": Qt.binding(function () {
                                                                                        return glode.x + glode.y + canvas.scaling
