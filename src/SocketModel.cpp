@@ -94,7 +94,7 @@ void SocketModel::refreshSockets()
         socket.repeating = properties.value("repeating", false).toBool();
 
         this->addSocket(socket, this->sockets.end());
-        this->socket_counts.insert({socket.name, 1});
+        this->socket_counts.insert({socket.prefix, 1});
     }
 }
 
