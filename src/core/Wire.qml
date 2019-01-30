@@ -227,6 +227,9 @@ WireItem {
         Rectangle {
             width: 14
             height: 14
+
+            // When debugging, it's useful to dial the opacity up and visualize
+            // the tip as a rectangle.
             color: "green"
             opacity: 0
 
@@ -237,7 +240,7 @@ WireItem {
             property int dragMask
             property int twinIndex
             property bool twinSide
-            property int index: root.index
+            property int index: root.startIndex
             property var socketType: parent == null ? undefined : parent.socketType
             property var socketName: parent == null ? undefined : parent.socketName
 
