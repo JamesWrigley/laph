@@ -47,6 +47,7 @@ public:
     Q_INVOKABLE void addWire(QObject*);
     Q_INVOKABLE void removeNode(unsigned int);
     Q_INVOKABLE void addNode(QString, QObject*);
+    Q_INVOKABLE NodeItem* getNode(unsigned int);
     Q_INVOKABLE void evaluateFrom(NodeItem*, QStringList);
     Q_INVOKABLE QString inputToString(QObject*, QString const&);
     Q_INVOKABLE QList<double> inputToList(QObject*, QString const&);

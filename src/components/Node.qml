@@ -203,7 +203,7 @@ NodeItem {
                                         if (drop.source.twinIndex != glode.index &&
                                             drop.source.twinSide == !isInput) {
                                             if (!isInput && wires != 0
-                                                && drop.source.parent != da) {
+                                                && drop.source.parent != glode) {
                                                 if (drop.source.parent.index != undefined) {
                                                     children[0].parent = drop.source.parent
                                                 } else {
@@ -234,15 +234,16 @@ NodeItem {
                                         if (wire == null && da.wires == 0) {
                                             var component = Qt.createComponent("../core/Wire.qml")
                                             if (component.status == Component.Ready) {
-                                                wire = component.createObject(da, {"startIndex": glode.index,
-                                                                                   "startOnLeft": parent.isInput,
-                                                                                   "canvas": Qt.binding(function () { return canvas }),
-                                                                                   "startUpdateHook": Qt.binding(function () {
-                                                                                       return glode.x + glode.y + canvas.scaling
-                                                                                   }),
-                                                                                   "endUpdateHook": Qt.binding(function () {
-                                                                                       return ma.mouseX + ma.mouseY
-                                                                                   })})
+                                                wire = component.createObject(glode, {"initialSocket": da,
+                                                                                      "startIndex": glode.index,
+                                                                                      "startOnLeft": parent.isInput,
+                                                                                      "canvas": Qt.binding(function () { return canvas }),
+                                                                                      "startUpdateHook": Qt.binding(function () {
+                                                                                          return glode.x + glode.y + canvas.scaling
+                                                                                      }),
+                                                                                      "endUpdateHook": Qt.binding(function () {
+                                                                                          return ma.mouseX + ma.mouseY
+                                                                                      })})
 
                                                 if (wire == null) {
                                                     console.error("Object 'Wire.qml' could not be created")

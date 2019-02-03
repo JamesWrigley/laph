@@ -87,6 +87,11 @@ void Glaph::addNode(QString code_path, QObject* qobj_node)
                                                  })});
 }
 
+NodeItem* Glaph::getNode(unsigned int index)
+{
+    return this->nodes.at(index).get();
+}
+
 void Glaph::addWire(QObject* wire_qobj)
 {
     WireItem* wire{static_cast<WireItem*>(wire_qobj)};

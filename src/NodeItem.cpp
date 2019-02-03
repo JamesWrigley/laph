@@ -166,9 +166,9 @@ void NodeItem::onWireDisconnected(unsigned int index, XCom::TipType type,
 {
     if (index == this->index) {
         if (type == XCom::TipType::Input) {
-            this->inputsModel->disconnectSocket(socket_name);
-        } else {
             this->outputsModel->disconnectSocket(socket_name);
+        } else {
+            this->inputsModel->disconnectSocket(socket_name);
         }
     }
 }

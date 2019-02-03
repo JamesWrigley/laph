@@ -25,18 +25,13 @@ import "../components"
 WireItem {
     id: root
 
-    valid: ((startType == null || endType == null) ||
-            (startType == Socket.Generic || endType == Socket.Generic) ||
-            (isScalar(startType) == isScalar(endType)))
-    inputNode: endParent == null ? null : choose(endParent.isInput, endParent.node, startParent.node, null)
-    outputNode: endParent == null ? null : choose(endParent.isInput, startParent.node, endParent.node, null)
-    inputSocket: endParent == null ? "" : choose(inputNode == endParent.node, endParent.socketName, startParent.socketName, "")
-    outputSocket: endParent == null ? "" : choose(endParent.isInput, startParent.socketName, endParent.socketName, "")
-
-    function choose(condition, option1, option2, unity) {
-        var choice = condition ? option1 : option2
-        return choice == undefined ? unity : choice
-    }
+    valid: ((startType === null || endType === null) ||
+            (startType === Socket.Generic || endType === Socket.Generic) ||
+            (isScalar(startType) === isScalar(endType)))
+    inputNode: null
+    outputNode: null
+    inputSocket: ""
+    outputSocket: ""
 
     property int dragging
     property int endDragging: 1
@@ -50,6 +45,7 @@ WireItem {
     property real endUpdateHook
     property real startUpdateHook
 
+    property var initialSocket: null
     property var endParent: end.item.parent
     property var startParent: start.item.parent
 
@@ -60,7 +56,7 @@ WireItem {
     property var startType: start.item.socketType
 
     onValidChanged: {
-        if (inputNode != null && outputNode != null) {
+        if (inputNode !== null && outputNode !== null) {
             evaluateInput()
         }
     }
@@ -70,7 +66,7 @@ WireItem {
     states: [
         State {
             name: "setOutputTip"
-            when: endParent != null
+            when: endParent !== null
 
             PropertyChanges {
                 target: root
@@ -96,15 +92,15 @@ WireItem {
     }
 
     function isScalar(type) {
-        return type == Socket.Scalar || type == Socket.ScalarInput
+        return type === Socket.Scalar || type === Socket.ScalarInput
     }
 
     function disconnect(oN, oS) {
-        oN = oN == undefined ? outputNode : oN
-        oS = oS == undefined ? outputSocket : oS
+        oN = oN === undefined ? outputNode : oN
+        oS = oS === undefined ? outputSocket : oS
 
-        if (oN != null) {
-            xcom.wireDisconnected(oN.index, oS)
+        if (oN !== null) {
+            xcom.wireDisconnected(oN.index, XCom.Input, oS)
         }
     }
 
@@ -123,12 +119,13 @@ WireItem {
         wireTip.parent = target
         wireTip.x = 0
         wireTip.y = 0
+        wireTip.index = target.node.index
 
         var hook = Qt.binding(function () {
-            return target.node == null ? 0 : target.node.x + target.node.y + canvas.scaling
+            return target.node === null ? 0 : target.node.x + target.node.y + canvas.scaling
         })
 
-        if (wireTip == start.item) {
+        if (wireTip === start.item) {
             root.startUpdateHook = hook
         } else {
             root.endUpdateHook = hook
@@ -137,29 +134,40 @@ WireItem {
 
     function handleRelease(wireTip) {
         var target = wireTip.Drag.target
-        if (target != null && wireTip.Drag.drop() == Qt.MoveAction) {
-            if (endParent == end) {
+
+        // When connecting a wire
+        if (target !== null && wireTip.Drag.drop() === Qt.MoveAction) {
+            if (endParent === initialSocket) {
                 // If the wire has just been created
+                var otherTip = wireTip === endTip ? start.item : endTip
+                if (target.isInput) {
+                    root.inputNode = target.node
+                    root.inputSocket = target.socketName
+                    root.outputNode = graphEngine.getNode(otherTip.index)
+                    root.outputSocket = otherTip.socketName
+                } else {
+                    root.outputNode = target.node
+                    root.outputSocket = target.socketName
+                    root.inputNode = graphEngine.getNode(otherTip.index)
+                    root.inputSocket = otherTip.socketName
+                }
+
                 xcom.wireConnected(target.node.index,
                                    wireTip.twinSide ? XCom.Output : XCom.Input,
                                    target.socketName)
 
-                var otherTip = wireTip == endTip ? start.item : endTip
-                console.info(otherTip.index,
-                             wireTip.twinSide ? XCom.Input : XCom.Output,
-                             otherTip.socketName)
                 xcom.wireConnected(otherTip.index,
                                    wireTip.twinSide ? XCom.Input : XCom.Output,
                                    otherTip.socketName)
-            } else if (wireTip.parent != target) {
-                // Emit signals if connecting to a different socket
-                // xcom.wireDisconnected(wireTip.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
-                // xcom.wireConnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, target.socketName)
+            } else if (wireTip.parent !== target) {
+                // Emit signals if connecting to a different socket on the same node
+                xcom.wireDisconnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
+                xcom.wireConnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, target.socketName)
             }
 
             root.setParent(wireTip)
             evaluateInput()
-        } else {
+        } else { // When disconnecting a wire
             // We need to store the current output node index and output socket
             // because they may be overwritten by the next couple of lines.
             var oldOutputSocket = outputSocket
@@ -168,14 +176,13 @@ WireItem {
             // We found that disconnecting wires from the output tip would for
             // some reason disable the DropArea on the inputTip socket, which we
             // fix by resetting the inputTip parent before the wire is deleted.
-            var inputTip = outputTip == start.item ? end.item : start.item
+            var inputTip = outputTip === start.item ? end.item : start.item
             inputTip.parent = this
 
             canvas.requestPaint()
             removeSelf()
 
-            if (oldOutputNode != null) {
-                console.info("Disconnecting")
+            if (oldOutputNode !== null) {
                 disconnect(oldOutputNode, oldOutputSocket)
             }
         }
@@ -213,7 +220,7 @@ WireItem {
             property int curvature: 2
             property real relative1X: (x - wire.startX) / curvature
             property real relative2X: x - wire.startX
-            property bool startOnLeft: start.item.parent.isInput == undefined ? false : start.item.parent.isInput
+            property bool startOnLeft: startParent.isInput === undefined ? false : startParent.isInput
             property real sturdiness: Math.abs(wire.startX - x) / curvature
 
             onXChanged: canvas.requestPaint()
@@ -241,8 +248,8 @@ WireItem {
             property int twinIndex
             property bool twinSide
             property int index: root.startIndex
-            property var socketType: parent == null ? undefined : parent.socketType
-            property var socketName: parent == null ? undefined : parent.socketName
+            property var socketType: parent === null ? undefined : parent.socketType
+            property var socketName: parent === null ? undefined : parent.socketName
 
             MouseArea {
                 id: ma
@@ -269,7 +276,7 @@ WireItem {
 
         onLoaded: {
             item.dragMask = startDragging
-            item.parent = Qt.binding(function () { return parent.parent })
+            item.parent = initialSocket
             item.twinSide = Qt.binding(function () { return !root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return endIndex })
         }
@@ -282,6 +289,7 @@ WireItem {
         onLoaded: {
             root.dragging = startDragging & (~endDragging)
 
+            item.parent = initialSocket
             item.dragMask = endDragging
             item.twinSide = Qt.binding(function () { return root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return startIndex })
