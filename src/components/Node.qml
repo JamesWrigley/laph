@@ -69,7 +69,7 @@ NodeItem {
         target: graphEngine
 
         onInputChanged: {
-            if (nodeIndex == glode.index) {
+            if (nodeIndex === glode.index) {
                 inputChanged()
             }
         }
@@ -77,9 +77,9 @@ NodeItem {
 
     function input(socketName) {
         var type = graphEngine.getInputValueType(glode, socketName)
-        if (type == Socket.Scalar) {
+        if (type === Socket.Scalar) {
             return graphEngine.inputToString(glode, socketName)
-        } else if (type == Socket.Vector) {
+        } else if (type === Socket.Vector) {
             return graphEngine.inputToList(glode, socketName)
         }
     }
@@ -102,14 +102,14 @@ NodeItem {
             signal swapType()
 
             Keys.onPressed: {
-                if (event.key == Qt.Key_T) {
+                if (event.key === Qt.Key_T) {
                     swapType()
                 }
             }
 
             function attemptFocus(x, y) {
                 if (!glode.canvas.nodeHigherAt(Qt.point(x, y), root)) {
-                    if (FocusSingleton.selectedNode != index) {
+                    if (FocusSingleton.selectedNode !== index) {
                         FocusSingleton.selectedNode = index
                         root.z = FocusSingleton.maxZ
                     }
@@ -174,17 +174,17 @@ NodeItem {
                                 radius: width / 2
                                 border.width: generic ? 1.25 : 1
                                 border.color: generic ? "black" : Qt.darker(color, 2)
-                                color: type == Socket.Generic ? "teal" : isScalar ? "purple" : "green"
+                                color: type === Socket.Generic ? "teal" : isScalar ? "purple" : "green"
 
                                 property alias isInput: da.isInput
-                                property bool isScalar: (type == Socket.Scalar ||
-                                                         type == Socket.ScalarInput)
+                                property bool isScalar: (type === Socket.Scalar ||
+                                                         type === Socket.ScalarInput)
 
                                 Connections {
                                     target: root
                                     onSwapType: {
                                         if (generic && ma.containsMouse) {
-                                            type = type == Socket.Scalar ? Socket.Vector : Socket.Scalar
+                                            type = type === Socket.Scalar ? Socket.Vector : Socket.Scalar
                                         }
                                     }
                                 }
@@ -224,7 +224,7 @@ NodeItem {
                                     anchors.fill: parent
                                     hoverEnabled: true
 
-                                    drag.target: wire == null ? undefined : wire.endTip
+                                    drag.target: wire === null ? undefined : wire.endTip
                                     drag.threshold: 0
                                     drag.axis: Drag.XAndYAxis
 
@@ -279,7 +279,7 @@ NodeItem {
                                 validator: RegExpValidator { regExp: /^([a-zA-Z]|_)+\S*$/ }
 
                                 onEditingFinished: {
-                                    if (text.length == 0) {
+                                    if (text.length === 0) {
                                         text = name
                                     } else {
                                         name = text
