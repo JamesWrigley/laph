@@ -48,9 +48,10 @@ int main(int argc, char* argv[])
     registerLaphType<SocketModel>("SocketModel");
 
     QDir basePath{app.applicationDirPath()};
-    QQmlApplicationEngine engine(basePath.filePath("src/core/main.qml"));
+    QQmlApplicationEngine engine{basePath.filePath("src/core/main.qml")};
 
     XCom& xcom{XCom::get()};
+    xcom.engine = &engine;
     engine.rootContext()->setContextProperty("xcom", &xcom);
 
     Glaph graph{};

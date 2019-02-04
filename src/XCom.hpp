@@ -20,6 +20,7 @@
 #define XCOM_HPP
 
 #include <QObject>
+#include <QQmlApplicationEngine>
 
 #include "WireItem.hpp"
 
@@ -42,6 +43,8 @@ public:
             static XCom xcom;
             return xcom;
         }
+
+    QQmlApplicationEngine* engine;
 
 signals:
     void wireConnected(unsigned int, TipType, QString const&);

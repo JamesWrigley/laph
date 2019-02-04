@@ -30,6 +30,7 @@
 #include <QQuickItem>
 #include <QStringList>
 #include <QVariantMap>
+#include <QQmlComponent>
 
 #include "util.hpp"
 #include "XCom.hpp"
@@ -52,6 +53,16 @@ class NodeItem : public QQuickItem
 public:
     NodeItem(QQuickItem* = Q_NULLPTR);
     NodeItem(NodeItem const&, QQuickItem* = Q_NULLPTR);
+
+    // The wires need to be created from C++ instead of QML because of an
+    // annoying edge-case: when the wire's original socket is
+    // deleted. Presumably it's because the socket is the object parent of the
+    // Wire, so some weird memory stuff happens internally in QML which causes
+    // errors. Managing the wires (memory-wise) entirely from C++ avoids
+    // that. The wires need to be created in two steps so that we have a chance
+    // to specify the Wire property bindings before they are evaluated.
+    Q_INVOKABLE QObject* beginCreateWire();
+    Q_INVOKABLE void endCreateWire();
 
     int getIndex();
     QObject* getHooks();
@@ -84,6 +95,8 @@ public:
 
 private:
     XCom& xcom;
+    QQmlComponent wireComponent;
+
     Socket::SocketType getSocketType(QString const&, SocketModel const*);
 
 signals:

@@ -26,7 +26,9 @@
 
 #include "NodeItem.hpp"
 
-NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent), xcom(XCom::get())
+NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent),
+                                         xcom(XCom::get()),
+                                         wireComponent(xcom.engine, "./core/Wire.qml")
 {
     connect(&(this->xcom), &XCom::wireDisconnected, this, &NodeItem::onWireDisconnected);
     connect(&(this->xcom), &XCom::wireConnected, this, &NodeItem::onWireConnected);
@@ -183,6 +185,16 @@ void NodeItem::onWireConnected(unsigned int index, XCom::TipType type,
             this->inputsModel->connectSocket(socket_name);
         }
     }
+}
+
+QObject* NodeItem::beginCreateWire()
+{
+    return this->wireComponent.beginCreate(this->xcom.engine->rootContext());
+}
+
+void NodeItem::endCreateWire()
+{
+    this->wireComponent.completeCreate();
 }
 
 bool NodeItem::isInput(QString socket_name)

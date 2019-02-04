@@ -234,16 +234,21 @@ NodeItem {
                                         if (wire == null && da.wires == 0) {
                                             var component = Qt.createComponent("../core/Wire.qml")
                                             if (component.status == Component.Ready) {
-                                                wire = component.createObject(glode, {"initialSocket": da,
-                                                                                      "startIndex": glode.index,
-                                                                                      "startOnLeft": parent.isInput,
-                                                                                      "canvas": Qt.binding(function () { return canvas }),
-                                                                                      "startUpdateHook": Qt.binding(function () {
-                                                                                          return glode.x + glode.y + canvas.scaling
-                                                                                      }),
-                                                                                      "endUpdateHook": Qt.binding(function () {
-                                                                                          return ma.mouseX + ma.mouseY
-                                                                                      })})
+                                                wire = glode.beginCreateWire()
+
+                                                // Wire configuration
+                                                wire.initialSocket = da
+                                                wire.startIndex = glode.index
+                                                wire.startOnLeft = parent.isInput
+                                                wire.canvas = Qt.binding(function () { return canvas })
+                                                wire.startUpdateHook = Qt.binding(function () {
+                                                    return glode.x + glode.y + canvas.scaling
+                                                })
+                                                wire.endUpdateHook = Qt.binding(function () {
+                                                    return ma.mouseX + ma.mouseY
+                                                })
+
+                                                glode.endCreateWire()
 
                                                 if (wire == null) {
                                                     console.error("Object 'Wire.qml' could not be created")

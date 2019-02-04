@@ -87,25 +87,8 @@ WireItem {
         }
     }
 
-    function removeSelf() {
-        graphEngine.removeWire(index)
-    }
-
     function isScalar(type) {
         return type === Socket.Scalar || type === Socket.ScalarInput
-    }
-
-    function disconnect(oN, oS) {
-        oN = oN === undefined ? outputNode : oN
-        oS = oS === undefined ? outputSocket : oS
-
-        if (oN !== null) {
-            xcom.wireDisconnected(oN.index, XCom.Input, oS)
-        }
-    }
-
-    function connect() {
-        xcom.wireConnected(outputNode.index, outputSocket)
     }
 
     function evaluateInput() {
@@ -134,24 +117,12 @@ WireItem {
 
     function handleRelease(wireTip) {
         var target = wireTip.Drag.target
+        var otherTip = wireTip === endTip ? start.item : endTip
 
         // When connecting a wire
         if (target !== null && wireTip.Drag.drop() === Qt.MoveAction) {
             if (endParent === initialSocket) {
                 // If the wire has just been created
-                var otherTip = wireTip === endTip ? start.item : endTip
-                if (target.isInput) {
-                    root.inputNode = target.node
-                    root.inputSocket = target.socketName
-                    root.outputNode = graphEngine.getNode(otherTip.index)
-                    root.outputSocket = otherTip.socketName
-                } else {
-                    root.outputNode = target.node
-                    root.outputSocket = target.socketName
-                    root.inputNode = graphEngine.getNode(otherTip.index)
-                    root.inputSocket = otherTip.socketName
-                }
-
                 xcom.wireConnected(target.node.index,
                                    wireTip.twinSide ? XCom.Output : XCom.Input,
                                    target.socketName)
@@ -165,29 +136,30 @@ WireItem {
                 xcom.wireConnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, target.socketName)
             }
 
+            if (target.isInput) {
+                root.inputNode = target.node
+                root.inputSocket = target.socketName
+                root.outputNode = graphEngine.getNode(otherTip.index)
+                root.outputSocket = otherTip.socketName
+            } else {
+                root.outputNode = target.node
+                root.outputSocket = target.socketName
+                root.inputNode = graphEngine.getNode(otherTip.index)
+                root.inputSocket = otherTip.socketName
+            }
+
             root.setParent(wireTip)
             evaluateInput()
+            root.dragging = (~startDragging) & (~endDragging)
         } else { // When disconnecting a wire
-            // We need to store the current output node index and output socket
-            // because they may be overwritten by the next couple of lines.
-            var oldOutputSocket = outputSocket
-            var oldOutputNode = outputNode
-
-            // We found that disconnecting wires from the output tip would for
-            // some reason disable the DropArea on the inputTip socket, which we
-            // fix by resetting the inputTip parent before the wire is deleted.
-            var inputTip = outputTip === start.item ? end.item : start.item
-            inputTip.parent = this
+            // Don't emit a disconnect signal if the wire was never fully connected
+            if (outputNode !== null) {
+                xcom.wireDisconnected(wireTip.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
+            }
 
             canvas.requestPaint()
-            removeSelf()
-
-            if (oldOutputNode !== null) {
-                disconnect(oldOutputNode, oldOutputSocket)
-            }
+            graphEngine.removeWire(root.index)
         }
-
-        root.dragging = (~startDragging) & (~endDragging)
     }
 
     function computeCoord(wireTip, hook, x) {
