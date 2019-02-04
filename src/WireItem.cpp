@@ -16,12 +16,8 @@
  *                                                                                *
  *********************************************************************************/
 
-#include <cstdint>
-
 #ifndef QT_DEBUG
 #include <iostream>
-
-#include "util.hpp"
 #endif
 
 #include "WireItem.hpp"
