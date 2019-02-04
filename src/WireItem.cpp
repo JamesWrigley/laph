@@ -33,15 +33,6 @@ WireItem::WireItem(QQuickItem* parent) : QQuickItem(parent)
     this->index = wire_count;
     emit this->indexChanged();
     ++wire_count;
-
-    auto printer{[this] () {
-            if (this->inputSocket != nullptr && this->outputSocket != nullptr) {
-                std::cout << "inputSocket: " << this->inputSocket
-                          << ", outputSocket: " << this->outputSocket << "\n";
-            }
-        }};
-    // connect(this, &WireItem::inputSocketChanged, printer);
-    connect(this, &WireItem::outputSocketChanged, printer);
 }
 
 int WireItem::getIndex()
