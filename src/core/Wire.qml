@@ -163,11 +163,15 @@ WireItem {
     }
 
     function computeCoord(wireTip, hook, x) {
-        var oldCoord = (x ? wireTip.x : wireTip.y) + wireTip.width / 2
-        var newCoord = (dragging > 0 ? wireTip.parent : wireTip)
-            .mapToItem(root.canvas, x ? oldCoord : hook, x ? hook : oldCoord)
+        if (wireTip.parent !== null) {
+            var oldCoord = (x ? wireTip.x : wireTip.y) + wireTip.width / 2
+            var newCoord = (dragging > 0 ? wireTip.parent : wireTip)
+                .mapToItem(root.canvas, x ? oldCoord : hook, x ? hook : oldCoord)
 
-        return x ? newCoord.x : newCoord.y
+            return x ? newCoord.x : newCoord.y
+        } else {
+            return 0
+        }
     }
 
     Path {
