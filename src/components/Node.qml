@@ -200,18 +200,8 @@ NodeItem {
                                     property string socketName: name
 
                                     onDropped: {
-                                        if (drop.source.twinIndex != glode.index &&
-                                            drop.source.twinSide == !isInput) {
-                                            if (!isInput && wires != 0
-                                                && drop.source.parent != glode) {
-                                                if (drop.source.parent.index != undefined) {
-                                                    children[0].parent = drop.source.parent
-                                                } else {
-                                                    // If this is an input, replace the old
-                                                    // wire with the new one.
-                                                    graphEngine.removeWire(children[0].index)
-                                                }
-                                            }
+                                        if (drop.source.twinIndex !== glode.index &&
+                                            drop.source.twinSide === !isInput) {
 
                                             drop.accept(Qt.MoveAction)
                                         }
@@ -222,7 +212,6 @@ NodeItem {
                                     id: ma
 
                                     anchors.fill: parent
-                                    hoverEnabled: true
 
                                     drag.target: wire === null ? undefined : wire.endTip
                                     drag.threshold: 0
@@ -231,32 +220,27 @@ NodeItem {
                                     property var wire: null
 
                                     onPressed: {
-                                        if (wire == null && da.wires == 0) {
-                                            var component = Qt.createComponent("../core/Wire.qml")
-                                            if (component.status == Component.Ready) {
-                                                wire = glode.beginCreateWire()
+                                        if (wire === null && da.wires === 0) {
+                                            wire = glode.beginCreateWire()
 
-                                                // Wire configuration
-                                                wire.initialSocket = da
-                                                wire.startIndex = glode.index
-                                                wire.startOnLeft = parent.isInput
-                                                wire.canvas = Qt.binding(function () { return canvas })
-                                                wire.startUpdateHook = Qt.binding(function () {
-                                                    return glode.x + glode.y + canvas.scaling
-                                                })
-                                                wire.endUpdateHook = Qt.binding(function () {
-                                                    return ma.mouseX + ma.mouseY
-                                                })
+                                            // Wire configuration
+                                            wire.initialSocket = da
+                                            wire.startIndex = glode.index
+                                            wire.startOnLeft = parent.isInput
+                                            wire.canvas = Qt.binding(function () { return canvas })
+                                            wire.startUpdateHook = Qt.binding(function () {
+                                                return glode.x + glode.y + canvas.scaling
+                                            })
+                                            wire.endUpdateHook = Qt.binding(function () {
+                                                return ma.mouseX + ma.mouseY
+                                            })
 
-                                                glode.endCreateWire()
+                                            glode.endCreateWire()
 
-                                                if (wire == null) {
-                                                    console.error("Object 'Wire.qml' could not be created")
-                                                } else {
-                                                    graphEngine.addWire(wire)
-                                                }
+                                            if (wire === null) {
+                                                console.error("Object 'Wire.qml' could not be created")
                                             } else {
-                                                console.error("Component 'Wire.qml' is not ready:", component.errorString())
+                                                graphEngine.addWire(wire)
                                             }
                                         } else {
                                             mouse.accepted = false
