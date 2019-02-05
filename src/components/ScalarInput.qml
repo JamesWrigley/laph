@@ -16,7 +16,7 @@
  *                                                                                *
  *********************************************************************************/
 
-import QtQuick 2.7
+import QtQuick 2.11
 
 Input {
     validator: DoubleValidator { }
