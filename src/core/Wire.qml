@@ -150,6 +150,7 @@ WireItem {
             // Don't emit a disconnect signal if the wire was never fully connected
             if (outputNode !== null) {
                 xcom.wireDisconnected(wireTip.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
+                xcom.wireDisconnected(otherTip.index, otherTip.twinSide ? XCom.Output : XCom.Input, otherTip.socketName)
             }
 
             canvas.requestPaint()
