@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     registerLaphType<SocketModel>("SocketModel");
 
     QDir basePath{app.applicationDirPath()};
-    QQmlApplicationEngine engine{basePath.filePath("src/core/main.qml")};
+    QQmlApplicationEngine engine{};
 
     XCom& xcom{XCom::get()};
     xcom.engine = &engine;
@@ -56,6 +56,10 @@ int main(int argc, char* argv[])
 
     Glaph graph{};
     engine.rootContext()->setContextProperty("graphEngine", &graph);
+
+    // We load the QML file after setting the context properties so that the
+    // file has access to the properties immediately.
+    engine.load(basePath.filePath("src/core/main.qml"));
 
     return app.exec();
 }

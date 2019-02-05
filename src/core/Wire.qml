@@ -56,8 +56,8 @@ WireItem {
             evaluateInput()
         }
     }
-    onEndTypeChanged: canvas.requestPaint()
-    onStartTypeChanged: canvas.requestPaint()
+    onEndTypeChanged: xcom.repaintCanvas()
+    onStartTypeChanged: xcom.repaintCanvas()
 
     states: [
         State {
@@ -156,7 +156,7 @@ WireItem {
                 xcom.wireDisconnected(otherTip.index, otherTip.twinSide ? XCom.Output : XCom.Input, otherTip.socketName)
             }
 
-            canvas.requestPaint()
+            xcom.repaintCanvas()
             graphEngine.removeWire(root.index)
         }
     }
@@ -179,8 +179,8 @@ WireItem {
         startX: computeCoord(start.item, startUpdateHook, true)
         startY: computeCoord(start.item, startUpdateHook, false)
 
-        onStartXChanged: canvas.requestPaint()
-        onStartYChanged: canvas.requestPaint()
+        onStartXChanged: xcom.repaintCanvas()
+        onStartYChanged: xcom.repaintCanvas()
 
         PathCubic {
             id: cubic
@@ -198,8 +198,8 @@ WireItem {
             property bool startOnLeft: startParent.isInput === undefined ? false : startParent.isInput
             property real sturdiness: Math.abs(wire.startX - x) / curvature
 
-            onXChanged: canvas.requestPaint()
-            onYChanged: canvas.requestPaint()
+            onXChanged: xcom.repaintCanvas()
+            onYChanged: xcom.repaintCanvas()
         }
     }
 

@@ -41,6 +41,11 @@ ApplicationWindow {
         dir: "src/nodes"
     }
 
+    Connections {
+        target: xcom
+        onRepaintCanvas: canvas.requestPaint()
+    }
+
     Shortcut {
         context: Qt.ApplicationShortcut
         sequence: "Shift+A"
@@ -171,7 +176,7 @@ ApplicationWindow {
                         FocusSingleton.selectedNode = -1
                         graphEngine.removeNode(nodes[i].index)
                         nodes.splice(i, 1)
-                        canvas.requestPaint()
+                        xcom.repaintCanvas()
                         FocusSingleton.canvasFocus = true
                     }
                 }
