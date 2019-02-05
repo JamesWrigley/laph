@@ -95,13 +95,10 @@ WireItem {
 
     function setParent(wireTip) {
         var target = wireTip.Drag.target
-        wireTip.parent = target
-        wireTip.x = 0
-        wireTip.y = 0
         wireTip.index = target.node.index
 
         var hook = Qt.binding(function () {
-            return target.node === null ? 0 : target.node.x + target.node.y + canvas.scaling
+            return target.node === null ? 0 : target.node.x + target.node.y + canvas.scaling + target.socketChangeHook
         })
 
         if (wireTip === start.item) {
@@ -109,6 +106,12 @@ WireItem {
         } else {
             root.endUpdateHook = hook
         }
+
+        // Change these after setting the hook so that the wire coordinates will
+        // be recalculated.
+        wireTip.parent = target
+        wireTip.x = 0
+        wireTip.y = 0
     }
 
     function handleRelease(wireTip) {

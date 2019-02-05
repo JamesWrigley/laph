@@ -161,10 +161,15 @@ NodeItem {
                     property bool floatRight
 
                     Repeater {
+                        id: socketRepeater
                         model: parent.sockets
+
+                        property int socketChangeHook: 0
 
                         RowLayout {
                             LayoutMirroring.enabled: !floatRight
+
+                            onYChanged: socketRepeater.socketChangeHook += 1
 
                             Rectangle {
                                 id: socket
@@ -198,6 +203,7 @@ NodeItem {
                                     property int wires: children.length
                                     property var socketType: type
                                     property string socketName: name
+                                    property int socketChangeHook: socketRepeater.socketChangeHook
 
                                     onDropped: {
                                         if (drop.source.twinIndex !== glode.index &&
