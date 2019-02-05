@@ -33,10 +33,6 @@ WireItem {
     inputSocket: ""
     outputSocket: ""
 
-    property int dragging
-    property int endDragging: 1
-    property int startDragging: 2
-
     property real endX
     property real endY
     property var canvas
@@ -150,7 +146,6 @@ WireItem {
 
             root.setParent(wireTip)
             evaluateInput()
-            root.dragging = (~startDragging) & (~endDragging)
         } else { // When disconnecting a wire
             // Don't emit a disconnect signal if the wire was never fully connected
             if (outputNode !== null) {
@@ -165,7 +160,7 @@ WireItem {
     function computeCoord(wireTip, hook, x) {
         if (wireTip.parent !== null) {
             var oldCoord = (x ? wireTip.x : wireTip.y) + wireTip.width / 2
-            var newCoord = (dragging > 0 ? wireTip.parent : wireTip)
+            var newCoord = (wireTip.Drag.active ? wireTip.parent : wireTip)
                 .mapToItem(root.canvas, x ? oldCoord : hook, x ? hook : oldCoord)
 
             return x ? newCoord.x : newCoord.y
@@ -216,11 +211,9 @@ WireItem {
             color: "green"
             opacity: 0
 
-            Drag.active: root.dragging > 0
             Drag.hotSpot.x: width / 2
             Drag.hotSpot.y: height / 2
 
-            property int dragMask
             property int twinIndex
             property bool twinSide
             property int index: root.startIndex
@@ -236,11 +229,12 @@ WireItem {
                 drag.axis: Drag.XAndYAxis
 
                 onPressed: {
-                    root.dragging = dragMask
+                    parent.Drag.active = true
                 }
 
                 onReleased: {
                     root.handleRelease(parent)
+                    parent.Drag.active = false
                 }
             }
         }
@@ -251,7 +245,6 @@ WireItem {
         sourceComponent: tip
 
         onLoaded: {
-            item.dragMask = startDragging
             item.parent = initialSocket
             item.twinSide = Qt.binding(function () { return !root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return endIndex })
@@ -263,10 +256,9 @@ WireItem {
         sourceComponent: tip
 
         onLoaded: {
-            root.dragging = startDragging & (~endDragging)
+            item.Drag.active = true
 
             item.parent = initialSocket
-            item.dragMask = endDragging
             item.twinSide = Qt.binding(function () { return root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return startIndex })
         }
