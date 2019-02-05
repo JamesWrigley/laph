@@ -29,18 +29,21 @@
 #include "NodeMonitor.hpp"
 #include "SocketModel.hpp"
 
+#define MAJOR_VERSION 0
+#define MINOR_VERSION 1
+
 template<typename T>
 void registerLaphType(char const* name)
 {
-    qmlRegisterType<T>("Laph", 0, 1, name);
+    qmlRegisterType<T>("Laph", MAJOR_VERSION, MINOR_VERSION, name);
 }
 
 int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
 
-    qmlRegisterUncreatableType<XCom>("Laph", 0, 1, "XCom",
-                                     "XCom is not instantiable");
+    qmlRegisterUncreatableType<XCom>("Laph", MAJOR_VERSION, MINOR_VERSION,
+                                     "XCom", "XCom is not instantiable");
     registerLaphType<Socket>("Socket");
     registerLaphType<NodeItem>("NodeItem");
     registerLaphType<WireItem>("WireItem");
