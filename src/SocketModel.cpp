@@ -101,10 +101,10 @@ void SocketModel::refreshSockets()
 void SocketModel::connectSocket(QString const& socket_name)
 {
     auto socket_it{this->findSocket(socket_name)};
-    unsigned int& count{this->socket_counts.at(socket_it->prefix)};
-    ++count;
 
     if (socket_it->repeating) {
+        unsigned int& count{this->socket_counts.at(socket_it->prefix)};
+        ++count;
         Socket new_socket{*socket_it};
         new_socket.name = socket_it->prefix + QString::number(count);
         this->addSocket(new_socket, socket_it + 1);
