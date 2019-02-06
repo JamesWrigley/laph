@@ -42,6 +42,8 @@ using dvector = std::vector<double>;
 using dvector_ptr = std::shared_ptr<dvector>;
 Q_DECLARE_METATYPE(dvector_ptr);
 
+class Glaph;
+
 class NodeItem : public QQuickItem
 {
     Q_OBJECT
@@ -72,6 +74,7 @@ public:
     void setHooks(QObject*);
     void setInputs(QVariantMap const&);
     void setOutputs(QVariantMap const&);
+    void setGraphEngine(Glaph*);
 
     bool isInput(QString);
     QVariantMap getHooksMap();
@@ -95,6 +98,7 @@ public:
 
 private:
     XCom& xcom;
+    Glaph* graphEngine{nullptr};
     QQmlComponent wireComponent;
 
     Socket::SocketType getSocketType(QString const&, SocketModel const*);

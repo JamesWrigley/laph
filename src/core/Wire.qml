@@ -120,21 +120,6 @@ WireItem {
 
         // When connecting a wire
         if (target !== null && wireTip.Drag.drop() === Qt.MoveAction) {
-            if (endParent === initialSocket) {
-                // If the wire has just been created
-                xcom.wireConnected(target.node.index,
-                                   wireTip.twinSide ? XCom.Output : XCom.Input,
-                                   target.socketName)
-
-                xcom.wireConnected(otherTip.index,
-                                   wireTip.twinSide ? XCom.Input : XCom.Output,
-                                   otherTip.socketName)
-            } else if (wireTip.parent !== target) {
-                // Emit signals if connecting to a different socket on the same node
-                xcom.wireDisconnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
-                xcom.wireConnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, target.socketName)
-            }
-
             if (target.isInput) {
                 root.inputNode = target.node
                 root.inputSocket = target.socketName
@@ -147,15 +132,29 @@ WireItem {
                 root.inputSocket = otherTip.socketName
             }
 
+            // If the wire has just been created
+            if (endParent === initialSocket) {
+                xcom.wireConnected(target.node.index,
+                                   wireTip.twinSide ? XCom.Output : XCom.Input,
+                                   target.socketName)
+
+                xcom.wireConnected(otherTip.index,
+                                   wireTip.twinSide ? XCom.Input : XCom.Output,
+                                   otherTip.socketName)
+            } else if (wireTip.parent !== target) { // If connecting to a different socket on the same node
+                xcom.wireDisconnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
+                xcom.wireConnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, target.socketName)
+            }
+
+            // If the socket already has a wire connected, disconnect it
+            if (!target.isInput && target.wires > 0) {
+                var extantWireTip = target.children[0]
+                graphEngine.removeWire(extantWireTip.wireIndex)
+            }
+
             root.setParent(wireTip)
             evaluateInput()
         } else { // When disconnecting a wire
-            // Don't emit a disconnect signal if the wire was never fully connected
-            if (outputNode !== null) {
-                xcom.wireDisconnected(wireTip.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
-                xcom.wireDisconnected(otherTip.index, otherTip.twinSide ? XCom.Output : XCom.Input, otherTip.socketName)
-            }
-
             xcom.repaintCanvas()
             graphEngine.removeWire(root.index)
         }
@@ -220,6 +219,7 @@ WireItem {
 
             property int twinIndex
             property bool twinSide
+            property int wireIndex: root.index
             property int index: root.startIndex
             property var socketType: parent === null ? undefined : parent.socketType
             property var socketName: parent === null ? undefined : parent.socketName

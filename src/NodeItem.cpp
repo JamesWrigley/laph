@@ -24,6 +24,7 @@
 #include <QMetaObject>
 #include <QVariantList>
 
+#include "Glaph.hpp"
 #include "NodeItem.hpp"
 
 NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent),
@@ -167,10 +168,14 @@ void NodeItem::onWireDisconnected(unsigned int index, XCom::TipType type,
                                   QString const& socket_name)
 {
     if (index == this->index) {
+        // Only remove the socket if the wire is an input node with no other
+        // wires connected to that socket.
         if (type == XCom::TipType::Input) {
             this->outputsModel->disconnectSocket(socket_name);
         } else {
-            this->inputsModel->disconnectSocket(socket_name);
+            if (this->graphEngine->getInputs(this, socket_name).size() <= 1) {
+                this->inputsModel->disconnectSocket(socket_name);
+            }
         }
     }
 }
@@ -182,7 +187,9 @@ void NodeItem::onWireConnected(unsigned int index, XCom::TipType type,
         if (type == XCom::TipType::Input) {
             this->outputsModel->connectSocket(socket_name);
         } else {
-            this->inputsModel->connectSocket(socket_name);
+            if (this->graphEngine->getInputs(this, socket_name).size() == 1) {
+                this->inputsModel->connectSocket(socket_name);
+            }
         }
     }
 }
@@ -286,4 +293,9 @@ void NodeItem::setInputs(QVariantMap const& inputs)
 {
     this->inputs = inputs;
     emit this->inputsChanged();
+}
+
+void NodeItem::setGraphEngine(Glaph* graphEngine)
+{
+    this->graphEngine = graphEngine;
 }

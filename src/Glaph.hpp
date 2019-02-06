@@ -53,11 +53,12 @@ public:
     Q_INVOKABLE QList<double> inputToList(QObject*, QString const&);
     Q_INVOKABLE Socket::SocketType getInputValueType(NodeItem*, QString const&);
 
+    std::unordered_set<WireItem*> getInputs(NodeItem*, QString const& socket_name="");
+    std::unordered_set<WireItem*> getOutputs(NodeItem*);
+
 private:
     jl_value_t* safe_eval(std::string);
 
-    std::unordered_set<WireItem*> getInputs(NodeItem*);
-    std::unordered_set<WireItem*> getOutputs(NodeItem*);
     template<typename T>
     T inputToType(QObject*, QString const&, std::function<T(QVariant const&)>);
 

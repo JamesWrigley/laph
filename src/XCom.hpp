@@ -48,6 +48,7 @@ public:
 
 signals:
     void repaintCanvas();
+
     void wireConnected(unsigned int, TipType, QString const&);
     void wireDisconnected(unsigned int, TipType, QString const&);
 

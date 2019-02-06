@@ -47,6 +47,7 @@ void Glaph::addNode(QString code_path, QObject* qobj_node)
 {
     NodeItem* node{static_cast<NodeItem*>(qobj_node)};
     QQmlEngine::setObjectOwnership(node, QQmlEngine::CppOwnership);
+    node->setGraphEngine(this);
     connect(node, &NodeItem::nodeChanged, this, &Glaph::evaluateFrom);
     QString node_name{QFileInfo(code_path).baseName()};
 
@@ -151,28 +152,30 @@ T Glaph::inputToType(QObject* node_qobj, QString const& socket_name,
 
 void Glaph::removeWire(int index)
 {
-    this->wires.erase(std::find_if(this->wires.begin(), this->wires.end(),
-                                   [&index] (WireItemPtr const& wire_ptr) {
-                                       return wire_ptr->index == index;
-                                   }));
+    auto wire_it{std::find_if(this->wires.begin(), this->wires.end(),
+                              [&index] (WireItemPtr const& wire_ptr) {
+                                  return wire_ptr->index == index;
+                              })};
+    auto& wire{*wire_it};
+
+    // If this is not a new node, emit disconnect signals
+    if (wire->outputNode != nullptr) {
+        XCom& xcom{XCom::get()};
+        xcom.wireDisconnected(wire->inputNode->index, XCom::TipType::Input, wire->inputSocket);
+        xcom.wireDisconnected(wire->outputNode->index, XCom::TipType::Output, wire->outputSocket);
+    }
+
+    this->wires.erase(wire_it);
 }
 
 void Glaph::removeNode(unsigned int index)
 {
-    XCom& xcom{XCom::get()};
     NodeItem* node{this->nodes.at(index).get()};
-    auto remove_wrapper{[this, &xcom] (auto&& wires) {
-            std::for_each(wires.begin(), wires.end(),
-                          [this, &xcom] (auto& wire) {
-                              xcom.wireDisconnected(wire->outputNode->index,
-                                                    XCom::TipType::Output,
-                                                    wire->outputSocket);
-                              xcom.wireDisconnected(wire->inputNode->index,
-                                                    XCom::TipType::Input,
-                                                    wire->inputSocket);
-                              this->removeWire(wire->index);
-                          });
-        }};
+    auto remove_wrapper{[this] (auto&& wires) {
+                            for (auto& wire : wires) {
+                                this->removeWire(wire->index);
+                            }
+                        }};
     remove_wrapper(this->getInputs(node));
     remove_wrapper(this->getOutputs(node));
 
@@ -236,11 +239,12 @@ Socket::SocketType Glaph::getInputValueType(NodeItem* node, QString const& socke
     }
 }
 
-std::unordered_set<WireItem*> Glaph::getInputs(NodeItem* node)
+std::unordered_set<WireItem*> Glaph::getInputs(NodeItem* node, QString const& socket_name)
 {
     std::unordered_set<WireItem*> inputs{};
     for (auto& wire : this->wires) {
-        if (wire->valid && wire->outputNode->index == node->index) {
+        if (wire->valid && wire->outputNode->index == node->index &&
+            (socket_name != "" ? wire->outputSocket == socket_name : true)) {
             inputs.insert(wire.get());
         }
     }
