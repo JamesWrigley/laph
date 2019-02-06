@@ -21,13 +21,14 @@ import Laph 0.1
 import QtQuick 2.11
 
 import "../components"
+import "Wire.js" as Wire
 
 WireItem {
     id: root
 
     valid: ((startType === null || endType === null) ||
             (startType === Socket.Generic || endType === Socket.Generic) ||
-            (isScalar(startType) === isScalar(endType)))
+            (Wire.isScalar(startType) === Wire.isScalar(endType)))
     inputNode: null
     outputNode: null
     inputSocket: ""
@@ -53,11 +54,15 @@ WireItem {
 
     onValidChanged: {
         if (inputNode !== null && outputNode !== null) {
-            evaluateInput()
+            Wire.evaluateInput()
         }
     }
     onEndTypeChanged: xcom.repaintCanvas()
     onStartTypeChanged: xcom.repaintCanvas()
+
+    function handleRelease(wireTip) {
+        Wire.handleReleaseImpl(wireTip)
+    }
 
     states: [
         State {
@@ -83,100 +88,11 @@ WireItem {
         }
     }
 
-    function isScalar(type) {
-        return type === Socket.Scalar || type === Socket.ScalarInput
-    }
-
-    function evaluateInput() {
-        if (valid) {
-            graphEngine.evaluateFrom(inputNode, [inputSocket])
-        }
-    }
-
-    function setParent(wireTip) {
-        var target = wireTip.Drag.target
-        wireTip.index = target.node.index
-
-        var hook = Qt.binding(function () {
-            return target.node === null ? 0 : target.node.x + target.node.y + canvas.scaling + target.socketChangeHook
-        })
-
-        if (wireTip === start.item) {
-            root.startUpdateHook = hook
-        } else {
-            root.endUpdateHook = hook
-        }
-
-        // Change these after setting the hook so that the wire coordinates will
-        // be recalculated.
-        wireTip.parent = target
-        wireTip.x = 0
-        wireTip.y = 0
-    }
-
-    function handleRelease(wireTip) {
-        var target = wireTip.Drag.target
-        var otherTip = wireTip === endTip ? start.item : endTip
-
-        // When connecting a wire
-        if (target !== null && wireTip.Drag.drop() === Qt.MoveAction) {
-            if (target.isInput) {
-                root.inputNode = target.node
-                root.inputSocket = target.socketName
-                root.outputNode = graphEngine.getNode(otherTip.index)
-                root.outputSocket = otherTip.socketName
-            } else {
-                root.outputNode = target.node
-                root.outputSocket = target.socketName
-                root.inputNode = graphEngine.getNode(otherTip.index)
-                root.inputSocket = otherTip.socketName
-            }
-
-            // If the wire has just been created
-            if (endParent === initialSocket) {
-                xcom.wireConnected(target.node.index,
-                                   wireTip.twinSide ? XCom.Output : XCom.Input,
-                                   target.socketName)
-
-                xcom.wireConnected(otherTip.index,
-                                   wireTip.twinSide ? XCom.Input : XCom.Output,
-                                   otherTip.socketName)
-            } else if (wireTip.parent !== target) { // If connecting to a different socket on the same node
-                xcom.wireDisconnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
-                xcom.wireConnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, target.socketName)
-            }
-
-            // If the socket already has a wire connected, disconnect it
-            if (!target.isInput && target.wires > 0) {
-                var extantWireTip = target.children[0]
-                graphEngine.removeWire(extantWireTip.wireIndex)
-            }
-
-            root.setParent(wireTip)
-            evaluateInput()
-        } else { // When disconnecting a wire
-            xcom.repaintCanvas()
-            graphEngine.removeWire(root.index)
-        }
-    }
-
-    function computeCoord(wireTip, hook, x) {
-        if (wireTip.parent !== null) {
-            var oldCoord = (x ? wireTip.x : wireTip.y) + wireTip.width / 2
-            var newCoord = (wireTip.Drag.active ? wireTip.parent : wireTip)
-                .mapToItem(root.canvas, x ? oldCoord : hook, x ? hook : oldCoord)
-
-            return x ? newCoord.x : newCoord.y
-        } else {
-            return 0
-        }
-    }
-
     Path {
         id: wire
 
-        startX: computeCoord(start.item, startUpdateHook, true)
-        startY: computeCoord(start.item, startUpdateHook, false)
+        startX: Wire.computeCoord(start.item, startUpdateHook, true)
+        startY: Wire.computeCoord(start.item, startUpdateHook, false)
 
         onStartXChanged: xcom.repaintCanvas()
         onStartYChanged: xcom.repaintCanvas()
@@ -184,8 +100,8 @@ WireItem {
         PathCubic {
             id: cubic
 
-            x: computeCoord(end.item, endUpdateHook, true)
-            y: computeCoord(end.item, endUpdateHook, false)
+            x: Wire.computeCoord(end.item, endUpdateHook, true)
+            y: Wire.computeCoord(end.item, endUpdateHook, false)
             relativeControl1X: startOnLeft ? Math.max(relative1X, sturdiness) : Math.min(relative1X, -sturdiness)
             relativeControl1Y: 0
             relativeControl2X: startOnLeft ? Math.min(relative2X, relative2X - sturdiness) : Math.max(relative2X, relative2X + sturdiness)
