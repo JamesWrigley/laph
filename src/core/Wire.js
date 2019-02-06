@@ -74,8 +74,9 @@ function handleReleaseImpl(wireTip) {
             xcom.wireConnected(otherTip.index,
                                wireTip.twinSide ? XCom.Input : XCom.Output,
                                otherTip.socketName)
-        } else if (wireTip.parent !== target) { // If connecting to a different socket on the same node
-            xcom.wireDisconnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
+        } else {
+            // If connecting to a different socket
+            xcom.wireDisconnected(wireTip.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
             xcom.wireConnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, target.socketName)
         }
 
