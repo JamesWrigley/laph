@@ -29,12 +29,13 @@ class Socket : public QObject
 public:
     enum SocketType {
         // Data types
-        Scalar  = 1 << 0,
-        Vector  = 1 << 1,
-        Generic = 1 << 2,
+        Scalar    = 1 << 0,
+        Vector    = 1 << 1,
+        Generic   = 1 << 2,
         // IO types
-        Input   = 1 << 3,
-        Output  = 1 << 4
+        Input     = 1 << 3,
+        Output    = 1 << 4,
+        Immediate = 1 << 5
     };
     Q_ENUM(SocketType)
 

@@ -42,18 +42,18 @@ NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
 void NodeItem::evaluate(QString const& output_socket_name,
                         std::unordered_set<WireItem*> const& inputs)
 {
-    SocketType type{this->getOutputType(output_socket_name)};
-    char const* socket_name_char{output_socket_name.toStdString().c_str()};
+    Socket const& socket{this->getSocket(output_socket_name, SocketType::Output)};
 
-    // If this is a data input node, then we can add the values directly to
+    // If this is socket is an immediate, then we can add the value directly to
     // output_values without having to call a Julia function.
-    if (type & SocketType::Input) {
-        this->cacheInput(output_socket_name, type);
+    if (socket.type & SocketType::Immediate) {
+        this->cacheOutput(output_socket_name, socket.type);
         return;
     }
 
     // We assume that if this is not an input node, then we are dealing with a
     // list of arguments to the Julia function.
+    char const* socket_name_char{output_socket_name.toStdString().c_str()};
     QVariantList var_args(this->hooks->property(socket_name_char).toList());
     jl_function_t* output_function{this->functions.at(output_socket_name.toStdString())};
     jl_value_t** args{};
@@ -77,15 +77,16 @@ void NodeItem::evaluate(QString const& output_socket_name,
                 // If the socket is connected
                 if (wire_it != inputs.end()) {
                     NodeItem* input_node{(*wire_it)->inputNode};
+                    Socket const& input_socket{this->getSocket(arg_str, SocketType::Input)};
                     QVariant value{input_node->output_values.at((*wire_it)->inputSocket)};
 
                     if (!value.isValid()) { // If the node can't compute its result
                         JL_GC_POP(); // Pop arguments
                         this->output_values[output_socket_name] = QVariant();
                         return;
-                    } else if (this->getInputType(arg_str) & SocketType::Scalar) {
+                    } else if (input_socket.type & SocketType::Scalar) {
                         args[i] = jl_box_float64(value.value<double>());
-                    } else if (this->getInputType(arg_str) & SocketType::Vector) {
+                    } else if (input_socket.type & SocketType::Vector) {
                         // For now, assume that this is a 1D vector
                         dvector_ptr vec{value.value<dvector_ptr>()};
                         jl_value_t* vec_type{jl_apply_array_type((jl_value_t*)jl_float64_type, 1)};
@@ -110,20 +111,20 @@ void NodeItem::evaluate(QString const& output_socket_name,
     if (jl_exception_occurred()) {
         std::cout << "Error: " << jl_typeof_str(jl_exception_occurred()) << "\n";
         this->output_values[output_socket_name] = QVariant();
-    } else if ((type & SocketType::Scalar && jl_typeis(result, jl_float64_type)) ||
-               (type & SocketType::Vector && jl_is_array(result))) {
-        this->cacheComputation(result, type, output_socket_name);
+    } else if ((socket.type & SocketType::Scalar && jl_typeis(result, jl_float64_type)) ||
+               (socket.type & SocketType::Vector && jl_is_array(result))) {
+        this->cacheComputation(result, socket.type, output_socket_name);
     } else {
-        this->cacheComputation(nullptr, type, output_socket_name);
+        this->cacheComputation(nullptr, socket.type, output_socket_name);
     }
 
     JL_GC_POP(); // Pop arguments
 }
 
-void NodeItem::cacheInput(QString const& output_socket_name, SocketType type)
+void NodeItem::cacheOutput(QString const& output_socket_name, SocketType type)
 {
     // Make sure we're dealing with an input socket
-    if (!(type & SocketType::Input)) {
+    if (!(type & SocketType::Output)) {
         throw std::invalid_argument(output_socket_name.toStdString() + " is not an input");
     }
 
@@ -245,25 +246,17 @@ QVariantMap NodeItem::getHooksMap()
     return map;
 }
 
-SocketType NodeItem::getInputType(QString const& socket)
+Socket const& NodeItem::getSocket(QString const& socket_name,
+                                  SocketType socket_type)
 {
-    return this->getSocketType(socket, this->inputsModel);
-}
-
-SocketType NodeItem::getOutputType(QString const& socket)
-{
-    return this->getSocketType(socket, this->outputsModel);
-}
-
-SocketType NodeItem::getSocketType(QString const& socket_name,
-                                   SocketModel const* sockets)
-{
-    auto socket_it{std::find_if(sockets->cbegin(), sockets->cend(),
+    auto* model{socket_type & SocketType::Input ? inputsModel : outputsModel};
+    auto socket_it{std::find_if(model->cbegin(), model->cend(),
                                 [&] (Socket const& socket) {
                                     return socket.name == socket_name;
                                 })};
-    if (socket_it != sockets->cend()) {
-        return socket_it->type;
+
+    if (socket_it != model->cend()) {
+        return *socket_it;
     } else {
         throw std::runtime_error("Could not find socket " + socket_name.toStdString());
     }
