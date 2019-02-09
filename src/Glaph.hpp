@@ -28,7 +28,9 @@
 #include <julia.h>
 #include <QObject>
 #include <QStringList>
+#include <QQmlComponent>
 
+#include "XCom.hpp"
 #include "Socket.hpp"
 #include "NodeItem.hpp"
 #include "WireItem.hpp"
@@ -46,7 +48,8 @@ public:
 
     Q_INVOKABLE void addWire(QObject*);
     Q_INVOKABLE void removeNode(unsigned int);
-    Q_INVOKABLE void addNode(QString, QObject*);
+    Q_INVOKABLE QObject* beginCreateNode(QString const&);
+    Q_INVOKABLE void endCreateNode(QString const&, QObject*);
     Q_INVOKABLE NodeItem* getNode(unsigned int);
     Q_INVOKABLE void evaluateFrom(NodeItem*, QStringList);
     Q_INVOKABLE QString inputToString(QObject*, QString const&);
@@ -57,6 +60,9 @@ public:
     std::unordered_set<WireItem*> getOutputs(NodeItem*);
 
 private:
+    XCom& xcom;
+    QQmlComponent nodeComponent;
+
     jl_value_t* safe_eval(std::string);
 
     template<typename T>

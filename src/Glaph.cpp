@@ -33,7 +33,9 @@
 #include <iostream>
 #endif
 
-Glaph::Glaph(QObject* parent) : QObject(parent)
+Glaph::Glaph(QObject* parent) : QObject(parent),
+                                xcom(XCom::get()),
+                                nodeComponent(xcom.engine)
 {
     jl_init();
 }
@@ -43,10 +45,16 @@ Glaph::~Glaph()
     jl_atexit_hook(0);
 }
 
-void Glaph::addNode(QString code_path, QObject* qobj_node)
+QObject* Glaph::beginCreateNode(QString const& node_path)
 {
+    this->nodeComponent.loadUrl(node_path);
+    return this->nodeComponent.beginCreate(this->xcom.engine->rootContext());
+}
+
+void Glaph::endCreateNode(QString const& code_path, QObject* qobj_node)
+{
+    this->nodeComponent.completeCreate();
     NodeItem* node{static_cast<NodeItem*>(qobj_node)};
-    QQmlEngine::setObjectOwnership(node, QQmlEngine::CppOwnership);
     node->setGraphEngine(this);
     connect(node, &NodeItem::nodeChanged, this, &Glaph::evaluateFrom);
     QString node_name{QFileInfo(code_path).baseName()};
@@ -160,9 +168,8 @@ void Glaph::removeWire(int index)
 
     // If this is not a new node, emit disconnect signals
     if (wire->outputNode != nullptr) {
-        XCom& xcom{XCom::get()};
-        xcom.wireDisconnected(wire->inputNode->index, XCom::TipType::Input, wire->inputSocket);
-        xcom.wireDisconnected(wire->outputNode->index, XCom::TipType::Output, wire->outputSocket);
+        this->xcom.wireDisconnected(wire->inputNode->index, XCom::TipType::Input, wire->inputSocket);
+        this->xcom.wireDisconnected(wire->outputNode->index, XCom::TipType::Output, wire->outputSocket);
     }
 
     this->wires.erase(wire_it);

@@ -185,28 +185,21 @@ ApplicationWindow {
 
         function addNode(nodeFile, x, y) {
             var path = nm.dir + "/" + nodeFile
-            var nodeComponent = Qt.createComponent(path)
-            if (nodeComponent.status == Component.Ready) {
-                var node = nodeComponent.createObject(nodesContainer,
-                                                      {"index": nodeCount,
-                                                       "xDrag": x - xOffset,
-                                                       "yDrag": y - yOffset,
-                                                       "rootZ": FocusSingleton.maxZ,
-                                                       "scaling": scaling,
-                                                       "xOffset": Qt.binding(function() { return canvas.xOffset }),
-                                                       "yOffset": Qt.binding(function() { return canvas.yOffset }),
-                                                       "canvas":  Qt.binding(function() { return canvas })})
+            var node = graphEngine.beginCreateNode(path)
 
-                if (node != null) {
-                    nodeCount += 1
-                    nodes.push(node)
-                    graphEngine.addNode(path.replace("qml", "jl"), node)
-                } else {
-                    console.error("Node object", nodeFile, "could not be created")
-                }
-            } else {
-                console.error("Component", nodeFile, "is not ready:", nodeComponent.errorString())
-            }
+            node.parent = nodesContainer
+            node.index = nodeCount
+            node.xDrag = x - xOffset
+            node.yDrag = y - yOffset
+            node.rootZ = FocusSingleton.maxZ
+            node.scaling = scaling
+            node.xOffset = Qt.binding(function() { return canvas.xOffset })
+            node.yOffset = Qt.binding(function() { return canvas.yOffset })
+            node.canvas =  Qt.binding(function() { return canvas })
+
+            graphEngine.endCreateNode(path.replace("qml", "jl"), node)
+            nodeCount += 1
+            nodes.push(node)
         }
 
         Keys.onPressed: {
