@@ -78,11 +78,11 @@ public:
 
     bool isInput(QString);
     QVariantMap getHooksMap();
-    Socket::SocketType getInputType(QString const&);
-    Socket::SocketType getOutputType(QString const&);
+    SocketType getInputType(QString const&);
+    SocketType getOutputType(QString const&);
     void evaluate(QString const&, std::unordered_set<WireItem*> const&);
-    void cacheInput(char const*, Socket::SocketType);
-    void cacheComputation(jl_value_t*, Socket::SocketType, QString const&);
+    void cacheInput(QString const&, SocketType);
+    void cacheComputation(jl_value_t*, SocketType, QString const&);
 
     unsigned int index;
     QObject* hooks{nullptr};
@@ -101,7 +101,7 @@ private:
     Glaph* graphEngine{nullptr};
     QQmlComponent wireComponent;
 
-    Socket::SocketType getSocketType(QString const&, SocketModel const*);
+    SocketType getSocketType(QString const&, SocketModel const*);
 
 signals:
     void hooksChanged();

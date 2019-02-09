@@ -16,10 +16,6 @@
  *                                                                                *
  *********************************************************************************/
 
-function isScalar(type) {
-    return type === Socket.Scalar || type === Socket.ScalarInput
-}
-
 function evaluateInput() {
     if (valid) {
         graphEngine.evaluateFrom(inputNode, [inputSocket])

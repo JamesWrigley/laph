@@ -27,8 +27,8 @@ WireItem {
     id: root
 
     valid: ((startType === null || endType === null) ||
-            (startType === Socket.Generic || endType === Socket.Generic) ||
-            (Wire.isScalar(startType) === Wire.isScalar(endType)))
+            ((startType & Socket.Generic) || (endType & Socket.Generic)) ||
+            ((startType & Socket.Scalar) === (endType & Socket.Scalar)))
     inputNode: null
     outputNode: null
     inputSocket: ""

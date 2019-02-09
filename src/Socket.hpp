@@ -27,7 +27,15 @@ class Socket : public QObject
     Q_OBJECT
 
 public:
-    enum SocketType { Scalar, ScalarInput, Vector, VectorInput, Generic };
+    enum SocketType {
+        // Data types
+        Scalar  = 1 << 0,
+        Vector  = 1 << 1,
+        Generic = 1 << 2,
+        // IO types
+        Input   = 1 << 3,
+        Output  = 1 << 4
+    };
     Q_ENUM(SocketType)
 
     Socket(QObject* parent = Q_NULLPTR) : QObject(parent) { }
@@ -60,5 +68,7 @@ public:
     bool repeating;
     bool generic;
 };
+
+using SocketType = Socket::SocketType;
 
 #endif

@@ -77,9 +77,9 @@ NodeItem {
 
     function input(socketName) {
         var type = graphEngine.getInputValueType(glode, socketName)
-        if (type === Socket.Scalar) {
+        if (type & Socket.Scalar) {
             return graphEngine.inputToString(glode, socketName)
-        } else if (type === Socket.Vector) {
+        } else if (type & Socket.Vector) {
             return graphEngine.inputToList(glode, socketName)
         }
     }
@@ -179,17 +179,16 @@ NodeItem {
                                 radius: width / 2
                                 border.width: generic ? 1.25 : 1
                                 border.color: generic ? "black" : Qt.darker(color, 2)
-                                color: type === Socket.Generic ? "teal" : isScalar ? "purple" : "green"
+                                color: type & Socket.Generic ? "teal" : isScalar ? "purple" : "green"
 
                                 property alias isInput: da.isInput
-                                property bool isScalar: (type === Socket.Scalar ||
-                                                         type === Socket.ScalarInput)
+                                property bool isScalar: type & Socket.Scalar
 
                                 Connections {
                                     target: root
                                     onSwapType: {
                                         if (generic && ma.containsMouse) {
-                                            type = type === Socket.Scalar ? Socket.Vector : Socket.Scalar
+                                            type = type & Socket.Scalar ? Socket.Vector : Socket.Scalar
                                         }
                                     }
                                 }

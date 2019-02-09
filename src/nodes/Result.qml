@@ -26,16 +26,20 @@ import "../components"
 
 Node {
     title: "Result"
-    inputs: ({y: { type: Socket.Generic }})
+    inputs: ({y: { type: Socket.Generic | Socket.Input }})
     outputs: ({ })
 
-    property var inputValueType: Socket.Scalar
+    property var inputValueType: Socket.Scalar | Socket.Input
+
+    function setInputType(dataType) {
+        inputValueType = dataType | Socket.Input
+    }
 
     onInputChanged: {
-        inputValueType = graphEngine.getInputValueType(this, "y")
+        setInputType(graphEngine.getInputValueType(this, "y"))
         var inputValue = input("y")
 
-        if (inputValueType == Socket.Scalar) {
+        if (inputValueType & Socket.Scalar) {
             ui.item.text = inputValue
         } else {
             var vec = inputValue
@@ -95,6 +99,6 @@ Node {
     }
 
     Loader {
-        sourceComponent: inputValueType == Socket.Scalar ? scalarOutput : vectorOutput
+        sourceComponent: inputValueType & Socket.Scalar ? scalarOutput : vectorOutput
     }
 }
