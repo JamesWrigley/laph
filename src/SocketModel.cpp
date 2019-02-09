@@ -102,7 +102,8 @@ void SocketModel::connectSocket(QString const& socket_name)
 {
     auto socket_it{this->findSocket(socket_name)};
 
-    if (socket_it->repeating) {
+    // At least for now, we only allow repeating *input* sockets
+    if (socket_it->repeating && (socket_it->type & SocketType::Input)) {
         unsigned int& count{this->socket_counts.at(socket_it->prefix)};
         ++count;
         Socket new_socket{*socket_it};

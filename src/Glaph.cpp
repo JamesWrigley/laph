@@ -228,7 +228,7 @@ void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
     }
 }
 
-SocketType Glaph::getInputValueType(NodeItem* node, QString const& socket)
+Socket::SocketType Glaph::getInputValueType(NodeItem* node, QString const& socket)
 {
     auto inputs{this->getInputs(node)};
     auto wire_it{std::find_if(inputs.begin(), inputs.end(),
