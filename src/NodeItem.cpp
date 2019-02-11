@@ -51,63 +51,102 @@ void NodeItem::evaluate(QString const& output_socket_name,
         return;
     }
 
-    // We assume that if this is not an input node, then we are dealing with a
-    // list of arguments to the Julia function.
+    // If not, then we are dealing with a list of arguments to the Julia
+    // function that backs this node.
     char const* socket_name_char{output_socket_name.toStdString().c_str()};
     QVariantList var_args(this->hooks->property(socket_name_char).toList());
     jl_function_t* output_function{this->functions.at(output_socket_name.toStdString())};
-    jl_value_t** args{};
-    JL_GC_PUSHARGS(args, var_args.size());
+    std::vector<jl_value_t*> args{};
+
+    auto box_argument{[&] (QVariant& arg, SocketType type) {
+                          if (!arg.isValid()) {
+                              this->output_values[output_socket_name] = QVariant();
+                              return false;
+                          } else if (arg.userType() == QMetaType::QString) {
+                              args.push_back(jl_cstr_to_string(arg.toString().toStdString().c_str()));
+                          } else if (type & SocketType::Scalar) {
+                              args.push_back(jl_box_float64(arg.value<double>()));
+                          } else if (type & SocketType::Vector) {
+                              // For now, assume that this is a 1D vector
+                              dvector_ptr vec{arg.value<dvector_ptr>()};
+                              jl_value_t* vec_type{jl_apply_array_type((jl_value_t*)jl_float64_type, 1)};
+                              args.push_back((jl_value_t*)jl_ptr_to_array_1d(vec_type, vec->data(), vec->size(), 0));
+                          } else {
+                              throw std::runtime_error("Got unknown result from node");
+                          }
+
+                          return true;
+                      }};
 
     for (int i = 0; i < var_args.size(); ++i) {
         QVariant arg{var_args.at(i)};
 
         if (arg.userType() == QMetaType::Double) { // Double
-            args[i] = jl_box_float64(arg.value<double>());
+            box_argument(arg, socket.type);
         } else if (arg.userType() == QMetaType::QString) {
             QString arg_str{arg.value<QString>()};
 
             // Check if we are dealing with an input
             if (this->isInput(arg_str)) {
-                auto wire_it{std::find_if(inputs.begin(), inputs.end(),
-                                          [&arg_str] (WireItem* wire) {
-                                              return wire->outputSocket == arg_str;
-                                          })};
+                // Check if it's a repeating socket, and if so add all of its
+                // repetitions to the sockets vector to process.
+                std::vector<Socket const*> sockets{&(this->getSocket(arg_str, SocketType::Input))};
+                if (sockets.front()->repeating) {
+                    for (auto const& socket : *(this->inputsModel)) {
+                        if (&socket != sockets.front() && socket.prefix == sockets.front()->prefix) {
+                            sockets.push_back(&socket);
+                        }
+                    }
+                }
 
-                // If the socket is connected
-                if (wire_it != inputs.end()) {
-                    NodeItem* input_node{(*wire_it)->inputNode};
-                    Socket const& input_socket{this->getSocket(arg_str, SocketType::Input)};
-                    QVariant value{input_node->output_values.at((*wire_it)->inputSocket)};
+                for (auto const* socket : sockets) {
+                    auto wire_it{std::find_if(inputs.begin(), inputs.end(),
+                                              [&] (WireItem* wire) {
+                                                  return wire->outputSocket == socket->name;
+                                              })};
 
-                    if (!value.isValid()) { // If the node can't compute its result
-                        JL_GC_POP(); // Pop arguments
+                    // If the socket is connected
+                    if (wire_it != inputs.end()) {
+                        NodeItem* input_node{(*wire_it)->inputNode};
+                        QVariant value{input_node->output_values.at((*wire_it)->inputSocket)};
+
+                        // If it's a repeating socket, we also insert its name
+                        if (socket->repeating) {
+                            QVariant socket_name{socket->name};
+                            box_argument(socket_name, socket->type);
+                        }
+                        if (!box_argument(value, socket->type)) {
+                            return;
+                        }
+                    } else if (!socket->repeating) { // Otherwise, set an invalid QVariant
+                        // Repeating sockets are a special case because they
+                        // will always have at least one repetition unconnected,
+                        // so if the socket is not connected but repeating we
+                        // assume that it's that last socket. Should be possible
+                        // to do it more reliably based on the position of the
+                        // socket, but this will do for now.
                         this->output_values[output_socket_name] = QVariant();
                         return;
-                    } else if (input_socket.type & SocketType::Scalar) {
-                        args[i] = jl_box_float64(value.value<double>());
-                    } else if (input_socket.type & SocketType::Vector) {
-                        // For now, assume that this is a 1D vector
-                        dvector_ptr vec{value.value<dvector_ptr>()};
-                        jl_value_t* vec_type{jl_apply_array_type((jl_value_t*)jl_float64_type, 1)};
-                        args[i] = (jl_value_t*)jl_ptr_to_array_1d(vec_type, vec->data(),
-                                                                  vec->size(), 0);
-                    } else {
-                        throw std::runtime_error("Got unknown result from node");
                     }
-
-                } else { // Otherwise, set an invalid QVariant
-                    JL_GC_POP(); // Pop arguments
-                    this->output_values[output_socket_name] = QVariant();
-                    return;
                 }
-            } else {
-                args[i] = jl_cstr_to_string(arg_str.toStdString().c_str());
+            } else { // Otherwise, we just pass the string into the function
+                QVariant str{arg_str};
+                box_argument(str, socket.type);
             }
         }
     }
 
-    jl_value_t* result{jl_call(output_function, args, var_args.size())};
+    // Prepare arguments
+    jl_value_t** args_jl{};
+    JL_GC_PUSHARGS(args_jl, args.size());
+    for (auto i{0u}; i < args.size(); ++i) {
+        args_jl[i] = args[i];
+    }
+
+    // Call function and pop arguments
+    jl_value_t* result{jl_call(output_function, args_jl, args.size())};
+    JL_GC_POP();
+
     if (jl_exception_occurred()) {
         std::cout << "Error: " << jl_typeof_str(jl_exception_occurred()) << "\n";
         this->output_values[output_socket_name] = QVariant();
@@ -117,8 +156,6 @@ void NodeItem::evaluate(QString const& output_socket_name,
     } else {
         this->cacheComputation(nullptr, socket.type, output_socket_name);
     }
-
-    JL_GC_POP(); // Pop arguments
 }
 
 void NodeItem::cacheOutput(QString const& output_socket_name, SocketType type)

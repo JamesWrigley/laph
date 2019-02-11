@@ -30,7 +30,7 @@ Node {
     title: "Math"
     inputs: ({x: { type: Socket.Scalar | Socket.Input, generic: true, repeating: true }})
     outputs: ({y: { type: Socket.Scalar | Socket.Output , generic: true, repeating: true }})
-    hooks: QtObject { property var y: [ "x", ui.expr.text ] }
+    hooks: QtObject { property var y: [ ui.expr.text, "x" ] }
 
     ColumnLayout {
         property var expr: exprItem
