@@ -32,6 +32,7 @@
 #include "Socket.hpp"
 
 using SocketVector = std::vector<Socket>;
+using SocketIterator = SocketVector::iterator;
 using SocketConstIterator = SocketVector::const_iterator;
 
 class SocketModel : public QAbstractListModel
@@ -61,6 +62,8 @@ public:
     void connectSocket(QString const&);
     void disconnectSocket(QString const&);
 
+    SocketIterator begin();
+    SocketIterator end();
     SocketConstIterator cbegin() const;
     SocketConstIterator cend() const;
 

@@ -68,6 +68,16 @@ SocketConstIterator SocketModel::findSocket(QString const& socket_name)
                         });
 }
 
+SocketIterator SocketModel::begin()
+{
+    return this->sockets.begin();
+}
+
+SocketIterator SocketModel::end()
+{
+    return this->sockets.end();
+}
+
 SocketConstIterator SocketModel::cbegin() const
 {
     return this->sockets.cbegin();
