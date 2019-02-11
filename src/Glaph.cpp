@@ -48,7 +48,9 @@ Glaph::~Glaph()
 QObject* Glaph::beginCreateNode(QString const& node_path)
 {
     this->nodeComponent.loadUrl(node_path);
-    return this->nodeComponent.beginCreate(this->xcom.engine->rootContext());
+    QObject* node_ptr{this->nodeComponent.beginCreate(this->xcom.engine->rootContext())};
+    QQmlEngine::setObjectOwnership(node_ptr, QQmlEngine::CppOwnership);
+    return node_ptr;
 }
 
 void Glaph::endCreateNode(QString const& code_path, QObject* qobj_node)
