@@ -193,6 +193,7 @@ void Glaph::removeNode(unsigned int index)
 
 void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
 {
+    // Find all wires that are connected to the affected output sockets
     std::unordered_set<WireItem*> output_wires{};
     for (auto& wire : this->getOutputs(node)) {
         if (wire->valid && outputs.contains(wire->inputSocket)) {
@@ -208,13 +209,14 @@ void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)
     // Find all nodes that have this node as an input
     std::unordered_map<NodeItem*, QStringList> dirtied_outputs{};
     for (auto& wire : output_wires) {
-        QString socket_name{wire->outputSocket};
+        Socket const& socket{wire->outputNode->getSocket(wire->outputSocket, SocketType::Input)};
         QVariantMap other_hooks{wire->outputNode->getHooksMap()};
         emit this->inputChanged(wire->outputNode->index);
 
         for (auto it{other_hooks.begin()}; it != other_hooks.end(); ++it) {
             QStringList output_args{it.value().value<QStringList>()};
-            if (output_args.contains(socket_name)) {
+            if (output_args.contains(socket.name) ||
+                (socket.repeating && output_args.contains(socket.prefix))) {
                 if (dirtied_outputs.count(wire->outputNode) > 0) {
                     dirtied_outputs.at(wire->outputNode).append(it.key());
                 } else {

@@ -78,7 +78,9 @@ public:
 
     bool isInput(QString);
     QVariantMap getHooksMap();
+    Socket const& getSocket(QString const&, SocketType);
     void evaluate(QString const&, std::unordered_set<WireItem*> const&);
+
     void cacheOutput(QString const&, SocketType);
     void cacheComputation(jl_value_t*, SocketType, QString const&);
 
@@ -98,8 +100,6 @@ private:
     XCom& xcom;
     Glaph* graphEngine{nullptr};
     QQmlComponent wireComponent;
-
-    Socket const& getSocket(QString const&, SocketType);
 
 signals:
     void hooksChanged();
