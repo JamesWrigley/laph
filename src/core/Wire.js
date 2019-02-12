@@ -64,16 +64,16 @@ function handleReleaseImpl(wireTip) {
         // If the wire has just been created
         if (endParent === initialSocket) {
             xcom.wireConnected(target.node.index,
-                               wireTip.twinSide ? XCom.Output : XCom.Input,
+                               wireTip.isOutput ? XCom.Output : XCom.Input,
                                target.socketName)
 
             xcom.wireConnected(otherTip.index,
-                               wireTip.twinSide ? XCom.Input : XCom.Output,
+                               wireTip.isOutput ? XCom.Input : XCom.Output,
                                otherTip.socketName)
         } else {
             // If connecting to a different socket
-            xcom.wireDisconnected(wireTip.index, wireTip.twinSide ? XCom.Output : XCom.Input, wireTip.socketName)
-            xcom.wireConnected(target.node.index, wireTip.twinSide ? XCom.Output : XCom.Input, target.socketName)
+            xcom.wireDisconnected(wireTip.index, wireTip.isOutput ? XCom.Output : XCom.Input, wireTip.socketName)
+            xcom.wireConnected(target.node.index, wireTip.isOutput ? XCom.Output : XCom.Input, target.socketName)
         }
 
         // If the socket already has a wire connected, disconnect it

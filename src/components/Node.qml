@@ -206,7 +206,7 @@ NodeItem {
 
                                     onDropped: {
                                         if (drop.source.twinIndex !== glode.index &&
-                                            drop.source.twinSide === !isInput) {
+                                            drop.source.isOutput === !isInput) {
 
                                             drop.accept(Qt.MoveAction)
                                         }

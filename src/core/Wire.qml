@@ -134,7 +134,7 @@ WireItem {
             Drag.hotSpot.y: height / 2
 
             property int twinIndex
-            property bool twinSide
+            property bool isOutput
             property int wireIndex: root.index
             property int index: root.startIndex
             property var socketType: parent === null ? undefined : parent.socketType
@@ -166,7 +166,7 @@ WireItem {
 
         onLoaded: {
             item.parent = initialSocket
-            item.twinSide = Qt.binding(function () { return !root.startOnLeft })
+            item.isOutput = Qt.binding(function () { return !root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return endIndex })
         }
     }
@@ -179,7 +179,7 @@ WireItem {
             item.Drag.active = true
 
             item.parent = initialSocket
-            item.twinSide = Qt.binding(function () { return root.startOnLeft })
+            item.isOutput = Qt.binding(function () { return root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return startIndex })
         }
     }
