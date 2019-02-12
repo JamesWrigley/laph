@@ -49,7 +49,6 @@ public:
 
     enum SocketRoles { NameRole = Qt::UserRole + 1,
                        TypeRole,
-                       GenericRole,
                        RepeatingRole };
 
     SocketModel& operator=(SocketModel const& other)

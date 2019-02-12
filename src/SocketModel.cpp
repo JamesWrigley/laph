@@ -100,7 +100,6 @@ void SocketModel::refreshSockets()
 
         QVariantMap properties{socket_it.value().toMap()};
         socket.type = properties.value("type").value<Socket::SocketType>();
-        socket.generic = properties.value("generic", false).toBool();
         socket.repeating = properties.value("repeating", false).toBool();
 
         this->addSocket(socket, this->sockets.end());
@@ -165,8 +164,6 @@ QVariant SocketModel::data(QModelIndex const& index, int role) const
         return socket.name;
     } else if (role == TypeRole) {
         return socket.type;
-    } else if (role == GenericRole) {
-        return socket.generic;
     } else if (role == RepeatingRole) {
         return socket.repeating;
     } else {
@@ -187,8 +184,6 @@ bool SocketModel::setData(QModelIndex const& index, QVariant const& value, int r
         socket.type = value.value<Socket::SocketType>();
     } else if (role == RepeatingRole) {
         socket.repeating = value.toBool();
-    } else if (role == GenericRole) {
-        socket.generic = value.toBool();
     } else {
         return false;
     }
@@ -201,6 +196,5 @@ QHash<int, QByteArray> SocketModel::roleNames() const
 {
     return QHash<int, QByteArray>{{NameRole, "name"},
                                   {TypeRole, "type"},
-                                  {GenericRole, "generic"},
                                   {RepeatingRole, "repeating"}};
 }

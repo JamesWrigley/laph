@@ -42,15 +42,13 @@ public:
     Socket(QObject* parent = Q_NULLPTR) : QObject(parent) { }
     Socket(Socket const& other, QObject* parent = Q_NULLPTR) : Socket(other.name, other.prefix,
                                                                       other.type, other.repeating,
-                                                                      other.generic, parent) { }
+                                                                      parent) { }
     Socket(QString const& name, QString const& prefix,
-           SocketType type, bool repeating,
-           bool generic, QObject* parent = Q_NULLPTR) : QObject(parent),
-                                                        prefix(prefix),
-                                                        name(name),
-                                                        type(type),
-                                                        repeating(repeating),
-                                                        generic(generic) { }
+           SocketType type, bool repeating, QObject* parent = Q_NULLPTR) : QObject(parent),
+                                                                           prefix(prefix),
+                                                                           name(name),
+                                                                           type(type),
+                                                                           repeating(repeating) { }
 
     Socket& operator=(Socket const& other)
         {
@@ -58,7 +56,6 @@ public:
             this->name = other.name;
             this->type = other.type;
             this->repeating = other.repeating;
-            this->generic = other.generic;
 
             return *this;
         }
@@ -67,7 +64,6 @@ public:
     QString name;
     SocketType type;
     bool repeating;
-    bool generic;
 };
 
 using SocketType = Socket::SocketType;
