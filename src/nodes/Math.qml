@@ -28,8 +28,8 @@ Node {
     id: root
 
     title: "Math"
-    inputs: ({x: { type: Socket.Scalar | Socket.Input, generic: true, repeating: true }})
-    outputs: ({y: { type: Socket.Scalar | Socket.Output , generic: true, repeating: true }})
+    inputs: ({x: { type: Socket.Generic | Socket.Input, repeating: true }})
+    outputs: ({y: { type: Socket.Generic | Socket.Output, repeating: true }})
     hooks: QtObject { property var y: [ ui.expr.text, "x" ] }
 
     ColumnLayout {
