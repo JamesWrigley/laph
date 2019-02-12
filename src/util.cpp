@@ -16,10 +16,36 @@
  *                                                                                *
  *********************************************************************************/
 
+#include <regex>
+#include <iostream>
+
 #include "util.hpp"
 
 std::ostream& operator<<(std::ostream& os, QString const& str)
 {
     os << str.toStdString();
     return os;
+}
+
+/**
+ * Example usage: println("Foo :0, baz :1", {"bar", "quux"})
+ */
+void println(std::string const& format_str, QVariantList const& args)
+{
+    std::string final_str{format_str};
+    std::regex re{":(\\d+)"};
+    auto it{std::sregex_iterator(format_str.begin(), format_str.end(), re)};
+    auto end{std::sregex_iterator()};
+
+    int length_delta{0};
+    for (; it != end; ++it) {
+        std::smatch match{*it};
+        int index{std::stoi(match[1].str())};
+        std::string replacement{args.at(index).toString().toStdString()};
+        final_str.replace(match.position() + length_delta,
+                          match.length(), replacement);
+        length_delta += replacement.length() - match.length();
+    }
+
+    std::cout << final_str << std::endl;
 }

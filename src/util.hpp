@@ -23,6 +23,7 @@
 
 #include <QHash>
 #include <QString>
+#include <QVariant>
 
 std::ostream& operator<<(std::ostream&, QString const&);
 
@@ -36,5 +37,7 @@ namespace std {
             }
     };
 }
+
+void println(std::string const& format_str, QVariantList const& args={});
 
 #endif
