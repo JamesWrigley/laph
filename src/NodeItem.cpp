@@ -148,7 +148,9 @@ void NodeItem::evaluate(QString const& output_socket_name,
     JL_GC_POP();
 
     if (jl_exception_occurred()) {
-        std::cout << "Error: " << jl_typeof_str(jl_exception_occurred()) << "\n";
+        jl_call2(jl_get_function(jl_base_module, "showerror"),
+                 jl_stderr_obj(), jl_exception_occurred());
+        jl_printf(jl_stderr_stream(), "\n");
         this->output_values[output_socket_name] = QVariant();
     } else if ((socket.type & SocketType::Scalar && jl_typeis(result, jl_float64_type)) ||
                (socket.type & SocketType::Vector && jl_is_array(result))) {
