@@ -64,9 +64,9 @@ void NodeItem::evaluate(QString const& output_socket_name,
                               return false;
                           } else if (arg.userType() == QMetaType::QString) {
                               args.push_back(jl_cstr_to_string(arg.toString().toStdString().c_str()));
-                          } else if (type & SocketType::Scalar) {
+                          } else if (type & SocketType::Scalar || arg.userType() == QMetaType::Double) {
                               args.push_back(jl_box_float64(arg.value<double>()));
-                          } else if (type & SocketType::Vector) {
+                          } else if (type & SocketType::Vector || arg.userType() == QMetaType::type("dvector_ptr")) {
                               // For now, assume that this is a 1D vector
                               dvector_ptr vec{arg.value<dvector_ptr>()};
                               jl_value_t* vec_type{jl_apply_array_type((jl_value_t*)jl_float64_type, 1)};
