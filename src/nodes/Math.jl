@@ -1,8 +1,10 @@
+import Base.eval
+
 # `expr` is the Julia expression, and args is an iterable of variable names and
 # their values.
 function y(expr_str, args...)
     args_dict = Dict([(Symbol(args[i]), args[i + 1]) for i in 1:2:length(args)])
-    expr = parse(expr_str)
+    expr = Meta.parse(expr_str)
     prepare_expr(expr, args_dict)
 
     return eval(expr)
