@@ -37,6 +37,7 @@
 #include "Socket.hpp"
 #include "WireItem.hpp"
 #include "SocketModel.hpp"
+#include "MessageModel.hpp"
 
 using dvector = std::vector<double>;
 using dvector_ptr = std::shared_ptr<dvector>;
@@ -51,6 +52,7 @@ class NodeItem : public QQuickItem
     Q_PROPERTY(QObject* hooks READ getHooks WRITE setHooks NOTIFY hooksChanged)
     Q_PROPERTY(QVariantMap inputs READ getInputs WRITE setInputs NOTIFY inputsChanged)
     Q_PROPERTY(QVariantMap outputs READ getOutputs WRITE setOutputs NOTIFY outputsChanged)
+    Q_PROPERTY(MessageModel* messages READ getMessages NOTIFY messagesChanged)
 
 public:
     NodeItem(QQuickItem* = Q_NULLPTR);
@@ -70,6 +72,7 @@ public:
     QObject* getHooks();
     QVariantMap getInputs();
     QVariantMap getOutputs();
+    MessageModel* getMessages();
     void setIndex(int);
     void setHooks(QObject*);
     void setInputs(QVariantMap const&);
@@ -100,12 +103,14 @@ private:
     XCom& xcom;
     Glaph* graphEngine{nullptr};
     QQmlComponent wireComponent;
+    MessageModel messageModel{};
 
 signals:
     void hooksChanged();
     void indexChanged();
     void inputsChanged();
     void outputsChanged();
+    void messagesChanged();
     void nodeChanged(NodeItem*, QStringList);
 
     void wireConnectedTo(QString const&);

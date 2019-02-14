@@ -20,6 +20,7 @@ import Laph 0.1
 
 import QtQuick 2.11
 import QtQuick.Layouts 1.3
+import QtQuick.Controls 2.4
 
 import "."
 import "../core"
@@ -131,12 +132,53 @@ NodeItem {
                 source: "../fonts/FiraSans-Regular.otf"
             }
 
+            ToolTip {
+                id: tooltip
+                delay: 500
+                width: 250
+                visible: mainMa.containsMouse && !ma.drag.active && tipListView.count > 0
+
+                contentItem: Column {
+                    padding: 0
+                    spacing: 0
+
+                    Repeater {
+                        id: tipListView
+                        model: glode.messages
+
+                        Label {
+                            id: msgLabel
+                            text: msg
+                            color: "gray"
+                            padding: 10
+
+                            background: Rectangle {
+                                opacity: 0.5
+                                color: "#202020"
+
+                                Rectangle {
+                                    opacity: 1
+                                    color: Qt.tint(Qt.lighter(parent.color, 2), "red")
+                                    height: 3
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.bottom: parent.bottom
+                                }
+                            }
+                        }
+                    }
+                }
+
+                background: Rectangle { opacity: 0 }
+            }
+
             MouseArea {
                 id: mainMa
 
                 // Ugly hack to make sure that this overlays all other MouseArea's
                 z: 1 + parent.z
                 anchors.fill: mainLayout
+                hoverEnabled: true
 
                 onPressed: {
                     mouse.accepted = parent.attemptFocus(mouse.x, mouse.y)

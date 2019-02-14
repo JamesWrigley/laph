@@ -16,55 +16,47 @@
  *                                                                                *
  *********************************************************************************/
 
-#include <QDir>
-#include <QQmlContext>
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-
-#include "XCom.hpp"
-#include "Glaph.hpp"
-#include "Socket.hpp"
-#include "NodeItem.hpp"
-#include "WireItem.hpp"
-#include "NodeMonitor.hpp"
-#include "SocketModel.hpp"
 #include "MessageModel.hpp"
 
-#define MAJOR_VERSION 0
-#define MINOR_VERSION 1
+MessageModel::MessageModel(QObject* parent) : QAbstractListModel(parent) { }
 
-template<typename T>
-void registerLaphType(char const* name)
+void MessageModel::addMessage(QString const& msg, MessageLevel level)
 {
-    qmlRegisterType<T>("Laph", MAJOR_VERSION, MINOR_VERSION, name);
+    this->beginInsertRows(QModelIndex(), 0, 0);
+
+    this->msgs.insert(this->msgs.begin(), {msg, level});
+
+    this->endInsertRows();
 }
 
-int main(int argc, char* argv[])
+Qt::ItemFlags MessageModel::flags(QModelIndex const&) const
 {
-    QGuiApplication app(argc, argv);
+    return Qt::ItemIsEnabled;
+}
 
-    qmlRegisterUncreatableType<XCom>("Laph", MAJOR_VERSION, MINOR_VERSION,
-                                     "XCom", "XCom is not instantiable");
-    registerLaphType<Socket>("Socket");
-    registerLaphType<NodeItem>("NodeItem");
-    registerLaphType<WireItem>("WireItem");
-    registerLaphType<NodeMonitor>("NodeMonitor");
-    registerLaphType<SocketModel>("SocketModel");
-    registerLaphType<MessageModel>("MessageModel");
+int MessageModel::rowCount(QModelIndex const&) const
+{
+    return this->msgs.size();
+}
 
-    QDir basePath{app.applicationDirPath()};
-    QQmlApplicationEngine engine{};
+QVariant MessageModel::data(QModelIndex const& index, int role) const
+{
+    if (!index.isValid() || index.row() >= (int)this->msgs.size()) {
+        return QVariant();
+    }
 
-    XCom& xcom{XCom::get()};
-    xcom.engine = &engine;
-    engine.rootContext()->setContextProperty("xcom", &xcom);
+    std::pair<QString, MessageLevel> const& msg{this->msgs.at(index.row())};
+    if (role == MsgRole) {
+        return msg.first;
+    } else if (role == LevelRole) {
+        return msg.second;
+    } else {
+        return QVariant();
+    }
+}
 
-    Glaph graph{};
-    engine.rootContext()->setContextProperty("graphEngine", &graph);
-
-    // We load the QML file after setting the context properties so that the
-    // file has access to the properties immediately.
-    engine.load(basePath.filePath("src/core/main.qml"));
-
-    return app.exec();
+QHash<int, QByteArray> MessageModel::roleNames() const
+{
+    return QHash<int, QByteArray>{{MsgRole, "msg"},
+                                  {LevelRole, "level"}};
 }

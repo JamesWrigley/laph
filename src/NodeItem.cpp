@@ -330,6 +330,8 @@ void NodeItem::setOutputs(QVariantMap const& outputs)
 
 QVariantMap NodeItem::getInputs() { return this->inputs; }
 
+MessageModel* NodeItem::getMessages() { return &(this->messageModel); }
+
 void NodeItem::setInputs(QVariantMap const& inputs)
 {
     this->inputs = inputs;

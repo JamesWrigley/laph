@@ -17,7 +17,8 @@ SOURCES += src/main.cpp        \
            src/NodeItem.cpp    \
            src/WireItem.cpp    \
            src/SocketModel.cpp \
-           src/util.cpp
+           src/util.cpp        \
+           src/MessageModel.cpp
 
 HEADERS += src/NodeMonitor.hpp \
            src/Glaph.hpp       \
@@ -26,4 +27,5 @@ HEADERS += src/NodeMonitor.hpp \
            src/Socket.hpp      \
            src/SocketModel.hpp \
            src/util.hpp        \
-           src/XCom.hpp
+           src/XCom.hpp        \
+           src/MessageModel.hpp
