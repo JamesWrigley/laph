@@ -40,6 +40,7 @@ public:
     MessageModel(QObject* = Q_NULLPTR);
 
     void addMessage(QString const&, MessageLevel);
+    void clearMessages();
 
     MessageModel& operator=(MessageModel const& other)
         {

@@ -29,6 +29,15 @@ void MessageModel::addMessage(QString const& msg, MessageLevel level)
     this->endInsertRows();
 }
 
+void MessageModel::clearMessages()
+{
+    this->beginRemoveRows(QModelIndex(), 0, this->msgs.size() - 1);
+
+    this->msgs.clear();
+
+    this->endRemoveRows();
+}
+
 Qt::ItemFlags MessageModel::flags(QModelIndex const&) const
 {
     return Qt::ItemIsEnabled;

@@ -42,6 +42,8 @@ NodeItem::NodeItem(NodeItem const&, QQuickItem* parent) : NodeItem(parent) { }
 void NodeItem::evaluate(QString const& output_socket_name,
                         std::unordered_set<WireItem*> const& inputs)
 {
+    this->messageModel.clearMessages();
+
     Socket const& socket{this->getSocket(output_socket_name, SocketType::Output)};
 
     // If this is socket is an immediate, then we can add the value directly to
