@@ -177,9 +177,17 @@ NodeItem {
                                 width: 14
                                 height: width
                                 radius: width / 2
-                                border.width: isGeneric ? 1.25 : 1
-                                border.color: isGeneric ? "black" : Qt.darker(color, 2)
-                                color: isGeneric ? "teal" : isScalar ? "purple" : "green"
+                                border.width: 1
+                                border.color: Qt.darker(color, 2)
+                                color: {
+                                    if (isGeneric) {
+                                        return da.containsDrag ? Qt.lighter("teal", 1.5) : "teal"
+                                    } else if (isScalar) {
+                                        return da.containsDrag ? Qt.lighter("purple", 1.5) : "purple"
+                                    } else {
+                                        return da.containsDrag ? Qt.lighter("green", 1.5) : "green"
+                                    }
+                                }
 
                                 property alias isInput: da.isInput
                                 property bool isScalar: type & Socket.Scalar
