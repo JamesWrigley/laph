@@ -146,17 +146,20 @@ void NodeItem::evaluate(QString const& output_socket_name,
     // Call function and pop arguments
     jl_value_t* result{jl_call(output_function, args_jl, args.size())};
     JL_GC_POP();
+    SocketType result_type{jl_is_array(result) ? SocketType::Vector : SocketType::Scalar};
 
+    // TODO: Show the error message to the user when an exception occurs
     if (jl_exception_occurred()) {
         jl_call2(jl_get_function(jl_base_module, "showerror"),
                  jl_stderr_obj(), jl_exception_occurred());
         jl_printf(jl_stderr_stream(), "\n");
         this->output_values[output_socket_name] = QVariant();
-    } else if ((socket.type & SocketType::Scalar && jl_typeis(result, jl_float64_type)) ||
-               (socket.type & SocketType::Vector && jl_is_array(result))) {
-        this->cacheComputation(result, socket.type, output_socket_name);
+    } else if ((socket.type & SocketType::Scalar && result_type == SocketType::Vector) ||
+               (socket.type & SocketType::Vector && result_type == SocketType::Scalar)) {
+        println("Error: Output type does not match socket.");
+        this->cacheComputation(nullptr, result_type, output_socket_name);
     } else {
-        this->cacheComputation(nullptr, socket.type, output_socket_name);
+        this->cacheComputation(result, result_type, output_socket_name);
     }
 }
 
