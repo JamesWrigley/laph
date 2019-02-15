@@ -159,7 +159,7 @@ void NodeItem::evaluate(QString const& output_socket_name,
         SocketType result_type{jl_is_array(result) ? SocketType::Vector : SocketType::Scalar};
         if ((socket.type & SocketType::Scalar && result_type == SocketType::Vector) ||
             (socket.type & SocketType::Vector && result_type == SocketType::Scalar)) {
-            println("Error: Output type does not match socket.");
+            this->messageModel.addMessage("Output type does not match socket type.", MessageLevel::Critical);
             this->cacheComputation(nullptr, result_type, output_socket_name);
         } else {
             this->cacheComputation(result, result_type, output_socket_name);
