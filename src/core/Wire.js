@@ -70,6 +70,12 @@ function handleReleaseImpl(wireTip) {
             xcom.wireConnected(otherTip.index,
                                wireTip.isOutput ? XCom.Input : XCom.Output,
                                otherTip.socketName)
+        } else if (wireTip.parent === target) {
+            // If the user is reconnecting to the same socket, all we need to do
+            // is reset the wireTip's local coordinates.
+            wireTip.x = 0
+            wireTip.y = 0
+            return
         } else {
             // If connecting to a different socket
             xcom.wireDisconnected(wireTip.index, wireTip.isOutput ? XCom.Output : XCom.Input, wireTip.socketName)
