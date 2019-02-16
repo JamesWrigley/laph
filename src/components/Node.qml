@@ -100,14 +100,6 @@ NodeItem {
             width: childrenRect.width
             height: childrenRect.height
 
-            signal swapType()
-
-            Keys.onPressed: {
-                if (event.key === Qt.Key_T) {
-                    swapType()
-                }
-            }
-
             function attemptFocus(x, y) {
                 if (!glode.canvas.nodeHigherAt(Qt.point(x, y), root)) {
                     if (FocusSingleton.selectedNode !== index) {
@@ -234,15 +226,6 @@ NodeItem {
                                 property alias isInput: da.isInput
                                 property bool isScalar: type & Socket.Scalar
                                 property bool isGeneric: type & Socket.Generic
-
-                                Connections {
-                                    target: root
-                                    onSwapType: {
-                                        if (isGeneric && ma.containsMouse) {
-                                            type = isScalar ? Socket.Vector : Socket.Scalar
-                                        }
-                                    }
-                                }
 
                                 DropArea {
                                     id: da
