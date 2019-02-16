@@ -16,54 +16,48 @@
  *                                                                                *
  *********************************************************************************/
 
-#ifndef XCOM_HPP
-#define XCOM_HPP
+#include "UndoCommands.hpp"
 
-#include <QObject>
-#include <QQmlApplicationEngine>
+/*** NodeCommand ***/
 
-#include "WireItem.hpp"
+NodeCommand::NodeCommand() : xcom(XCom::get()) { }
 
-class XCom : public QObject
+/*** CreateNode ***/
+
+CreateNode::CreateNode(QString const& nodeFile, int index, int x, int y)
 {
-    Q_OBJECT
+    this->x = x;
+    this->y = y;
+    this->index = index;
+    this->nodeFile = nodeFile;
+}
 
-public:
-    // It'd be nicer if this was defined in WireItem.hpp, but enums that are
-    // used as signal parameters from QML need to be declared in the same class
-    // as the signal (i.e. wireConnected() and wireDisconnected()).
-    enum class TipType { Input, Output };
-    Q_ENUM(TipType)
+void CreateNode::undo()
+{
+    emit this->xcom.deleteNode(this->index);
+}
 
-    XCom(QObject*) = delete;
-    XCom(XCom const&) = delete;
-    void operator=(XCom const&) = delete;
-    static XCom& get()
-        {
-            static XCom xcom;
-            return xcom;
-        }
+void CreateNode::redo()
+{
+    emit this->xcom.createNode(this->nodeFile, this->index, this->x, this->y);
+}
 
-    QQmlApplicationEngine* engine;
+/*** DeleteNode ***/
 
-signals:
-    void repaintCanvas();
+DeleteNode::DeleteNode(NodeItem const* node)
+{
+    this->x = node->x();
+    this->y = node->y();
+    this->index = node->index;
+    this->nodeFile = node->nodeFile;
+}
 
-    void wireConnected(unsigned int, TipType, QString const&);
-    void wireDisconnected(unsigned int, TipType, QString const&);
+void DeleteNode::undo()
+{
+    emit this->xcom.createNode(this->nodeFile, this->index, this->x, this->y);
+}
 
-    // Signals to be emitted from QMLland
-    void requestCreateNode(QString const&, int, int, int);
-    void requestDeleteNode(int);
-    void requestUndo();
-    void requestRedo();
-
-    // Signals to be emitted from C++land
-    void createNode(QString const& nodeFile, int index, int x, int y);
-    void deleteNode(int index);
-
-private:
-    XCom() { }
-};
-
-#endif
+void DeleteNode::redo()
+{
+    emit this->xcom.deleteNode(this->index);
+}

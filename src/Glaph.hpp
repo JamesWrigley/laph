@@ -27,6 +27,7 @@
 
 #include <julia.h>
 #include <QObject>
+#include <QUndoStack>
 #include <QStringList>
 #include <QQmlComponent>
 
@@ -62,13 +63,13 @@ public:
     std::unordered_set<WireItem*> getOutputs(NodeItem*);
 
 private:
-    XCom& xcom;
-    QQmlComponent nodeComponent;
-
     jl_value_t* safe_eval(std::string);
-
     template<typename T>
     T inputToType(QObject*, QString const&, std::function<T(QVariant const&)>);
+
+    XCom& xcom;
+    QUndoStack commandStack;
+    QQmlComponent nodeComponent;
 
     std::unordered_set<WireItemPtr> wires;
     std::unordered_map<unsigned int, NodeItemPtr> nodes;

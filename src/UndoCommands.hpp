@@ -16,54 +16,46 @@
  *                                                                                *
  *********************************************************************************/
 
-#ifndef XCOM_HPP
-#define XCOM_HPP
+#ifndef UNDOCOMMANDS_HPP
+#define UNDOCOMMANDS_HPP
 
-#include <QObject>
-#include <QQmlApplicationEngine>
+#include <QUndoCommand>
 
-#include "WireItem.hpp"
+#include "XCom.hpp"
+#include "NodeItem.hpp"
 
-class XCom : public QObject
+class NodeCommand : public QUndoCommand
 {
-    Q_OBJECT
-
 public:
-    // It'd be nicer if this was defined in WireItem.hpp, but enums that are
-    // used as signal parameters from QML need to be declared in the same class
-    // as the signal (i.e. wireConnected() and wireDisconnected()).
-    enum class TipType { Input, Output };
-    Q_ENUM(TipType)
+    NodeCommand();
 
-    XCom(QObject*) = delete;
-    XCom(XCom const&) = delete;
-    void operator=(XCom const&) = delete;
-    static XCom& get()
-        {
-            static XCom xcom;
-            return xcom;
-        }
+    virtual void undo() = 0;
+    virtual void redo() = 0;
 
-    QQmlApplicationEngine* engine;
+protected:
+    XCom& xcom;
+    int x;
+    int y;
+    int index;
+    QString nodeFile;
+};
 
-signals:
-    void repaintCanvas();
+class CreateNode : public NodeCommand
+{
+public:
+    CreateNode(QString const&, int, int, int);
 
-    void wireConnected(unsigned int, TipType, QString const&);
-    void wireDisconnected(unsigned int, TipType, QString const&);
+    void undo() override;
+    void redo() override;
+};
 
-    // Signals to be emitted from QMLland
-    void requestCreateNode(QString const&, int, int, int);
-    void requestDeleteNode(int);
-    void requestUndo();
-    void requestRedo();
+class DeleteNode : public NodeCommand
+{
+public:
+    DeleteNode(NodeItem const*);
 
-    // Signals to be emitted from C++land
-    void createNode(QString const& nodeFile, int index, int x, int y);
-    void deleteNode(int index);
-
-private:
-    XCom() { }
+    void undo() override;
+    void redo() override;
 };
 
 #endif

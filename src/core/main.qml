@@ -55,7 +55,7 @@ ApplicationWindow {
     Shortcut {
         context: Qt.ApplicationShortcut
         sequence: "X"
-        onActivated: canvas.deleteSelectedNode()
+        onActivated: xcom.requestDeleteNode(FocusSingleton.selectedNode)
     }
 
     Shortcut {
@@ -68,15 +68,32 @@ ApplicationWindow {
         }
     }
 
+    Shortcut {
+        context: Qt.ApplicationShortcut
+        sequence: "Ctrl+Z"
+        onActivated: xcom.requestUndo()
+    }
+
+    Shortcut {
+        context: Qt.ApplicationShortcut
+        sequence: "Ctrl+Shift+Z"
+        onActivated: xcom.requestRedo()
+    }
+
+    Connections {
+        target: xcom
+
+        onCreateNode: canvas.addNode(nodeFile, index, x, y)
+        onDeleteNode: canvas.deleteNode(index)
+    }
+
     SearchBox {
         id: searchBox
 
         z: FocusSingleton.maxZ + 1
         nodes: nm.nodes
 
-        onSelected: {
-            canvas.addNode(node, mouseArea.mouseX, mouseArea.mouseY)
-        }
+        onSelected: xcom.requestCreateNode(node, canvas.nodeCount, mouseArea.mouseX, mouseArea.mouseY)
 
         Component.onCompleted: {
             // If we don't do this after the component is loaded, QML throws an error
@@ -169,26 +186,28 @@ ApplicationWindow {
             return null
         }
 
-        function deleteSelectedNode() {
-            if (FocusSingleton.selectedNode != -1) {
-                for (var i = 0; i < nodes.length; ++i) {
-                    if (nodes[i].index == FocusSingleton.selectedNode) {
-                        FocusSingleton.selectedNode = -1
-                        graphEngine.removeNode(nodes[i].index)
-                        nodes.splice(i, 1)
-                        xcom.repaintCanvas()
-                        FocusSingleton.canvasFocus = true
-                    }
+        function deleteNode(nodeIndex) {
+            if (FocusSingleton.selectedNode === nodeIndex) {
+                FocusSingleton.selectedNode = -1;
+                FocusSingleton.canvasFocus = true
+            }
+
+            for (var i = 0; i < nodes.length; ++i) {
+                if (nodes[i].index == nodeIndex) {
+                    graphEngine.removeNode(nodeIndex)
+                    nodes.splice(i, 1)
+                    xcom.repaintCanvas()
+                    break
                 }
             }
         }
 
-        function addNode(nodeFile, x, y) {
+        function addNode(nodeFile, index, x, y) {
             var path = nm.dir + "/" + nodeFile
             var node = graphEngine.beginCreateNode(path)
 
             node.parent = nodesContainer
-            node.index = nodeCount
+            node.index = index
             node.xDrag = x - xOffset
             node.yDrag = y - yOffset
             node.rootZ = FocusSingleton.maxZ

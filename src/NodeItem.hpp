@@ -48,11 +48,11 @@ class Glaph;
 class NodeItem : public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
+    Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged);
+    Q_PROPERTY(MessageModel* messages READ getMessages NOTIFY messagesChanged)
     Q_PROPERTY(QObject* hooks READ getHooks WRITE setHooks NOTIFY hooksChanged)
     Q_PROPERTY(QVariantMap inputs READ getInputs WRITE setInputs NOTIFY inputsChanged)
     Q_PROPERTY(QVariantMap outputs READ getOutputs WRITE setOutputs NOTIFY outputsChanged)
-    Q_PROPERTY(MessageModel* messages READ getMessages NOTIFY messagesChanged)
 
 public:
     NodeItem(QQuickItem* = Q_NULLPTR);
@@ -87,6 +87,7 @@ public:
     void cacheOutput(QString const&, SocketType);
     void cacheComputation(jl_value_t*, SocketType, QString const&);
 
+    QString nodeFile;
     unsigned int index;
     QObject* hooks{nullptr};
 

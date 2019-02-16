@@ -20,6 +20,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <filesystem>
 
 #include <QString>
 #include <QtGlobal>
@@ -28,16 +29,25 @@
 
 #include "util.hpp"
 #include "Glaph.hpp"
+#include "UndoCommands.hpp"
 
-#ifdef QT_DEBUG
-#include <iostream>
-#endif
+namespace fs = std::filesystem;
 
 Glaph::Glaph(QObject* parent) : QObject(parent),
                                 xcom(XCom::get()),
+                                commandStack(parent),
                                 nodeComponent(xcom.engine)
 {
     jl_init();
+
+    connect(&xcom, &XCom::requestCreateNode, [&] (QString const& nodeFile, int index, int x, int y) {
+                                                 this->commandStack.push(new CreateNode(nodeFile, index, x, y));
+                                             });
+    connect(&xcom, &XCom::requestDeleteNode, [&] (int index) {
+                                                 this->commandStack.push(new DeleteNode(this->nodes.at(index).get()));
+                                             });
+    connect(&xcom, &XCom::requestUndo, [&] () { this->commandStack.undo(); });
+    connect(&xcom, &XCom::requestRedo, [&] () { this->commandStack.redo(); });
 }
 
 Glaph::~Glaph()
@@ -47,8 +57,11 @@ Glaph::~Glaph()
 
 QObject* Glaph::beginCreateNode(QString const& node_path)
 {
+    std::string nodeFile{fs::path(node_path.toStdString()).filename().string()};
+
     this->nodeComponent.loadUrl(node_path);
     QObject* node_ptr{this->nodeComponent.beginCreate(this->xcom.engine->rootContext())};
+    static_cast<NodeItem*>(node_ptr)->nodeFile = QString::fromStdString(nodeFile);
     QQmlEngine::setObjectOwnership(node_ptr, QQmlEngine::CppOwnership);
     return node_ptr;
 }
