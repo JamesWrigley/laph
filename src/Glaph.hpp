@@ -37,7 +37,6 @@
 #include "WireItem.hpp"
 
 using NodeItemPtr = std::unique_ptr<NodeItem, std::function<void(NodeItem*)>>;
-using WireItemPtr = std::unique_ptr<WireItem, std::function<void(WireItem*)>>;
 
 class Glaph : public QObject
 {
@@ -59,6 +58,11 @@ public:
     // Socket::SocketType.
     Q_INVOKABLE Socket::SocketType getInputValueType(NodeItem*, QString const&);
 
+    // We need this custom replacement for QObject::findChild() because in Qt5
+    // you can't use it to find an item in a Repeater. Kudos to Christian
+    // Feldbacher: https://stackoverflow.com/a/22556528.
+    QObject* findChildItem(QQuickItem*, QString const&);
+    WireItem const* findWire(unsigned int, QString const&, unsigned int, QString const&);
     std::unordered_set<WireItem*> getInputs(NodeItem*, QString const& socket_name="");
     std::unordered_set<WireItem*> getOutputs(NodeItem*);
 

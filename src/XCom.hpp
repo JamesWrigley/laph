@@ -55,12 +55,15 @@ signals:
     // Signals to be emitted from QMLland
     void requestCreateNode(QString const&, int, int, int);
     void requestDeleteNode(int);
+    void requestCreateWire(unsigned int, QString const&, bool);
+    void requestDeleteWire(unsigned int, QString const&, unsigned int, QString const&);
     void requestUndo();
     void requestRedo();
 
     // Signals to be emitted from C++land
     void createNode(QString const& nodeFile, int index, int x, int y);
     void deleteNode(int index);
+    void deleteWire(int index);
 
 private:
     XCom() { }

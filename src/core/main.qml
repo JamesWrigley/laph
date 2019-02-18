@@ -55,7 +55,11 @@ ApplicationWindow {
     Shortcut {
         context: Qt.ApplicationShortcut
         sequence: "X"
-        onActivated: xcom.requestDeleteNode(FocusSingleton.selectedNode)
+        onActivated: {
+            if (FocusSingleton.selectedNode != -1) {
+                xcom.requestDeleteNode(FocusSingleton.selectedNode)
+            }
+        }
     }
 
     Shortcut {

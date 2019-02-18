@@ -85,6 +85,31 @@ NodeItem {
         }
     }
 
+    function createWire(dropArea, mouseArea, isInput) {
+        var wire = glode.beginCreateWire()
+
+        // Wire configuration
+        wire.initialSocket = dropArea
+        wire.startIndex = glode.index
+        wire.startOnLeft = isInput
+        wire.canvas = Qt.binding(function () { return canvas })
+        wire.startUpdateHook = Qt.binding(function () {
+            return glode.x + glode.y + canvas.scaling
+        })
+        wire.endUpdateHook = Qt.binding(function () {
+            return mouseArea.mouseX + mouseArea.mouseY
+        })
+
+        glode.endCreateWire()
+        mouseArea.wire = wire
+
+        return wire
+    }
+
+    function getObjectName(type, name, isInput) {
+        return type + "_" + name + "_" + (isInput ? "I" : "O")
+    }
+
     FocusScope {
         id: scope
 
@@ -188,7 +213,6 @@ NodeItem {
 
                 Column {
                     id: column
-
                     spacing: 10
 
                     property var sockets
@@ -229,6 +253,7 @@ NodeItem {
 
                                 DropArea {
                                     id: da
+                                    objectName: getObjectName("da", name, !parent.isInput)
                                     anchors.fill: parent
 
                                     property var node: glode
@@ -249,7 +274,7 @@ NodeItem {
 
                                 MouseArea {
                                     id: ma
-
+                                    objectName: getObjectName("ma", name, !parent.isInput)
                                     anchors.fill: parent
 
                                     drag.target: wire === null ? undefined : wire.endTip
@@ -260,27 +285,8 @@ NodeItem {
 
                                     onPressed: {
                                         if (wire === null && da.wires === 0) {
-                                            wire = glode.beginCreateWire()
-
-                                            // Wire configuration
-                                            wire.initialSocket = da
-                                            wire.startIndex = glode.index
-                                            wire.startOnLeft = parent.isInput
-                                            wire.canvas = Qt.binding(function () { return canvas })
-                                            wire.startUpdateHook = Qt.binding(function () {
-                                                return glode.x + glode.y + canvas.scaling
-                                            })
-                                            wire.endUpdateHook = Qt.binding(function () {
-                                                return ma.mouseX + ma.mouseY
-                                            })
-
-                                            glode.endCreateWire()
-
-                                            if (wire === null) {
-                                                console.error("Object 'Wire.qml' could not be created")
-                                            } else {
-                                                graphEngine.addWire(wire)
-                                            }
+                                            xcom.requestCreateWire(glode.index, name, !parent.isInput)
+                                            graphEngine.addWire(wire)
                                         } else {
                                             mouse.accepted = false
                                         }

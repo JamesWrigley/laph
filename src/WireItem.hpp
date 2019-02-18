@@ -19,9 +19,12 @@
 #ifndef WIREITEM_HPP
 #define WIREITEM_HPP
 
+#include <memory>
+
 #include <QQuickItem>
 
 class NodeItem;
+class CreateWire;
 
 class WireItem : public QQuickItem
 {
@@ -29,6 +32,7 @@ class WireItem : public QQuickItem
 
     Q_PROPERTY(int index READ getIndex NOTIFY indexChanged)
     Q_PROPERTY(bool valid READ getValid WRITE setValid NOTIFY validChanged)
+    Q_PROPERTY(QObject* endParent READ getEndParent WRITE setEndParent NOTIFY endParentChanged)
     Q_PROPERTY(QQuickItem* inputNode READ getInputNode WRITE setInputNode NOTIFY inputNodeChanged)
     Q_PROPERTY(QQuickItem* outputNode READ getOutputNode WRITE setOutputNode NOTIFY outputNodeChanged)
     Q_PROPERTY(QString inputSocket READ getInputSocket WRITE setInputSocket NOTIFY inputSocketChanged)
@@ -36,15 +40,18 @@ class WireItem : public QQuickItem
 
 public:
     WireItem(QQuickItem* = Q_NULLPTR);
+    ~WireItem();
 
     int getIndex();
     bool getValid();
+    QObject* getEndParent();
     QString getInputSocket();
     QString getOutputSocket();
     QQuickItem* getInputNode();
     QQuickItem* getOutputNode();
 
     void setValid(bool);
+    void setEndParent(QObject*);
     void setInputSocket(QString&);
     void setOutputSocket(QString&);
     void setInputNode(QQuickItem*);
@@ -61,14 +68,23 @@ public:
     NodeItem* outputNode;
     QString inputSocket;
     QString outputSocket;
+    CreateWire* creationCommand;
+
+private:
+    bool isNewSocket();
+
+    QObject* endParent{nullptr};
 
 signals:
     void indexChanged();
     void validChanged();
+    void endParentChanged();
     void inputNodeChanged();
     void outputNodeChanged();
     void inputSocketChanged();
     void outputSocketChanged();
 };
+
+using WireItemPtr = std::unique_ptr<WireItem, std::function<void(WireItem*)>>;
 
 #endif

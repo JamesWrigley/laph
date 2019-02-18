@@ -16,11 +16,8 @@
  *                                                                                *
  *********************************************************************************/
 
-#ifndef QT_DEBUG
-#include <iostream>
-#endif
-
 #include "WireItem.hpp"
+#include "UndoCommands.hpp"
 
 WireItem::WireItem(QQuickItem* parent) : QQuickItem(parent)
 {
@@ -31,6 +28,22 @@ WireItem::WireItem(QQuickItem* parent) : QQuickItem(parent)
     ++wire_count;
 }
 
+WireItem::~WireItem()
+{
+    // If the wire is new, we should make its creation command obsolete so that
+    // it doesn't execute when the user hits undo.
+    if (this->isNewSocket()) {
+        this->creationCommand->setObsolete(true);
+    }
+}
+
+bool WireItem::isNewSocket()
+{
+    QObject* endParent{this->property("endParent").value<QObject*>()};
+    QObject* initialSocket{this->property("initialSocket").value<QObject*>()};
+    return endParent == initialSocket;
+}
+
 int WireItem::getIndex()
 {
     return this->index;
@@ -39,6 +52,11 @@ int WireItem::getIndex()
 bool WireItem::getValid()
 {
     return this->valid;
+}
+
+QObject* WireItem::getEndParent()
+{
+    return this->endParent;
 }
 
 QString WireItem::getInputSocket()
@@ -65,6 +83,20 @@ void WireItem::setValid(bool valid)
 {
     this->valid = valid;
     emit this->validChanged();
+}
+
+void WireItem::setEndParent(QObject* endParent)
+{
+    QObject* initialSocket{this->property("initialSocket").value<QObject*>()};
+    if (endParent != nullptr && initialSocket != nullptr &&
+        this->endParent != endParent && this->endParent == initialSocket) {
+        QObject* endTip{this->property("endTip").value<QObject*>()};
+        this->creationCommand->setEndProperties(endTip->property("index").toInt(),
+                                                endTip->property("socketName").toString());
+    }
+
+    this->endParent = endParent;
+    emit this->endParentChanged();
 }
 
 void WireItem::setInputSocket(QString& socketName)

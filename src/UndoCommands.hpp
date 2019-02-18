@@ -24,6 +24,8 @@
 #include "XCom.hpp"
 #include "NodeItem.hpp"
 
+class Glaph;
+
 class NodeCommand : public QUndoCommand
 {
 public:
@@ -34,6 +36,7 @@ public:
 
 protected:
     XCom& xcom;
+
     int x;
     int y;
     int index;
@@ -53,6 +56,45 @@ class DeleteNode : public NodeCommand
 {
 public:
     DeleteNode(NodeItem const*);
+
+    void undo() override;
+    void redo() override;
+};
+
+class WireCommand : public QUndoCommand
+{
+public:
+    WireCommand(Glaph&);
+
+    virtual void undo() = 0;
+    virtual void redo() = 0;
+
+protected:
+    XCom& xcom;
+    Glaph& glaph;
+
+    bool startIsInput;
+    unsigned int inputIndex;
+    QString inputSocket;
+    unsigned int outputIndex;
+    QString outputSocket;
+};
+
+class CreateWire : public WireCommand
+{
+public:
+    CreateWire(Glaph&, unsigned int, QString const&, bool);
+
+    void undo() override;
+    void redo() override;
+
+    void setEndProperties(unsigned int, QString const&);
+};
+
+class DeleteWire : public WireCommand
+{
+public:
+    DeleteWire(Glaph&, unsigned int, QString const&, unsigned int, QString const&);
 
     void undo() override;
     void redo() override;

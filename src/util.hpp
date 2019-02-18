@@ -24,6 +24,7 @@
 #include <QHash>
 #include <QString>
 #include <QVariant>
+#include <QQuickItem>
 
 std::ostream& operator<<(std::ostream&, QString const&);
 
@@ -38,6 +39,8 @@ namespace std {
     };
 }
 
+std::string fmt(std::string const& format_str, QVariantList const& args);
 void println(std::string const& format_str, QVariantList const& args={});
+QObject* findChildItem(QQuickItem* parent, QString const& name);
 
 #endif

@@ -91,9 +91,19 @@ function handleReleaseImpl(wireTip) {
         setParent(wireTip)
         evaluateInput()
     } else { // When disconnecting a wire
-        xcom.repaintCanvas()
-        graphEngine.removeWire(root.index)
+        // If this is a valid wire with both ends connected, emit a signal so
+        // that the wire is deleted via the undo system.
+        if (endParent !== initialSocket) {
+            xcom.requestDeleteWire(inputNode.index, inputSocket, outputNode.index, outputSocket)
+        } else {
+            deleteWire()
+        }
     }
+}
+
+function deleteWire() {
+    xcom.repaintCanvas()
+    graphEngine.removeWire(root.index)
 }
 
 function computeCoord(wireTip, hook, x) {

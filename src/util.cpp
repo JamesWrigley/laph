@@ -30,7 +30,7 @@ std::ostream& operator<<(std::ostream& os, QString const& str)
 /**
  * Example usage: println("Foo :0, baz :1", {"bar", "quux"})
  */
-void println(std::string const& format_str, QVariantList const& args)
+std::string fmt(std::string const& format_str, QVariantList const& args)
 {
     std::string final_str{format_str};
     std::regex re{":(\\d+)"};
@@ -47,5 +47,27 @@ void println(std::string const& format_str, QVariantList const& args)
         length_delta += replacement.length() - match.length();
     }
 
-    std::cout << final_str << std::endl;
+    return final_str;
+}
+
+void println(std::string const& format_str, QVariantList const& args)
+{
+    std::cout << fmt(format_str, args) << std::endl;
+}
+
+QObject* findChildItem(QQuickItem* parent, QString const& name)
+{
+    if (parent->objectName() == name) {
+        return parent;
+    } else {
+        QList<QQuickItem*> children{parent->childItems()};
+        for (auto* item : children) {
+            QObject* child{findChildItem(item, name)};
+            if (child != nullptr) {
+                return child;
+            }
+        }
+
+        return nullptr;
+    }
 }

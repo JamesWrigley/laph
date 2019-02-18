@@ -33,6 +33,7 @@ WireItem {
     outputNode: null
     inputSocket: ""
     outputSocket: ""
+    endParent: end.item.parent
 
     property real endX
     property real endY
@@ -43,7 +44,6 @@ WireItem {
     property real startUpdateHook
 
     property var initialSocket: null
-    property var endParent: end.item.parent
     property var startParent: start.item.parent
 
     property int endIndex: -1
@@ -51,6 +51,15 @@ WireItem {
     property var endTip: end.item
     property var endType: end.item.socketType
     property var startType: start.item.socketType
+
+    Connections {
+        target: xcom
+        onDeleteWire: {
+            if (index == root.index) {
+                Wire.deleteWire()
+            }
+        }
+    }
 
     onValidChanged: {
         if (inputNode !== null && outputNode !== null) {
@@ -110,7 +119,7 @@ WireItem {
             property int curvature: 2
             property real relative1X: (x - wire.startX) / curvature
             property real relative2X: x - wire.startX
-            property bool startOnLeft: startParent.isInput === undefined ? false : startParent.isInput
+            property bool startOnLeft: startParent === null ? false : startParent.isInput
             property real sturdiness: Math.abs(wire.startX - x) / curvature
 
             onXChanged: xcom.repaintCanvas()
