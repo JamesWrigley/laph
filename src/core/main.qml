@@ -43,7 +43,10 @@ ApplicationWindow {
 
     Connections {
         target: xcom
+
         onRepaintCanvas: canvas.requestPaint()
+        onCreateNode: canvas.addNode(nodeFile, index, x, y)
+        onDeleteNode: canvas.deleteNode(index)
     }
 
     Shortcut {
@@ -84,13 +87,6 @@ ApplicationWindow {
         onActivated: xcom.requestRedo()
     }
 
-    Connections {
-        target: xcom
-
-        onCreateNode: canvas.addNode(nodeFile, index, x, y)
-        onDeleteNode: canvas.deleteNode(index)
-    }
-
     SearchBox {
         id: searchBox
 
@@ -105,31 +101,30 @@ ApplicationWindow {
         }
     }
 
-    Menu {
-        id: addMenu
-
-        title: "Nodes"
-
-        style: MenuStyle {
-            frame: Rectangle {
-                color: "#202020"
-            }
-        }
-
-        MenuItem { text: "Nodes"; enabled: false }
-        MenuSeparator { }
-        Instantiator {
-            model: nm.nodes
-            onObjectAdded: addMenu.insertItem(index, object)
-            onObjectRemoved: addMenu.removeItem(object)
-
-            MenuItem {
-                text: modelData.slice(0, -4) // Remove the file extension
-                onTriggered: canvas.addNode(modelData,
-                                            mouseArea.mouseX, mouseArea.mouseY)
-            }
-        }
-    }
+    // Menu {
+    //     id: addMenu
+    // 
+    //     title: "Nodes"
+    // 
+    //     style: MenuStyle {
+    //         frame: Rectangle {
+    //             color: "#202020"
+    //         }
+    //     }
+    // 
+    //     MenuItem { text: "Nodes"; enabled: false }
+    //     MenuSeparator { }
+    //     Instantiator {
+    //         model: nm.nodes
+    //         onObjectAdded: addMenu.insertItem(index, object)
+    //         onObjectRemoved: addMenu.removeItem(object)
+    // 
+    //         MenuItem {
+    //             text: modelData.slice(0, -4) // Remove the file extension
+    //             onTriggered: canvas.addNode(modelData, mouseArea.mouseX, mouseArea.mouseY)
+    //         }
+    //     }
+    // }
 
     Canvas {
         id: canvas
