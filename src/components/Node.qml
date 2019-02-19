@@ -253,7 +253,7 @@ NodeItem {
 
                                 DropArea {
                                     id: da
-                                    objectName: getObjectName("da", name, !parent.isInput)
+                                    objectName: getObjectName("da", name, !isInput)
                                     anchors.fill: parent
 
                                     property var node: glode

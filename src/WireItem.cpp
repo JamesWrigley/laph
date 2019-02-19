@@ -16,6 +16,8 @@
  *                                                                                *
  *********************************************************************************/
 
+#include <QQmlProperty>
+
 #include "WireItem.hpp"
 #include "UndoCommands.hpp"
 
@@ -39,9 +41,7 @@ WireItem::~WireItem()
 
 bool WireItem::isNewSocket()
 {
-    QObject* endParent{this->property("endParent").value<QObject*>()};
-    QObject* initialSocket{this->property("initialSocket").value<QObject*>()};
-    return endParent == initialSocket;
+    return this->endParent == this->initialSocket;
 }
 
 int WireItem::getIndex()
@@ -67,6 +67,11 @@ QString WireItem::getInputSocket()
 QString WireItem::getOutputSocket()
 {
     return this->outputSocket;
+}
+
+QObject* WireItem::getInitialSocket()
+{
+    return this->initialSocket;
 }
 
 QQuickItem* WireItem::getInputNode()
@@ -125,4 +130,10 @@ void WireItem::setOutputNode(QQuickItem* node)
 {
     this->outputNode = reinterpret_cast<NodeItem*>(node);
     emit this->outputNodeChanged();
+}
+
+void WireItem::setInitialSocket(QObject* socket)
+{
+    this->initialSocket = socket;
+    emit this->initialSocketChanged();
 }

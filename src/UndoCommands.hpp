@@ -69,11 +69,17 @@ public:
     virtual void undo() = 0;
     virtual void redo() = 0;
 
+    void setEndProperties(unsigned int, QString const&);
+
 protected:
+    void createWire();
+    void deleteWire();
+
     XCom& xcom;
     Glaph& glaph;
 
     bool startIsInput;
+    bool connected{false};
     unsigned int inputIndex;
     QString inputSocket;
     unsigned int outputIndex;
@@ -87,8 +93,6 @@ public:
 
     void undo() override;
     void redo() override;
-
-    void setEndProperties(unsigned int, QString const&);
 };
 
 class DeleteWire : public WireCommand

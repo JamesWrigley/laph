@@ -24,7 +24,7 @@
 #include <QQuickItem>
 
 class NodeItem;
-class CreateWire;
+class WireCommand;
 
 class WireItem : public QQuickItem
 {
@@ -37,6 +37,7 @@ class WireItem : public QQuickItem
     Q_PROPERTY(QQuickItem* outputNode READ getOutputNode WRITE setOutputNode NOTIFY outputNodeChanged)
     Q_PROPERTY(QString inputSocket READ getInputSocket WRITE setInputSocket NOTIFY inputSocketChanged)
     Q_PROPERTY(QString outputSocket READ getOutputSocket WRITE setOutputSocket NOTIFY outputSocketChanged)
+    Q_PROPERTY(QObject* initialSocket READ getInitialSocket WRITE setInitialSocket NOTIFY initialSocketChanged)
 
 public:
     WireItem(QQuickItem* = Q_NULLPTR);
@@ -47,6 +48,7 @@ public:
     QObject* getEndParent();
     QString getInputSocket();
     QString getOutputSocket();
+    QObject* getInitialSocket();
     QQuickItem* getInputNode();
     QQuickItem* getOutputNode();
 
@@ -56,6 +58,7 @@ public:
     void setOutputSocket(QString&);
     void setInputNode(QQuickItem*);
     void setOutputNode(QQuickItem*);
+    void setInitialSocket(QObject*);
 
     friend bool operator==(WireItem const& one, WireItem const& two)
         {
@@ -68,12 +71,13 @@ public:
     NodeItem* outputNode;
     QString inputSocket;
     QString outputSocket;
-    CreateWire* creationCommand;
+    WireCommand* creationCommand;
 
 private:
     bool isNewSocket();
 
     QObject* endParent{nullptr};
+    QObject* initialSocket{nullptr};
 
 signals:
     void indexChanged();
@@ -83,6 +87,7 @@ signals:
     void outputNodeChanged();
     void inputSocketChanged();
     void outputSocketChanged();
+    void initialSocketChanged();
 };
 
 using WireItemPtr = std::unique_ptr<WireItem, std::function<void(WireItem*)>>;

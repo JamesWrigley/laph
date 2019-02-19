@@ -34,6 +34,7 @@ WireItem {
     inputSocket: ""
     outputSocket: ""
     endParent: end.item.parent
+    initialSocket: null
 
     property real endX
     property real endY
@@ -43,7 +44,6 @@ WireItem {
     property real endUpdateHook
     property real startUpdateHook
 
-    property var initialSocket: null
     property var startParent: start.item.parent
 
     property int endIndex: -1

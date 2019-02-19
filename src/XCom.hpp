@@ -53,10 +53,11 @@ signals:
     void wireDisconnected(unsigned int, TipType, QString const&);
 
     // Signals to be emitted from QMLland
-    void requestCreateNode(QString const&, int, int, int);
-    void requestDeleteNode(int);
-    void requestCreateWire(unsigned int, QString const&, bool);
-    void requestDeleteWire(unsigned int, QString const&, unsigned int, QString const&);
+    void requestCreateNode(QString const& nodeFile, int nodeIndex, int x, int y);
+    void requestDeleteNode(int nodeIndex);
+    void requestCreateWire(unsigned int startNode, QString const& startSocket, bool isInput);
+    void requestDeleteWire(unsigned int startIndex, QString const& startSocket,
+                           unsigned int endIndex, QString const& endSocket);
     void requestUndo();
     void requestRedo();
 

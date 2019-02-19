@@ -67,6 +67,74 @@ void DeleteNode::redo()
 
 WireCommand::WireCommand(Glaph& glaph) : xcom(XCom::get()), glaph(glaph) { }
 
+void WireCommand::deleteWire()
+{
+    WireItem const* wire{this->glaph.findWire(this->inputIndex, this->inputSocket,
+                                              this->outputIndex, this->outputSocket)};
+    emit this->xcom.deleteWire(wire->index);
+}
+
+void WireCommand::createWire()
+{
+    unsigned int startIndex{this->startIsInput ? this->inputIndex : this->outputIndex};
+    QString& startSocket{this->startIsInput ? this->inputSocket : this->outputSocket};
+
+    NodeItem* startNode{this->glaph.getNode(startIndex)};
+    auto getObjName{[&] (QVariant& return_var, QString name, QString& socket, bool socketIsInput) {
+                        QMetaObject::invokeMethod(startNode, "getObjectName",
+                                                  Q_RETURN_ARG(QVariant, return_var),
+                                                  Q_ARG(QVariant, name),
+                                                  Q_ARG(QVariant, socket),
+                                                  // Need to flip the bool here because the argument means if the
+                                                  // socket is an input, not the wire tip.
+                                                  Q_ARG(QVariant, socketIsInput));
+                    }};
+    QVariant maName{};
+    QVariant daName{};
+    getObjName(maName, "ma", startSocket, !this->startIsInput);
+    getObjName(daName, "da", startSocket, !this->startIsInput);
+    QObject* ma{findChildItem(startNode, maName.toString())};
+    QObject* da{findChildItem(startNode, daName.toString())};
+    QVariant wire;
+    QMetaObject::invokeMethod(startNode, "createWire",
+                              Q_RETURN_ARG(QVariant, wire),
+                              Q_ARG(QVariant, QVariant::fromValue(da)),
+                              Q_ARG(QVariant, QVariant::fromValue(ma)),
+                              Q_ARG(QVariant, this->startIsInput));
+    WireItem* wire_ptr{wire.value<WireItem*>()};
+    wire_ptr->creationCommand = this;
+
+    // If the wire has been properly connected between two nodes, we need to
+    // connect it again to the same socket.
+    if (this->connected) {
+        unsigned int endIndex{this->startIsInput ? this->outputIndex : this->inputIndex};
+        QString& endSocket{this->startIsInput ? this->outputSocket : this->inputSocket};
+        QObject* endTip{wire_ptr->property("endTip").value<QObject*>()};
+        NodeItem* endNode{this->glaph.getNode(endIndex)};
+
+        QVariant endDaName{};
+        getObjName(endDaName, "da", endSocket, this->startIsInput);
+        QObject* endDa{findChildItem(static_cast<NodeItem*>(endNode), endDaName.toString())};
+        println("index: :2, :0: :1", {endDaName.toString(), (unsigned long long)endDa, static_cast<NodeItem*>(endNode)->index});
+        endTip->setProperty("Drag.target", QVariant::fromValue(endDa));
+
+        QMetaObject::invokeMethod(wire_ptr, "handleRelease", Q_ARG(QVariant, QVariant::fromValue(endTip)));
+    }
+}
+
+void WireCommand::setEndProperties(unsigned int index, QString const& socketName)
+{
+    if (this->startIsInput) {
+        this->outputIndex = index;
+        this->outputSocket = socketName;
+    } else {
+        this->inputIndex = index;
+        this->inputSocket = socketName;
+    }
+
+    this->connected = true;
+}
+
 /*** CreateWire ***/
 
 CreateWire::CreateWire(Glaph& glaph, unsigned int startIndex,
@@ -84,54 +152,9 @@ CreateWire::CreateWire(Glaph& glaph, unsigned int startIndex,
     }
 }
 
-void CreateWire::undo()
-{
-    WireItem const* wire{this->glaph.findWire(this->inputIndex, this->inputSocket,
-                                              this->outputIndex, this->outputSocket)};
-    emit this->xcom.deleteWire(wire->index);
-}
+void CreateWire::undo() { this->deleteWire(); }
 
-void CreateWire::redo()
-{
-    unsigned int startIndex{this->startIsInput ? this->inputIndex : this->outputIndex};
-    QString& startSocket{this->startIsInput ? this->inputSocket : this->outputSocket};
-
-    NodeItem* startNode{this->glaph.getNode(startIndex)};
-    auto find_obj{[&] (QVariant& return_var, QString name) {
-                      QMetaObject::invokeMethod(startNode, "getObjectName",
-                                                Q_RETURN_ARG(QVariant, return_var),
-                                                Q_ARG(QVariant, name),
-                                                Q_ARG(QVariant, startSocket),
-                                                // Need to flip the bool here because the argument means if the
-                                                // socket is an input, not the wire tip.
-                                                Q_ARG(QVariant, !this->startIsInput));
-                  }};
-    QVariant maName{};
-    QVariant daName{};
-    find_obj(maName, "ma");
-    find_obj(daName, "da");
-    QObject* ma{findChildItem(startNode, maName.toString())};
-    QObject* da{findChildItem(startNode, daName.toString())};
-    QVariant wire;
-    QMetaObject::invokeMethod(startNode, "createWire",
-                              Q_RETURN_ARG(QVariant, wire),
-                              Q_ARG(QVariant, QVariant::fromValue(da)),
-                              Q_ARG(QVariant, QVariant::fromValue(ma)),
-                              Q_ARG(QVariant, this->startIsInput));
-    WireItem* wire_ptr{wire.value<WireItem*>()};
-    wire_ptr->creationCommand = this;
-}
-
-void CreateWire::setEndProperties(unsigned int index, QString const& socketName)
-{
-    if (this->startIsInput) {
-        this->outputIndex = index;
-        this->outputSocket = socketName;
-    } else {
-        this->inputIndex = index;
-        this->inputSocket = socketName;
-    }
-}
+void CreateWire::redo() { this->createWire(); }
 
 /*** DeleteWire ***/
 
@@ -142,6 +165,12 @@ DeleteWire::DeleteWire(Glaph& glaph, unsigned int inputIndex, QString const& inp
     this->inputSocket = inputSocket;
     this->outputIndex = outputIndex;
     this->outputSocket = outputSocket;
+    this->connected = true;
+}
+
+void DeleteWire::undo() { this->createWire(); }
+
+void DeleteWire::redo() { this->deleteWire(); }
 }
 
 void DeleteWire::undo() { }
