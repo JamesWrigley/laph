@@ -23,6 +23,16 @@
 
 NodeCommand::NodeCommand() : xcom(XCom::get()) { }
 
+void NodeCommand::deleteNode()
+{
+    emit this->xcom.deleteNode(this->index);
+}
+
+void NodeCommand::createNode()
+{
+    emit this->xcom.createNode(this->nodeFile, this->index, this->x, this->y);
+}
+
 /*** CreateNode ***/
 
 CreateNode::CreateNode(QString const& nodeFile, int index, int x, int y)
@@ -33,15 +43,9 @@ CreateNode::CreateNode(QString const& nodeFile, int index, int x, int y)
     this->nodeFile = nodeFile;
 }
 
-void CreateNode::undo()
-{
-    emit this->xcom.deleteNode(this->index);
-}
+void CreateNode::undo() { this->deleteNode(); }
 
-void CreateNode::redo()
-{
-    emit this->xcom.createNode(this->nodeFile, this->index, this->x, this->y);
-}
+void CreateNode::redo() { this->createNode(); }
 
 /*** DeleteNode ***/
 
@@ -52,16 +56,9 @@ DeleteNode::DeleteNode(NodeItem const* node)
     this->index = node->index;
     this->nodeFile = node->nodeFile;
 }
+void DeleteNode::undo() { this->createNode(); }
 
-void DeleteNode::undo()
-{
-    emit this->xcom.createNode(this->nodeFile, this->index, this->x, this->y);
-}
-
-void DeleteNode::redo()
-{
-    emit this->xcom.deleteNode(this->index);
-}
+void DeleteNode::redo() { this->deleteNode(); }
 
 /*** WireCommand ***/
 

@@ -36,6 +36,9 @@ public:
     virtual void redo() = 0;
 
 protected:
+    void createNode();
+    void deleteNode();
+
     XCom& xcom;
 
     int x;
