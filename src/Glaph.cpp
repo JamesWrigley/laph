@@ -53,6 +53,14 @@ Glaph::Glaph(QObject* parent) : QObject(parent),
                                                   unsigned int outputIndex, QString const& outputSocket) {
                                                  this->commandStack.push(new DeleteWire(*this, inputIndex, inputSocket, outputIndex, outputSocket));
                                              });
+    connect(&xcom, &XCom::requestCreateSocket, [&] (Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) {
+                                                   println("Creating socket :0::1", {nodeIndex, socket.name});
+                                                   this->commandStack.push(new CreateSocket(socket, nodeIndex, socketIndex));
+                                               });
+    connect(&xcom, &XCom::requestDeleteSocket, [&] (Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) {
+                                                   println("Deleting socket :0::1", {nodeIndex, socket.name});
+                                                   this->commandStack.push(new DeleteSocket(socket, nodeIndex, socketIndex));
+                                               });
 
     connect(&xcom, &XCom::requestUndo, [&] () { this->commandStack.undo(); });
     connect(&xcom, &XCom::requestRedo, [&] () { this->commandStack.redo(); });

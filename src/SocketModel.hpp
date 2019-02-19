@@ -29,6 +29,7 @@
 #include <QAbstractListModel>
 
 #include "util.hpp"
+#include "XCom.hpp"
 #include "Socket.hpp"
 
 using SocketVector = std::vector<Socket>;
@@ -66,6 +67,8 @@ public:
     SocketConstIterator cbegin() const;
     SocketConstIterator cend() const;
 
+    unsigned int nodeIndex;
+
 protected:
     QHash<int, QByteArray> roleNames() const;
 
@@ -82,8 +85,10 @@ private:
     QVariant data(QModelIndex const&, int = Qt::DisplayRole) const;
     bool setData(QModelIndex const&, QVariant const&, int = Qt::EditRole);
 
-    QVariantMap socketsTemplate;
+    XCom& xcom;
+    SocketType socketsType;
     SocketVector sockets{};
+    QVariantMap socketsTemplate;
     std::unordered_map<QString, unsigned int> socket_counts{};
 
 signals:
@@ -91,6 +96,8 @@ signals:
 
 private slots:
     void refreshSockets();
+    void onCreateSocket(Socket, unsigned int nodeIndex, unsigned int socketIndex);
+    void onDeleteSocket(SocketType, unsigned int nodeIndex, unsigned int socketIndex);
 };
 
 #endif

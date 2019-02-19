@@ -71,3 +71,9 @@ QObject* findChildItem(QQuickItem* parent, QString const& name)
         return nullptr;
     }
 }
+
+bool ioTypesMatch(Socket const& one, Socket const& two)
+{
+    unsigned int mask{SocketType::Input | SocketType::Output};
+    return (one.type & mask) == (two.type & mask);
+}

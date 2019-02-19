@@ -30,13 +30,16 @@ SocketModel::SocketModel(SocketModel const& other) : SocketModel(other.parent(),
 
 SocketModel::SocketModel(QObject* parent,
                          QVariantMap socketsTemplate,
-                         SocketVector sockets) : QAbstractListModel(parent)
+                         SocketVector sockets) : QAbstractListModel(parent),
+                                                 xcom(XCom::get())
 {
     this->socketsTemplate = socketsTemplate;
     this->sockets = sockets;
 
     connect(this, &SocketModel::socketsTemplateChanged,
             this, &SocketModel::refreshSockets);
+    connect(&xcom, &XCom::createSocket, this, &SocketModel::onCreateSocket);
+    connect(&xcom, &XCom::deleteSocket, this, &SocketModel::onDeleteSocket);
 }
 
 void SocketModel::addSocket(Socket& socket, SocketConstIterator pos)
@@ -105,6 +108,26 @@ void SocketModel::refreshSockets()
         this->addSocket(socket, this->sockets.end());
         this->socket_counts.insert({socket.prefix, 1});
     }
+
+    if (this->sockets.size() > 0) {
+        this->socketsType = (SocketType)(this->sockets.front().type & (SocketType::Input | SocketType::Output));
+    }
+}
+
+void SocketModel::onCreateSocket(Socket socket, unsigned int nodeIndex, unsigned int socketIndex)
+{
+    if (nodeIndex == this->nodeIndex && this->sockets.size() > 0 && ioTypesMatch(socket, this->sockets.front())) {
+        this->addSocket(socket, this->cbegin() + socketIndex);
+    }
+}
+
+void SocketModel::onDeleteSocket(SocketType type, unsigned int nodeIndex, unsigned int socketIndex)
+{
+    if (nodeIndex == this->nodeIndex && this->sockets.size() > 0 && type & this->socketsType) {
+        auto socket_it{this->cbegin() + socketIndex};
+        this->socket_counts.at(socket_it->prefix) -= 1;
+        this->removeSocket(socket_it);
+    }
 }
 
 void SocketModel::connectSocket(QString const& socket_name)
@@ -117,21 +140,24 @@ void SocketModel::connectSocket(QString const& socket_name)
         ++count;
         Socket new_socket{*socket_it};
         new_socket.name = socket_it->prefix + QString::number(count);
-        this->addSocket(new_socket, socket_it + 1);
+        unsigned int socketIndex{static_cast<unsigned int>(socket_it - this->sockets.cbegin() + 1)};
+        xcom.requestCreateSocket(new_socket, this->nodeIndex, socketIndex);
     }
 }
 
 void SocketModel::disconnectSocket(QString const& socket_name)
 {
     auto socket_it{this->findSocket(socket_name)};
-    if (socket_it->repeating) {
-        unsigned int count{this->socket_counts.at(socket_it->prefix)};
+    unsigned int& count{this->socket_counts.at(socket_it->prefix)};
 
+    if (socket_it->repeating) {
         if (count > 1) {
-            this->removeSocket(socket_it);
+            println("Count: :0", {count});
+            unsigned int socketIndex{static_cast<unsigned int>(socket_it - this->sockets.cbegin())};
+            xcom.requestDeleteSocket(*socket_it, this->nodeIndex, socketIndex);
         }
     } else {
-        this->socket_counts.at(socket_it->prefix) -= 1;
+        --count;
     }
 }
 

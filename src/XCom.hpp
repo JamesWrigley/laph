@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QQmlApplicationEngine>
 
+#include "Socket.hpp"
 #include "WireItem.hpp"
 
 class XCom : public QObject
@@ -62,6 +63,10 @@ signals:
     void requestRedo();
 
     // Signals to be emitted from C++land
+    void requestCreateSocket(Socket const&, unsigned int nodeIndex, unsigned int socketIndex);
+    void requestDeleteSocket(Socket const&, unsigned int nodeIndex, unsigned int socketIndex);
+    void createSocket(Socket, unsigned int nodeIndex, unsigned int socketIndex);
+    void deleteSocket(SocketType, unsigned int nodeIndex, unsigned int socketIndex);
     void createNode(QString const& nodeFile, int index, int x, int y);
     void deleteNode(int index);
     void deleteWire(int index);

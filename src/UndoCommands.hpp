@@ -23,6 +23,7 @@
 
 #include "XCom.hpp"
 #include "NodeItem.hpp"
+#include "SocketModel.hpp"
 
 class Glaph;
 
@@ -99,6 +100,42 @@ class DeleteWire : public WireCommand
 {
 public:
     DeleteWire(Glaph&, unsigned int, QString const&, unsigned int, QString const&);
+
+    void undo() override;
+    void redo() override;
+};
+
+class SocketCommand : public QUndoCommand
+{
+public:
+    SocketCommand(Socket const&, unsigned int, unsigned int);
+
+    void undo() = 0;
+    void redo() = 0;
+
+protected:
+    void createSocket();
+    void deleteSocket();
+
+    XCom& xcom;
+    Socket const socket;
+    unsigned int nodeIndex;
+    unsigned int socketIndex;
+};
+
+class CreateSocket : public SocketCommand
+{
+public:
+    using SocketCommand::SocketCommand;
+
+    void undo() override;
+    void redo() override;
+};
+
+class DeleteSocket : public SocketCommand
+{
+public:
+    using SocketCommand::SocketCommand;
 
     void undo() override;
     void redo() override;

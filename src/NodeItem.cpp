@@ -269,11 +269,13 @@ bool NodeItem::isInput(QString socket_name)
 void NodeItem::onInputsChanged()
 {
     this->inputsModel = this->findChild<SocketModel*>("inputsModel");
+    this->inputsModel->nodeIndex = this->index;
 }
 
 void NodeItem::onOutputsChanged()
 {
     this->outputsModel = this->findChild<SocketModel*>("outputsModel");
+    this->outputsModel->nodeIndex = this->index;
 }
 
 QVariantMap NodeItem::getHooksMap()

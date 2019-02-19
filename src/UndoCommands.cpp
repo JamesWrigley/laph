@@ -171,8 +171,33 @@ DeleteWire::DeleteWire(Glaph& glaph, unsigned int inputIndex, QString const& inp
 void DeleteWire::undo() { this->createWire(); }
 
 void DeleteWire::redo() { this->deleteWire(); }
+
+/*** SocketCommand ***/
+
+SocketCommand::SocketCommand(Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) : xcom(XCom::get()),
+                                                                                                       socket(socket),
+                                                                                                       nodeIndex(nodeIndex),
+                                                                                                       socketIndex(socketIndex)
+{ }
+
+void SocketCommand::createSocket()
+{
+    xcom.createSocket(this->socket, this->nodeIndex, this->socketIndex);
 }
 
-void DeleteWire::undo() { }
+void SocketCommand::deleteSocket()
+{
+    xcom.deleteSocket(this->socket.type, this->nodeIndex, this->socketIndex);
+}
 
-void DeleteWire::redo() { }
+/*** CreateSocket ***/
+
+void CreateSocket::undo() { this->deleteSocket(); }
+
+void CreateSocket::redo() { this->createSocket(); }
+
+/*** DeleteSocket ***/
+
+void DeleteSocket::undo() { this->createSocket(); }
+
+void DeleteSocket::redo() { this->deleteSocket(); }
