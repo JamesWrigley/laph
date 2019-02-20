@@ -125,7 +125,6 @@ void SocketModel::onDeleteSocket(SocketType type, unsigned int nodeIndex, unsign
 {
     if (nodeIndex == this->nodeIndex && this->sockets.size() > 0 && type & this->socketsType) {
         auto socket_it{this->cbegin() + socketIndex};
-        this->socket_counts.at(socket_it->prefix) -= 1;
         this->removeSocket(socket_it);
     }
 }
@@ -148,16 +147,18 @@ void SocketModel::connectSocket(QString const& socket_name)
 void SocketModel::disconnectSocket(QString const& socket_name)
 {
     auto socket_it{this->findSocket(socket_name)};
-    unsigned int& count{this->socket_counts.at(socket_it->prefix)};
 
     if (socket_it->repeating) {
-        if (count > 1) {
-            println("Count: :0", {count});
+        auto socket_instances{std::count_if(this->sockets.cbegin(), this->sockets.cend(),
+                                            [&] (Socket const& socket) {
+                                                return socket.prefix == socket_it->prefix;
+                                            })};
+        if (socket_instances > 1) {
             unsigned int socketIndex{static_cast<unsigned int>(socket_it - this->sockets.cbegin())};
             xcom.requestDeleteSocket(*socket_it, this->nodeIndex, socketIndex);
         }
     } else {
-        --count;
+        this->socket_counts.at(socket_it->prefix) -= 1;
     }
 }
 
