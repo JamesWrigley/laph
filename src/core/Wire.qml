@@ -54,6 +54,11 @@ WireItem {
 
     Connections {
         target: xcom
+
+        onConnectWireTip: {
+            Wire.handleConnect(wireTip, target, type, true)
+            wireTip.Drag.active = false
+        }
         onDeleteWire: {
             if (index == root.index) {
                 Wire.deleteWire()
@@ -70,7 +75,21 @@ WireItem {
     onStartTypeChanged: xcom.repaintCanvas()
 
     function handleRelease(wireTip) {
-        Wire.handleReleaseImpl(wireTip)
+        var target = wireTip.Drag.target
+        if (target !== null && wireTip.Drag.drop() == Qt.MoveAction) {
+            var connectionType = null
+            if (endParent === initialSocket) {
+                connectionType = XCom.ConnectionType.New
+            } else if (wireTip.parent === target) {
+                connectionType = XCom.ConnectionType.Reconnect
+            } else {
+                connectionType = XCom.ConnectionType.Swap
+            }
+
+            Wire.handleConnect(wireTip, target, connectionType, false)
+        } else {
+            Wire.handleDisconnect()
+        }
     }
 
     states: [

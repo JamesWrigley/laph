@@ -22,8 +22,7 @@ function evaluateInput() {
     }
 }
 
-function setParent(wireTip) {
-    var target = wireTip.Drag.target
+function setParent(wireTip, target) {
     wireTip.index = target.node.index
 
     var hook = Qt.binding(function () {
@@ -43,26 +42,40 @@ function setParent(wireTip) {
     wireTip.y = 0
 }
 
-function handleReleaseImpl(wireTip) {
-    var target = wireTip.Drag.target
+function setRootProperties(wireTip, target) {
+    var otherTip = wireTip === endTip ? start.item : endTip
+    if (target.isInput) {
+        root.inputNode = target.node
+        root.inputSocket = target.socketName
+        root.outputNode = graphEngine.getNode(otherTip.index)
+        root.outputSocket = otherTip.socketName
+    } else {
+        root.outputNode = target.node
+        root.outputSocket = target.socketName
+        root.inputNode = graphEngine.getNode(otherTip.index)
+        root.inputSocket = otherTip.socketName
+    }
+}
+
+
+function handleConnect(wireTip, target, connectionType, isReplay) {
     var otherTip = wireTip === endTip ? start.item : endTip
 
-    // When connecting a wire
-    if (target !== null && wireTip.Drag.drop() === Qt.MoveAction) {
-        if (target.isInput) {
-            root.inputNode = target.node
-            root.inputSocket = target.socketName
-            root.outputNode = graphEngine.getNode(otherTip.index)
-            root.outputSocket = otherTip.socketName
-        } else {
-            root.outputNode = target.node
-            root.outputSocket = target.socketName
-            root.inputNode = graphEngine.getNode(otherTip.index)
-            root.inputSocket = otherTip.socketName
-        }
+    if (target.isInput) {
+        root.inputNode = target.node
+        root.inputSocket = target.socketName
+        root.outputNode = graphEngine.getNode(otherTip.index)
+        root.outputSocket = otherTip.socketName
+    } else {
+        root.outputNode = target.node
+        root.outputSocket = target.socketName
+        root.inputNode = graphEngine.getNode(otherTip.index)
+        root.inputSocket = otherTip.socketName
+    }
 
+    if (!isReplay) {
         // If the wire has just been created
-        if (endParent === initialSocket) {
+        if (connectionType === XCom.ConnectionType.New) {
             xcom.wireConnected(target.node.index,
                                wireTip.isOutput ? XCom.Output : XCom.Input,
                                target.socketName)
@@ -70,13 +83,13 @@ function handleReleaseImpl(wireTip) {
             xcom.wireConnected(otherTip.index,
                                wireTip.isOutput ? XCom.Input : XCom.Output,
                                otherTip.socketName)
-        } else if (wireTip.parent === target) {
+        } else if (connectionType === XCom.ConnectionType.Reconnect) {
             // If the user is reconnecting to the same socket, all we need to do
             // is reset the wireTip's local coordinates.
             wireTip.x = 0
             wireTip.y = 0
             return
-        } else {
+        } else if (connectionType === XCom.ConnectionType.Swap) {
             // If connecting to a different socket
             xcom.wireDisconnected(wireTip.index, wireTip.isOutput ? XCom.Output : XCom.Input, wireTip.socketName)
             xcom.wireConnected(target.node.index, wireTip.isOutput ? XCom.Output : XCom.Input, target.socketName)
@@ -87,17 +100,18 @@ function handleReleaseImpl(wireTip) {
             var extantWireTip = target.children[0]
             graphEngine.removeWire(extantWireTip.wireIndex)
         }
+    }
 
-        setParent(wireTip)
-        evaluateInput()
-    } else { // When disconnecting a wire
-        // If this is a valid wire with both ends connected, emit a signal so
-        // that the wire is deleted via the undo system.
-        if (endParent !== initialSocket) {
-            xcom.requestDeleteWire(inputNode.index, inputSocket, outputNode.index, outputSocket)
-        } else {
-            deleteWire()
-        }
+    setParent(wireTip, target)
+    evaluateInput()
+}
+
+function handleDisconnect()
+{
+    if (endParent !== initialSocket) {
+        xcom.requestDeleteWire(inputNode.index, inputSocket, outputNode.index, outputSocket)
+    } else {
+        Wire.deleteWire()
     }
 }
 

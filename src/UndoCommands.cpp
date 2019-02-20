@@ -100,6 +100,7 @@ void WireCommand::createWire()
                               Q_ARG(QVariant, this->startIsInput));
     WireItem* wire_ptr{wire.value<WireItem*>()};
     wire_ptr->creationCommand = this;
+    this->glaph.addWire(wire_ptr);
 
     // If the wire has been properly connected between two nodes, we need to
     // connect it again to the same socket.
@@ -112,10 +113,7 @@ void WireCommand::createWire()
         QVariant endDaName{};
         getObjName(endDaName, "da", endSocket, this->startIsInput);
         QObject* endDa{findChildItem(static_cast<NodeItem*>(endNode), endDaName.toString())};
-        println("index: :2, :0: :1", {endDaName.toString(), (unsigned long long)endDa, static_cast<NodeItem*>(endNode)->index});
-        endTip->setProperty("Drag.target", QVariant::fromValue(endDa));
-
-        QMetaObject::invokeMethod(wire_ptr, "handleRelease", Q_ARG(QVariant, QVariant::fromValue(endTip)));
+        emit this->xcom.connectWireTip(endTip, endDa, XCom::ConnectionType::New);
     }
 }
 

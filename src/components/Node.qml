@@ -286,7 +286,6 @@ NodeItem {
                                     onPressed: {
                                         if (wire === null && da.wires === 0) {
                                             xcom.requestCreateWire(glode.index, name, !parent.isInput)
-                                            graphEngine.addWire(wire)
                                         } else {
                                             mouse.accepted = false
                                         }

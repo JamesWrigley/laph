@@ -36,6 +36,9 @@ public:
     enum class TipType { Input, Output };
     Q_ENUM(TipType)
 
+    enum class ConnectionType { New, Swap, Reconnect };
+    Q_ENUM(ConnectionType)
+
     XCom(QObject*) = delete;
     XCom(XCom const&) = delete;
     void operator=(XCom const&) = delete;
@@ -69,6 +72,7 @@ signals:
     void deleteSocket(SocketType, unsigned int nodeIndex, unsigned int socketIndex);
     void createNode(QString const& nodeFile, int index, int x, int y);
     void deleteNode(int index);
+    void connectWireTip(QObject* wireTip, QObject* target, ConnectionType type);
     void deleteWire(int index);
 
 private:
