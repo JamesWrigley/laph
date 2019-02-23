@@ -82,6 +82,7 @@ protected:
     XCom& xcom;
     Glaph& glaph;
 
+    int wireIndex{-1};
     bool startIsInput;
     bool connected{false};
     unsigned int inputIndex;
@@ -102,7 +103,7 @@ public:
 class DeleteWire : public WireCommand
 {
 public:
-    DeleteWire(Glaph&, unsigned int, QString const&, unsigned int, QString const&);
+    DeleteWire(Glaph&, int);
 
     void undo() override;
     void redo() override;

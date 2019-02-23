@@ -49,9 +49,13 @@ Glaph::Glaph(QObject* parent) : QObject(parent),
     connect(&xcom, &XCom::requestCreateWire, [&] (int startIndex, QString const& startSocket, bool isInput) {
                                                  this->commandStack.push(new CreateWire(*this, startIndex, startSocket, isInput));
                                              });
-    connect(&xcom, &XCom::requestDeleteWire, [&] (unsigned int inputIndex, QString const& inputSocket,
-                                                  unsigned int outputIndex, QString const& outputSocket) {
-                                                 this->commandStack.push(new DeleteWire(*this, inputIndex, inputSocket, outputIndex, outputSocket));
+    connect(&xcom, &XCom::requestDeleteWire, [&] (int wireIndex) {
+                                                 WireItem const* wire{this->getWire(wireIndex)};
+                                                 unsigned int inputIndex{wire->inputNode->index};
+                                                 unsigned int outputIndex{wire->outputNode->index};
+                                                 QString inputSocket{wire->inputSocket};
+                                                 QString outputSocket{wire->outputSocket};
+                                                 this->commandStack.push(new DeleteWire(*this, wireIndex));
 
                                                  // These signals need to be emitted after the wire is deleted, because otherwise
                                                  // the DeleteSocket commands will be added to the undo stack before DeleteWire,
@@ -276,20 +280,15 @@ Socket::SocketType Glaph::getInputValueType(NodeItem* node, QString const& socke
     }
 }
 
-WireItem const* Glaph::findWire(unsigned int inputIndex, QString const& inputSocket,
-                                unsigned int outputIndex, QString const& outputSocket)
+WireItem const* Glaph::getWire(int wireIndex)
 {
     auto wire_it{std::find_if(this->wires.cbegin(), this->wires.cend(),
                               [&] (auto const& wire) {
-                                  NodeItem* input_node{static_cast<NodeItem*>(wire->inputNode)};
-                                  NodeItem* output_node{static_cast<NodeItem*>(wire->outputNode)};
-
-                                  return (input_node->index == inputIndex && wire->inputSocket == inputSocket &&
-                                          output_node->index == outputIndex && wire->outputSocket == outputSocket);
+                                  return wireIndex == wire->index;
                               })};
+
     if (wire_it == this->wires.cend()) {
-        throw std::runtime_error(fmt("Could not find wire between :0::1 and :2::3",
-                                     {inputIndex, inputSocket, outputIndex, outputSocket}));
+        throw std::runtime_error(fmt("Could not find wire with index :0", {wireIndex}));
     } else {
         return wire_it->get();
     }

@@ -109,7 +109,7 @@ function handleConnect(wireTip, target, connectionType, isReplay) {
 function handleDisconnect()
 {
     if (endParent !== initialSocket) {
-        xcom.requestDeleteWire(inputNode.index, inputSocket, outputNode.index, outputSocket)
+        xcom.requestDeleteWire(root.index)
     } else {
         Wire.deleteWire()
     }

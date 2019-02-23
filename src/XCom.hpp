@@ -60,8 +60,7 @@ signals:
     void requestCreateNode(QString const& nodeFile, int nodeIndex, int x, int y);
     void requestDeleteNode(int nodeIndex);
     void requestCreateWire(unsigned int startNode, QString const& startSocket, bool isInput);
-    void requestDeleteWire(unsigned int startIndex, QString const& startSocket,
-                           unsigned int endIndex, QString const& endSocket);
+    void requestDeleteWire(int wireIndex);
     void requestUndo();
     void requestRedo();
 

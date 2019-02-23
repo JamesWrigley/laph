@@ -58,11 +58,11 @@ public:
     // Socket::SocketType.
     Q_INVOKABLE Socket::SocketType getInputValueType(NodeItem*, QString const&);
 
+    WireItem const* getWire(int);
     // We need this custom replacement for QObject::findChild() because in Qt5
     // you can't use it to find an item in a Repeater. Kudos to Christian
     // Feldbacher: https://stackoverflow.com/a/22556528.
     QObject* findChildItem(QQuickItem*, QString const&);
-    WireItem const* findWire(unsigned int, QString const&, unsigned int, QString const&);
     std::unordered_set<WireItem*> getInputs(NodeItem*, QString const& socket_name="");
     std::unordered_set<WireItem*> getOutputs(NodeItem*);
 

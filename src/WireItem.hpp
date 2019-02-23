@@ -52,6 +52,7 @@ public:
     QQuickItem* getInputNode();
     QQuickItem* getOutputNode();
 
+    void setIndex(int);
     void setValid(bool);
     void setEndParent(QObject*);
     void setInputSocket(QString&);

@@ -67,9 +67,7 @@ WireCommand::WireCommand(Glaph& glaph) : xcom(XCom::get()), glaph(glaph) { }
 
 void WireCommand::deleteWire()
 {
-    WireItem const* wire{this->glaph.findWire(this->inputIndex, this->inputSocket,
-                                              this->outputIndex, this->outputSocket)};
-    emit this->xcom.deleteWire(wire->index);
+    emit this->xcom.deleteWire(this->wireIndex);
 }
 
 void WireCommand::createWire()
@@ -101,6 +99,16 @@ void WireCommand::createWire()
                               Q_ARG(QVariant, this->startIsInput));
     WireItem* wire_ptr{wire.value<WireItem*>()};
     wire_ptr->creationCommand = this;
+
+    // If it is the first time we are creating this particular wire, store its
+    // index so that we can set it correctly if the wire recreated later
+    // (i.e. via some undo/redo).
+    if (this->wireIndex == -1) {
+        this->wireIndex = wire_ptr->index;
+    } else {
+        wire_ptr->setIndex(this->wireIndex);
+    }
+
     this->glaph.addWire(wire_ptr);
 
     // If the wire has been properly connected between two nodes, we need to
@@ -154,18 +162,19 @@ void CreateWire::redo() { this->createWire(); }
 
 /*** DeleteWire ***/
 
-DeleteWire::DeleteWire(Glaph& glaph, unsigned int inputIndex, QString const& inputSocket,
-                       unsigned int outputIndex, QString const& outputSocket) : WireCommand(glaph)
+DeleteWire::DeleteWire(Glaph& glaph, int wireIndex) : WireCommand(glaph)
 {
-    this->inputIndex = inputIndex;
-    this->inputSocket = inputSocket;
-    this->outputIndex = outputIndex;
-    this->outputSocket = outputSocket;
+    WireItem const* wire{this->glaph.getWire(wireIndex)};
+
+    this->inputIndex = wire->inputNode->index;
+    this->inputSocket = wire->inputSocket;
+    this->outputIndex = wire->outputNode->index;
+    this->outputSocket = wire->outputSocket;
     this->connected = true;
 
-    WireItem const* wire{this->glaph.findWire(inputIndex, inputSocket, outputIndex, outputSocket)};
     QObject* endTip{wire->property("endTip").value<QObject*>()};
     this->startIsInput = endTip->property("socketName").toString() != inputSocket;
+    this->wireIndex = wire->index;
 }
 
 void DeleteWire::undo() { this->createWire(); }

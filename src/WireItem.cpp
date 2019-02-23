@@ -84,6 +84,12 @@ QQuickItem* WireItem::getOutputNode()
     return reinterpret_cast<QQuickItem*>(this->outputNode);
 }
 
+void WireItem::setIndex(int index)
+{
+    this->index = index;
+    emit this->indexChanged();
+}
+
 void WireItem::setValid(bool valid)
 {
     this->valid = valid;
