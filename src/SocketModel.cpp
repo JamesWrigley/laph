@@ -117,6 +117,7 @@ void SocketModel::refreshSockets()
 void SocketModel::onCreateSocket(Socket socket, unsigned int nodeIndex, unsigned int socketIndex)
 {
     if (nodeIndex == this->nodeIndex && this->sockets.size() > 0 && ioTypesMatch(socket, this->sockets.front())) {
+        this->socket_counts.at(socket.prefix) += 1;
         this->addSocket(socket, this->cbegin() + socketIndex);
     }
 }
@@ -135,10 +136,9 @@ void SocketModel::connectSocket(QString const& socket_name)
 
     // At least for now, we only allow repeating *input* sockets
     if (socket_it->repeating && (socket_it->type & SocketType::Input)) {
-        unsigned int& count{this->socket_counts.at(socket_it->prefix)};
-        ++count;
+        unsigned int count{this->socket_counts.at(socket_it->prefix)};
         Socket new_socket{*socket_it};
-        new_socket.name = socket_it->prefix + QString::number(count);
+        new_socket.name = socket_it->prefix + QString::number(count + 1);
         unsigned int socketIndex{static_cast<unsigned int>(socket_it - this->sockets.cbegin() + 1)};
         xcom.requestCreateSocket(new_socket, this->nodeIndex, socketIndex);
     }
