@@ -56,6 +56,7 @@ DeleteNode::DeleteNode(NodeItem const* node)
     this->index = node->index;
     this->nodeFile = node->nodeFile;
 }
+
 void DeleteNode::undo() { this->createNode(); }
 
 void DeleteNode::redo() { this->deleteNode(); }
@@ -161,6 +162,10 @@ DeleteWire::DeleteWire(Glaph& glaph, unsigned int inputIndex, QString const& inp
     this->outputIndex = outputIndex;
     this->outputSocket = outputSocket;
     this->connected = true;
+
+    WireItem const* wire{this->glaph.findWire(inputIndex, inputSocket, outputIndex, outputSocket)};
+    QObject* endTip{wire->property("endTip").value<QObject*>()};
+    this->startIsInput = endTip->property("socketName").toString() != inputSocket;
 }
 
 void DeleteWire::undo() { this->createWire(); }

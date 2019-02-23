@@ -52,6 +52,12 @@ Glaph::Glaph(QObject* parent) : QObject(parent),
     connect(&xcom, &XCom::requestDeleteWire, [&] (unsigned int inputIndex, QString const& inputSocket,
                                                   unsigned int outputIndex, QString const& outputSocket) {
                                                  this->commandStack.push(new DeleteWire(*this, inputIndex, inputSocket, outputIndex, outputSocket));
+
+                                                 // These signals need to be emitted after the wire is deleted, because otherwise
+                                                 // the DeleteSocket commands will be added to the undo stack before DeleteWire,
+                                                 // which is the wrong order and causes a crash during undo().
+                                                 this->xcom.wireDisconnected(inputIndex, XCom::TipType::Input, inputSocket);
+                                                 this->xcom.wireDisconnected(outputIndex, XCom::TipType::Output, outputSocket);
                                              });
     connect(&xcom, &XCom::requestCreateSocket, [&] (Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) {
                                                    this->commandStack.push(new CreateSocket(socket, nodeIndex, socketIndex));
@@ -193,13 +199,6 @@ void Glaph::removeWire(int index)
                               [&index] (WireItemPtr const& wire_ptr) {
                                   return wire_ptr->index == index;
                               })};
-    auto& wire{*wire_it};
-
-    // If this is not a new node, emit disconnect signals
-    if (wire->outputNode != nullptr) {
-        this->xcom.wireDisconnected(wire->inputNode->index, XCom::TipType::Input, wire->inputSocket);
-        this->xcom.wireDisconnected(wire->outputNode->index, XCom::TipType::Output, wire->outputSocket);
-    }
 
     this->wires.erase(wire_it);
 }
