@@ -44,6 +44,7 @@ namespace std {
 std::string fmt(std::string const& format_str, QVariantList const& args);
 void println(std::string const& format_str, QVariantList const& args={});
 QObject* findChildItem(QQuickItem* parent, QString const& name);
+QString getObjectName(QQuickItem*, QString, QString, bool);
 bool ioTypesMatch(Socket const&, Socket const&);
 
 #endif

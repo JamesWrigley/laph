@@ -16,6 +16,7 @@
  *                                                                                *
  *********************************************************************************/
 
+#include "util.hpp"
 #include "Glaph.hpp"
 #include "UndoCommands.hpp"
 
@@ -76,21 +77,10 @@ void WireCommand::createWire()
     QString& startSocket{this->startIsInput ? this->inputSocket : this->outputSocket};
 
     NodeItem* startNode{this->glaph.getNode(startIndex)};
-    auto getObjName{[&] (QVariant& return_var, QString name, QString& socket, bool socketIsInput) {
-                        QMetaObject::invokeMethod(startNode, "getObjectName",
-                                                  Q_RETURN_ARG(QVariant, return_var),
-                                                  Q_ARG(QVariant, name),
-                                                  Q_ARG(QVariant, socket),
-                                                  // Need to flip the bool here because the argument means if the
-                                                  // socket is an input, not the wire tip.
-                                                  Q_ARG(QVariant, socketIsInput));
-                    }};
-    QVariant maName{};
-    QVariant daName{};
-    getObjName(maName, "ma", startSocket, !this->startIsInput);
-    getObjName(daName, "da", startSocket, !this->startIsInput);
-    QObject* ma{findChildItem(startNode, maName.toString())};
-    QObject* da{findChildItem(startNode, daName.toString())};
+    QString maName{getObjectName(startNode, "ma", startSocket, !this->startIsInput)};
+    QString daName{getObjectName(startNode, "da", startSocket, !this->startIsInput)};
+    QObject* ma{findChildItem(startNode, maName)};
+    QObject* da{findChildItem(startNode, daName)};
     QVariant wire;
     QMetaObject::invokeMethod(startNode, "createWire",
                               Q_RETURN_ARG(QVariant, wire),
@@ -119,9 +109,8 @@ void WireCommand::createWire()
         QObject* endTip{wire_ptr->property("endTip").value<QObject*>()};
         NodeItem* endNode{this->glaph.getNode(endIndex)};
 
-        QVariant endDaName{};
-        getObjName(endDaName, "da", endSocket, this->startIsInput);
-        QObject* endDa{findChildItem(static_cast<NodeItem*>(endNode), endDaName.toString())};
+        QString endDaName{getObjectName(endNode, "da", endSocket, this->startIsInput)};
+        QObject* endDa{findChildItem(static_cast<NodeItem*>(endNode), endDaName)};
         emit this->xcom.connectWireTip(endTip, endDa, XCom::ConnectionType::New);
     }
 }

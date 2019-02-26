@@ -19,6 +19,8 @@
 #include <regex>
 #include <iostream>
 
+#include <QMetaObject>
+
 #include "util.hpp"
 
 std::ostream& operator<<(std::ostream& os, QString const& str)
@@ -70,6 +72,18 @@ QObject* findChildItem(QQuickItem* parent, QString const& name)
 
         return nullptr;
     }
+}
+
+QString getObjectName(QQuickItem* node, QString prefix,
+                      QString socket, bool socketIsInput)
+{
+    QVariant name{};
+    QMetaObject::invokeMethod(node, "getObjectName",
+                              Q_RETURN_ARG(QVariant, name),
+                              Q_ARG(QVariant, prefix),
+                              Q_ARG(QVariant, socket),
+                              Q_ARG(QVariant, socketIsInput));
+    return name.toString();
 }
 
 bool ioTypesMatch(Socket const& one, Socket const& two)
