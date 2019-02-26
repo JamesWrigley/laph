@@ -39,7 +39,6 @@ WireItem {
     property real endX
     property real endY
     property var canvas
-    property var outputTip
     property bool startOnLeft
     property real endUpdateHook
     property real startUpdateHook
@@ -49,6 +48,7 @@ WireItem {
     property int endIndex: -1
     property int startIndex: -1
     property var endTip: end.item
+    property var startTip: start.item
     property var endType: end.item.socketType
     property var startType: start.item.socketType
 
@@ -58,6 +58,9 @@ WireItem {
         onConnectWireTip: {
             Wire.handleConnect(wireTip, target, type, true)
             wireTip.Drag.active = false
+        }
+        onReconnectWireTip: {
+            Wire.handleConnect(wireTip, target, type, isReplay)
         }
         onDeleteWire: {
             if (index == root.index) {
@@ -81,9 +84,13 @@ WireItem {
             if (endParent === initialSocket) {
                 connectionType = XCom.ConnectionType.New
             } else if (wireTip.parent === target) {
-                connectionType = XCom.ConnectionType.Reconnect
+                connectionType = XCom.ConnectionType.None
             } else {
-                connectionType = XCom.ConnectionType.Swap
+                // Only reconnects are handled entirely through C++, so all we
+                // do here is emit XCom.requestReconnectWireTip().
+                var tipType = wireTip.socketName == root.inputSocket ? XCom.TipType.Input : XCom.TipType.Output
+                xcom.requestReconnectWireTip(root.index, tipType, target.node.index, target.socketName)
+                return
             }
 
             Wire.handleConnect(wireTip, target, connectionType, false)

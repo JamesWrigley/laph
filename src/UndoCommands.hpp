@@ -109,6 +109,29 @@ public:
     void redo() override;
 };
 
+class ReconnectWireTip : public QUndoCommand
+{
+public:
+    ReconnectWireTip(Glaph&, unsigned int, TipType, unsigned int, QString const&);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    void reconnect(unsigned int, unsigned int, QString const&);
+
+    XCom& xcom;
+    Glaph& glaph;
+
+    TipType tipType;
+    bool isReplay{false};
+    unsigned int wireIndex;
+    QString oldSocket;
+    QString newSocket;
+    unsigned int oldNodeIndex;
+    unsigned int newNodeIndex;
+};
+
 class SocketCommand : public QUndoCommand
 {
 public:

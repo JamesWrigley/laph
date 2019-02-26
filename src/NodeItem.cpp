@@ -306,7 +306,7 @@ Socket const& NodeItem::getSocket(QString const& socket_name,
     if (socket_it != model->cend()) {
         return *socket_it;
     } else {
-        throw std::runtime_error("Could not find socket " + socket_name.toStdString());
+        throw std::runtime_error(fmt("Could not find socket :0", {socket_name}));
     }
 }
 

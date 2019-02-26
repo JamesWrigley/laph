@@ -170,6 +170,51 @@ void DeleteWire::undo() { this->createWire(); }
 
 void DeleteWire::redo() { this->deleteWire(); }
 
+/*** ReconnectWire ***/
+
+ReconnectWireTip::ReconnectWireTip(Glaph& glaph, unsigned int wireIndex, TipType tipType,
+                                   unsigned int newNodeIndex, QString const& newSocket) : xcom(XCom::get()),
+                                                                                          glaph(glaph)
+{
+    this->tipType = tipType;
+    this->wireIndex = wireIndex;
+    this->newSocket = newSocket;
+    this->newNodeIndex = newNodeIndex;
+
+    WireItem const* wire{glaph.getWire(wireIndex)};
+    QQuickItem* oldNodeItem{tipType == TipType::Input ? wire->inputNode : wire->outputNode};
+    this->oldSocket = tipType == TipType::Input ? wire->inputSocket : wire->outputSocket;
+    this->oldNodeIndex = static_cast<NodeItem*>(oldNodeItem)->index;
+}
+
+void ReconnectWireTip::redo()
+{
+    this->reconnect(this->oldNodeIndex, this->newNodeIndex, this->newSocket);
+}
+
+void ReconnectWireTip::undo()
+{
+    this->reconnect(this->newNodeIndex, this->oldNodeIndex, this->oldSocket);
+}
+
+void ReconnectWireTip::reconnect(unsigned int oldNodeIndex, unsigned int newNodeIndex, QString const& newSocket)
+{
+    WireItem const* wire{glaph.getWire(this->wireIndex)};
+
+    // Find the correct tip
+    QObject* tip{wire->property("startTip").value<QObject*>()};
+    if (tip->property("index").toUInt() != oldNodeIndex) {
+        tip = wire->property("endTip").value<QObject*>();
+    }
+
+    // Find the correct target
+    NodeItem* newNode{this->glaph.getNode(newNodeIndex)};
+    QString targetName{getObjectName(newNode, "da", newSocket, this->tipType == TipType::Output)};
+    QObject* target{findChildItem(newNode, targetName)};
+    xcom.reconnectWireTip(tip, target, ConnectionType::Reconnect, this->isReplay);
+    this->isReplay = true;
+}
+
 /*** SocketCommand ***/
 
 SocketCommand::SocketCommand(Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) : xcom(XCom::get()),

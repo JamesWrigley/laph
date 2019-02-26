@@ -63,6 +63,19 @@ Glaph::Glaph(QObject* parent) : QObject(parent),
                                                  this->xcom.wireDisconnected(inputIndex, XCom::TipType::Input, inputSocket);
                                                  this->xcom.wireDisconnected(outputIndex, XCom::TipType::Output, outputSocket);
                                              });
+    connect(&xcom, &XCom::requestReconnectWireTip, [&] (unsigned int wireIndex, XCom::TipType tipType, unsigned int newNodeIndex, QString const& newSocket) {
+                                                       // These signals need to be emitted after the wire is reconnected,
+                                                       // for the same reasons as when a wire is deleted.
+                                                       WireItem const* wire{this->getWire(wireIndex)};
+                                                       bool isInput{tipType == TipType::Input};
+                                                       unsigned int oldNodeIndex{isInput ? wire->inputNode->index : wire->outputNode->index};
+                                                       QString oldSocket{isInput ? wire->inputSocket : wire->outputSocket};
+
+                                                       this->commandStack.push(new ReconnectWireTip(*this, wireIndex, tipType, newNodeIndex, newSocket));
+
+                                                       this->xcom.wireDisconnected(oldNodeIndex, tipType, oldSocket);
+                                                       this->xcom.wireConnected(newNodeIndex, tipType, newSocket);
+                                                   });
     connect(&xcom, &XCom::requestCreateSocket, [&] (Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) {
                                                    this->commandStack.push(new CreateSocket(socket, nodeIndex, socketIndex));
                                                });

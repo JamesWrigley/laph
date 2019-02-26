@@ -83,16 +83,15 @@ function handleConnect(wireTip, target, connectionType, isReplay) {
             xcom.wireConnected(otherTip.index,
                                wireTip.isOutput ? XCom.Input : XCom.Output,
                                otherTip.socketName)
-        } else if (connectionType === XCom.ConnectionType.Reconnect) {
+        } else if (connectionType === XCom.ConnectionType.None) {
             // If the user is reconnecting to the same socket, all we need to do
             // is reset the wireTip's local coordinates.
             wireTip.x = 0
             wireTip.y = 0
             return
-        } else if (connectionType === XCom.ConnectionType.Swap) {
-            // If connecting to a different socket
-            xcom.wireDisconnected(wireTip.index, wireTip.isOutput ? XCom.Output : XCom.Input, wireTip.socketName)
-            xcom.wireConnected(target.node.index, wireTip.isOutput ? XCom.Output : XCom.Input, target.socketName)
+        } else if (connectionType === XCom.ConnectionType.Reconnect) {
+            // If connecting to a different socket we do nothing, because those
+            // signals are emitted from C++land for timing reasons.
         }
 
         // If the socket already has a wire connected, disconnect it
