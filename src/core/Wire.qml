@@ -99,18 +99,6 @@ WireItem {
         }
     }
 
-    states: [
-        State {
-            name: "setOutputTip"
-            when: endParent !== null
-
-            PropertyChanges {
-                target: root
-                outputTip: endParent.isInput ? start.item : end.item
-            }
-        }
-    ]
-
     Connections {
         target: canvas
 
