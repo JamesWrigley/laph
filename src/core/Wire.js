@@ -97,7 +97,7 @@ function handleConnect(wireTip, target, connectionType, isReplay) {
         // If the socket already has a wire connected, disconnect it
         if (!target.isInput && target.wires > 0) {
             var extantWireTip = target.children[0]
-            graphEngine.removeWire(extantWireTip.wireIndex)
+            xcom.requestDeleteWire(extantWireTip.wireIndex)
         }
     }
 
