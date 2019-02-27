@@ -56,11 +56,15 @@ WireItem {
         target: xcom
 
         onConnectWireTip: {
-            Wire.handleConnect(wireTip, target, type, true)
-            wireTip.Drag.active = false
+            if (wireTip.wireIndex === root.index) {
+                Wire.handleConnect(wireTip, target, type, true)
+                wireTip.Drag.active = false
+            }
         }
         onReconnectWireTip: {
-            Wire.handleConnect(wireTip, target, type, isReplay)
+            if (wireTip.wireIndex === root.index) {
+                Wire.handleConnect(wireTip, target, type, isReplay)
+            }
         }
         onDeleteWire: {
             if (index == root.index) {
