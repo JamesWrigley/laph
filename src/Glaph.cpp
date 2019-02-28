@@ -150,7 +150,12 @@ void Glaph::endCreateNode(QString const& code_path, QObject* qobj_node)
 
 NodeItem* Glaph::getNode(unsigned int index)
 {
-    return this->nodes.at(index).get();
+    auto node_it{this->nodes.find(index)};
+    if (node_it == this->nodes.end()) {
+        throw std::runtime_error(fmt("Could not find node with index :0", {index}));
+    } else {
+        return node_it->second.get();
+    }
 }
 
 void Glaph::addWire(QObject* wire_qobj)

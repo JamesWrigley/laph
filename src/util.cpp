@@ -57,20 +57,32 @@ void println(std::string const& format_str, QVariantList const& args)
     std::cout << fmt(format_str, args) << std::endl;
 }
 
-QObject* findChildItem(QQuickItem* parent, QString const& name)
+QObject* findChildItemUnsafe(QQuickItem* parent, QString const& name)
 {
     if (parent->objectName() == name) {
         return parent;
     } else {
         QList<QQuickItem*> children{parent->childItems()};
         for (auto* item : children) {
-            QObject* child{findChildItem(item, name)};
+            QObject* child{findChildItemUnsafe(item, name)};
             if (child != nullptr) {
                 return child;
             }
         }
 
         return nullptr;
+    }
+}
+
+QObject* findChildItem(QQuickItem* parent, QString const& name)
+{
+    QObject* item{findChildItemUnsafe(parent, name)};
+
+    if (item == nullptr) {
+        throw std::runtime_error(fmt("Could not find child :0 in :1(:2)",
+                                     {name, parent->metaObject()->className(), (qulonglong)parent}));
+    } else {
+        return item;
     }
 }
 
