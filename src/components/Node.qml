@@ -285,7 +285,7 @@ NodeItem {
 
                                     onPressed: {
                                         if (da.wires === 0) {
-                                            wire = createWire(da, ma, parent.isInput)
+                                            xcom.requestCreateWire(glode.index, name, !parent.isInput)
                                         } else {
                                             mouse.accepted = false
                                         }
