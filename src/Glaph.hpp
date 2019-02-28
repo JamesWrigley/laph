@@ -54,6 +54,7 @@ public:
     Q_INVOKABLE void evaluateFrom(NodeItem*, QStringList);
     Q_INVOKABLE QString inputToString(QObject*, QString const&);
     Q_INVOKABLE QList<double> inputToList(QObject*, QString const&);
+
     // For some reason, QML doesn't recognize SocketType, but it does recognize
     // Socket::SocketType.
     Q_INVOKABLE Socket::SocketType getInputValueType(NodeItem*, QString const&);

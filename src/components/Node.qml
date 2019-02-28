@@ -106,8 +106,8 @@ NodeItem {
         return wire
     }
 
-    function getObjectName(type, name, isInput) {
-        return type + "_" + name + "_" + (isInput ? "I" : "O")
+    function getObjectName(type, name, socketIsInput) {
+        return type + "_" + name + "_" + (socketIsInput ? "I" : "O")
     }
 
     FocusScope {
@@ -284,8 +284,8 @@ NodeItem {
                                     property var wire: null
 
                                     onPressed: {
-                                        if (wire === null && da.wires === 0) {
-                                            xcom.requestCreateWire(glode.index, name, !parent.isInput)
+                                        if (da.wires === 0) {
+                                            wire = createWire(da, ma, parent.isInput)
                                         } else {
                                             mouse.accepted = false
                                         }
