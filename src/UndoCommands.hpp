@@ -27,10 +27,22 @@
 
 class Glaph;
 
-class NodeCommand : public QUndoCommand
+class BaseCommand : public QUndoCommand
 {
 public:
-    NodeCommand();
+    BaseCommand();
+
+    XCom& xcom;
+    unsigned int const eventId;
+
+    virtual void undo() = 0;
+    virtual void redo() = 0;
+};
+
+class NodeCommand : public BaseCommand
+{
+public:
+    NodeCommand(Glaph&);
 
     virtual void undo() = 0;
     virtual void redo() = 0;
@@ -39,8 +51,7 @@ protected:
     void createNode();
     void deleteNode();
 
-    XCom& xcom;
-
+    Glaph& glaph;
     int x;
     int y;
     int index;
@@ -50,7 +61,7 @@ protected:
 class CreateNode : public NodeCommand
 {
 public:
-    CreateNode(QString const&, int, int, int);
+    CreateNode(Glaph&, QString const&, int, int, int);
 
     void undo() override;
     void redo() override;
@@ -59,13 +70,13 @@ public:
 class DeleteNode : public NodeCommand
 {
 public:
-    DeleteNode(NodeItem const*);
+    DeleteNode(Glaph&, NodeItem const*);
 
     void undo() override;
     void redo() override;
 };
 
-class WireCommand : public QUndoCommand
+class WireCommand : public BaseCommand
 {
 public:
     WireCommand(Glaph&);
@@ -79,7 +90,6 @@ protected:
     void createWire();
     void deleteWire();
 
-    XCom& xcom;
     Glaph& glaph;
 
     int wireIndex{-1};
@@ -109,7 +119,7 @@ public:
     void redo() override;
 };
 
-class ReconnectWireTip : public QUndoCommand
+class ReconnectWireTip : public BaseCommand
 {
 public:
     ReconnectWireTip(Glaph&, unsigned int, TipType, unsigned int, QString const&);
@@ -120,7 +130,6 @@ public:
 private:
     void reconnect(unsigned int, unsigned int, QString const&);
 
-    XCom& xcom;
     Glaph& glaph;
 
     TipType tipType;
@@ -132,7 +141,7 @@ private:
     unsigned int newNodeIndex;
 };
 
-class SocketCommand : public QUndoCommand
+class SocketCommand : public BaseCommand
 {
 public:
     SocketCommand(Socket const&, unsigned int, unsigned int);
@@ -144,7 +153,6 @@ protected:
     void createSocket();
     void deleteSocket();
 
-    XCom& xcom;
     Socket const socket;
     unsigned int nodeIndex;
     unsigned int socketIndex;

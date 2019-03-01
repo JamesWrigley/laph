@@ -35,61 +35,65 @@ namespace fs = std::filesystem;
 
 Glaph::Glaph(QObject* parent) : QObject(parent),
                                 xcom(XCom::get()),
-                                commandStack(parent),
+                                mainStack(parent),
+                                socketStack(parent),
                                 nodeComponent(xcom.engine)
 {
     jl_init();
 
     connect(&xcom, &XCom::requestCreateNode, [&] (QString const& nodeFile, int index, int x, int y) {
-                                                 this->commandStack.push(new CreateNode(nodeFile, index, x, y));
+                                                 this->mainStack.push(new CreateNode(*this, nodeFile, index, x, y));
                                              });
     connect(&xcom, &XCom::requestDeleteNode, [&] (int index) {
-                                                 this->commandStack.push(new DeleteNode(this->nodes.at(index).get()));
+                                                 this->mainStack.push(new DeleteNode(*this, this->nodes.at(index).get()));
                                              });
     connect(&xcom, &XCom::requestCreateWire, [&] (int startIndex, QString const& startSocket, bool isInput) {
-                                                 this->commandStack.push(new CreateWire(*this, startIndex, startSocket, isInput));
+                                                 this->mainStack.push(new CreateWire(*this, startIndex, startSocket, isInput));
                                              });
     connect(&xcom, &XCom::requestDeleteWire, [&] (int wireIndex) {
-                                                 WireItem const* wire{this->getWire(wireIndex)};
-                                                 unsigned int inputIndex{wire->inputNode->index};
-                                                 unsigned int outputIndex{wire->outputNode->index};
-                                                 QString inputSocket{wire->inputSocket};
-                                                 QString outputSocket{wire->outputSocket};
-                                                 this->commandStack.push(new DeleteWire(*this, wireIndex));
-
-                                                 // These signals need to be emitted after the wire is deleted, because otherwise
-                                                 // the DeleteSocket commands will be added to the undo stack before DeleteWire,
-                                                 // which is the wrong order and causes a crash during undo().
-                                                 this->xcom.wireDisconnected(inputIndex, XCom::TipType::Input, inputSocket);
-                                                 this->xcom.wireDisconnected(outputIndex, XCom::TipType::Output, outputSocket);
+                                                 this->mainStack.push(new DeleteWire(*this, wireIndex));
                                              });
     connect(&xcom, &XCom::requestReconnectWireTip, [&] (unsigned int wireIndex, XCom::TipType tipType, unsigned int newNodeIndex, QString const& newSocket) {
-                                                       // These signals need to be emitted after the wire is reconnected,
-                                                       // for the same reasons as when a wire is deleted.
-                                                       WireItem const* wire{this->getWire(wireIndex)};
-                                                       bool isInput{tipType == TipType::Input};
-                                                       unsigned int oldNodeIndex{isInput ? wire->inputNode->index : wire->outputNode->index};
-                                                       QString oldSocket{isInput ? wire->inputSocket : wire->outputSocket};
-
-                                                       this->commandStack.push(new ReconnectWireTip(*this, wireIndex, tipType, newNodeIndex, newSocket));
-
-                                                       this->xcom.wireDisconnected(oldNodeIndex, tipType, oldSocket);
-                                                       this->xcom.wireConnected(newNodeIndex, tipType, newSocket);
+                                                       this->mainStack.push(new ReconnectWireTip(*this, wireIndex, tipType, newNodeIndex, newSocket));
                                                    });
     connect(&xcom, &XCom::requestCreateSocket, [&] (Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) {
-                                                   this->commandStack.push(new CreateSocket(socket, nodeIndex, socketIndex));
+                                                   this->socketStack.push(new CreateSocket(socket, nodeIndex, socketIndex));
                                                });
     connect(&xcom, &XCom::requestDeleteSocket, [&] (Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) {
-                                                   this->commandStack.push(new DeleteSocket(socket, nodeIndex, socketIndex));
+                                                   this->socketStack.push(new DeleteSocket(socket, nodeIndex, socketIndex));
                                                });
 
-    connect(&xcom, &XCom::requestUndo, [&] () { this->commandStack.undo(); });
-    connect(&xcom, &XCom::requestRedo, [&] () { this->commandStack.redo(); });
+    connect(&xcom, &XCom::requestUndo, [&] () { this->mainStack.undo(); });
+    connect(&xcom, &XCom::requestRedo, [&] () { this->mainStack.redo(); });
 }
 
 Glaph::~Glaph()
 {
     jl_atexit_hook(0);
+}
+
+void Glaph::socketStackUndo(unsigned int eventId)
+{
+    this->onStackChange(std::mem_fn(&QUndoStack::canUndo), std::mem_fn(&QUndoStack::undo),
+                        [] (auto& s) { return s.index() - 1; }, eventId);
+}
+
+void Glaph::socketStackRedo(unsigned int eventId)
+{
+    this->onStackChange(std::mem_fn(&QUndoStack::canRedo), std::mem_fn(&QUndoStack::redo),
+                        std::mem_fn(&QUndoStack::index), eventId);
+}
+
+void Glaph::onStackChange(std::function<bool(QUndoStack&)> predicate, std::function<void(QUndoStack&)> action,
+                          std::function<int(QUndoStack&)> index, unsigned int eventId)
+{
+    auto nextSocketCommand{[&] () {
+                               return static_cast<SocketCommand const*>(this->socketStack.command(index(this->socketStack)));
+                           }};
+
+    while (predicate(this->socketStack) && nextSocketCommand()->eventId == eventId) {
+        action(this->socketStack);
+    }
 }
 
 QObject* Glaph::beginCreateNode(QString const& node_path)
@@ -228,13 +232,25 @@ void Glaph::removeWire(int index)
 void Glaph::removeNode(unsigned int index)
 {
     NodeItem* node{this->nodes.at(index).get()};
-    auto remove_wrapper{[this] (auto&& wires) {
-                            for (auto& wire : wires) {
-                                this->removeWire(wire->index);
+    auto wire_cleanup{[&] (auto&& wires) {
+                          for (auto& wire : wires) {
+                              emit this->xcom.requestDeleteWire(wire->index);
+                              emit this->xcom.wireDisconnected(wire->outputNode->index, XCom::TipType::Output, wire->outputSocket);
+                              emit this->xcom.wireDisconnected(wire->inputNode->index, XCom::TipType::Input, wire->inputSocket);
+                          }
+                      }};
+    auto socket_cleanup{[&] (SocketModel model, QVariantMap const& modelTemplate) {
+                            for (auto socket_it{model.cbegin()}; socket_it != model.cend(); ++socket_it) {
+                                if (!modelTemplate.contains(socket_it->name)) {
+                                    emit this->xcom.requestDeleteSocket(*socket_it, index, socket_it - model.cbegin());
+                                }
                             }
                         }};
-    remove_wrapper(this->getInputs(node));
-    remove_wrapper(this->getOutputs(node));
+
+    wire_cleanup(this->getInputs(node));
+    wire_cleanup(this->getOutputs(node));
+    socket_cleanup(*(node->inputsModel), node->inputs);
+    socket_cleanup(*(node->outputsModel), node->outputs);
 
     this->nodes.erase(index);
 }

@@ -29,6 +29,8 @@ class XCom : public QObject
 {
     Q_OBJECT
 
+    Q_PROPERTY(int eventId READ getEventId WRITE setEventId)
+
 public:
     // It'd be nicer if this was defined in WireItem.hpp, but enums that are
     // used as signal parameters from QML need to be declared in the same class
@@ -48,7 +50,14 @@ public:
             return xcom;
         }
 
-    QQmlApplicationEngine* engine;
+    static unsigned int getEventId() { return XCom::get().eventId; }
+    static void setEventId(unsigned int newId)
+        {
+            XCom::get().eventId = newId;
+        }
+
+    unsigned int eventId{0u};
+    QQmlApplicationEngine* engine{nullptr};
 
 signals:
     void repaintCanvas();

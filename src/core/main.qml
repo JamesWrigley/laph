@@ -60,6 +60,7 @@ ApplicationWindow {
         sequence: "X"
         onActivated: {
             if (FocusSingleton.selectedNode != -1) {
+                xcom.eventId += 1
                 xcom.requestDeleteNode(FocusSingleton.selectedNode)
             }
         }
@@ -93,7 +94,10 @@ ApplicationWindow {
         z: FocusSingleton.maxZ + 1
         nodes: nm.nodes
 
-        onSelected: xcom.requestCreateNode(node, canvas.nodeCount, mouseArea.mouseX, mouseArea.mouseY)
+        onSelected: {
+            xcom.eventId += 1
+            xcom.requestCreateNode(node, canvas.nodeCount, mouseArea.mouseX, mouseArea.mouseY)
+        }
 
         Component.onCompleted: {
             // If we don't do this after the component is loaded, QML throws an error

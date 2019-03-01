@@ -92,6 +92,8 @@ function handleConnect(wireTip, target, connectionType, isReplay) {
         } else if (connectionType === XCom.ConnectionType.Reconnect) {
             // If connecting to a different socket we do nothing, because those
             // signals are emitted from C++land for timing reasons.
+            xcom.wireDisconnected(wireTip.index, wireTip.isOutput ? XCom.Output : XCom.Input, wireTip.socketName)
+            xcom.wireConnected(target.node.index, wireTip.isOutput ? XCom.Output : XCom.Input, target.socketName)
         }
 
         // If the socket already has a wire connected, disconnect it

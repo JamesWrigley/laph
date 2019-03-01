@@ -20,9 +20,16 @@
 #include "Glaph.hpp"
 #include "UndoCommands.hpp"
 
+/*** BaseCommand ***/
+
+BaseCommand::BaseCommand() : xcom(XCom::get()),
+                             eventId(xcom.eventId)
+{ }
+
 /*** NodeCommand ***/
 
-NodeCommand::NodeCommand() : xcom(XCom::get()) { }
+NodeCommand::NodeCommand(Glaph& glaph) : glaph(glaph)
+{ }
 
 void NodeCommand::deleteNode()
 {
@@ -36,7 +43,7 @@ void NodeCommand::createNode()
 
 /*** CreateNode ***/
 
-CreateNode::CreateNode(QString const& nodeFile, int index, int x, int y)
+CreateNode::CreateNode(Glaph& glaph, QString const& nodeFile, int index, int x, int y) : NodeCommand(glaph)
 {
     this->x = x;
     this->y = y;
@@ -44,13 +51,21 @@ CreateNode::CreateNode(QString const& nodeFile, int index, int x, int y)
     this->nodeFile = nodeFile;
 }
 
-void CreateNode::undo() { this->deleteNode(); }
+void CreateNode::undo()
+{
+    this->glaph.socketStackUndo(this->eventId);
+    this->deleteNode();
+}
 
-void CreateNode::redo() { this->createNode(); }
+void CreateNode::redo()
+{
+    this->createNode();
+    this->glaph.socketStackRedo(this->eventId);
+}
 
 /*** DeleteNode ***/
 
-DeleteNode::DeleteNode(NodeItem const* node)
+DeleteNode::DeleteNode(Glaph& glaph, NodeItem const* node) : NodeCommand(glaph)
 {
     this->x = node->x();
     this->y = node->y();
@@ -58,13 +73,22 @@ DeleteNode::DeleteNode(NodeItem const* node)
     this->nodeFile = node->nodeFile;
 }
 
-void DeleteNode::undo() { this->createNode(); }
+void DeleteNode::undo()
+{
+    this->createNode();
+    this->glaph.socketStackUndo(this->eventId);
+}
 
-void DeleteNode::redo() { this->deleteNode(); }
+void DeleteNode::redo()
+{
+    this->glaph.socketStackRedo(this->eventId);
+    this->deleteNode();
+}
 
 /*** WireCommand ***/
 
-WireCommand::WireCommand(Glaph& glaph) : xcom(XCom::get()), glaph(glaph) { }
+WireCommand::WireCommand(Glaph& glaph) : glaph(glaph)
+{ }
 
 void WireCommand::deleteWire()
 {
@@ -145,9 +169,17 @@ CreateWire::CreateWire(Glaph& glaph, unsigned int startIndex,
     }
 }
 
-void CreateWire::undo() { this->deleteWire(); }
+void CreateWire::undo()
+{
+    this->deleteWire();
+    this->glaph.socketStackUndo(this->eventId);
+}
 
-void CreateWire::redo() { this->createWire(); }
+void CreateWire::redo()
+{
+    this->glaph.socketStackRedo(this->eventId);
+    this->createWire();
+}
 
 /*** DeleteWire ***/
 
@@ -166,15 +198,22 @@ DeleteWire::DeleteWire(Glaph& glaph, int wireIndex) : WireCommand(glaph)
     this->wireIndex = wire->index;
 }
 
-void DeleteWire::undo() { this->createWire(); }
+void DeleteWire::undo()
+{
+    this->glaph.socketStackUndo(this->eventId);
+    this->createWire();
+}
 
-void DeleteWire::redo() { this->deleteWire(); }
+void DeleteWire::redo()
+{
+    this->deleteWire();
+    this->glaph.socketStackRedo(this->eventId);
+}
 
 /*** ReconnectWire ***/
 
 ReconnectWireTip::ReconnectWireTip(Glaph& glaph, unsigned int wireIndex, TipType tipType,
-                                   unsigned int newNodeIndex, QString const& newSocket) : xcom(XCom::get()),
-                                                                                          glaph(glaph)
+                                   unsigned int newNodeIndex, QString const& newSocket) : glaph(glaph)
 {
     this->tipType = tipType;
     this->wireIndex = wireIndex;
@@ -189,11 +228,13 @@ ReconnectWireTip::ReconnectWireTip(Glaph& glaph, unsigned int wireIndex, TipType
 
 void ReconnectWireTip::redo()
 {
+    this->glaph.socketStackRedo(this->eventId);
     this->reconnect(this->oldNodeIndex, this->newNodeIndex, this->newSocket);
 }
 
 void ReconnectWireTip::undo()
 {
+    this->glaph.socketStackUndo(this->eventId);
     this->reconnect(this->newNodeIndex, this->oldNodeIndex, this->oldSocket);
 }
 
@@ -217,8 +258,7 @@ void ReconnectWireTip::reconnect(unsigned int oldNodeIndex, unsigned int newNode
 
 /*** SocketCommand ***/
 
-SocketCommand::SocketCommand(Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) : xcom(XCom::get()),
-                                                                                                       socket(socket),
+SocketCommand::SocketCommand(Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) : socket(socket),
                                                                                                        nodeIndex(nodeIndex),
                                                                                                        socketIndex(socketIndex)
 { }

@@ -54,11 +54,12 @@ public:
     Q_INVOKABLE void evaluateFrom(NodeItem*, QStringList);
     Q_INVOKABLE QString inputToString(QObject*, QString const&);
     Q_INVOKABLE QList<double> inputToList(QObject*, QString const&);
-
     // For some reason, QML doesn't recognize SocketType, but it does recognize
     // Socket::SocketType.
     Q_INVOKABLE Socket::SocketType getInputValueType(NodeItem*, QString const&);
 
+    void socketStackUndo(unsigned int);
+    void socketStackRedo(unsigned int);
     WireItem const* getWire(int);
     // We need this custom replacement for QObject::findChild() because in Qt5
     // you can't use it to find an item in a Repeater. Kudos to Christian
@@ -71,9 +72,12 @@ private:
     jl_value_t* safe_eval(std::string);
     template<typename T>
     T inputToType(QObject*, QString const&, std::function<T(QVariant const&)>);
+    void onStackChange(std::function<bool(QUndoStack&)>, std::function<void(QUndoStack&)>,
+                       std::function<int(QUndoStack&)>, unsigned int);
 
     XCom& xcom;
-    QUndoStack commandStack;
+    QUndoStack mainStack;
+    QUndoStack socketStack;
     QQmlComponent nodeComponent;
 
     std::unordered_set<WireItemPtr> wires;

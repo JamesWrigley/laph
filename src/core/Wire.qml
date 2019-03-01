@@ -180,6 +180,7 @@ WireItem {
                 }
 
                 onReleased: {
+                    xcom.eventId += 1
                     root.handleRelease(parent)
                     parent.Drag.active = false
                 }
