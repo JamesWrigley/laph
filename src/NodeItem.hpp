@@ -53,6 +53,8 @@ class NodeItem : public QQuickItem
     Q_PROPERTY(QObject* hooks READ getHooks WRITE setHooks NOTIFY hooksChanged)
     Q_PROPERTY(QVariantMap inputs READ getInputs WRITE setInputs NOTIFY inputsChanged)
     Q_PROPERTY(QVariantMap outputs READ getOutputs WRITE setOutputs NOTIFY outputsChanged)
+    Q_PROPERTY(SocketModel* inputsModel READ getInputsModel NOTIFY inputsModelChanged)
+    Q_PROPERTY(SocketModel* outputsModel READ getOutputsModel NOTIFY outputsModelChanged)
 
 public:
     NodeItem(QQuickItem* = Q_NULLPTR);
@@ -72,6 +74,8 @@ public:
     QObject* getHooks();
     QVariantMap getInputs();
     QVariantMap getOutputs();
+    SocketModel* getInputsModel();
+    SocketModel* getOutputsModel();
     MessageModel* getMessages();
     void setIndex(int);
     void setHooks(QObject*);
@@ -93,8 +97,8 @@ public:
 
     QVariantMap inputs;
     QVariantMap outputs;
-    SocketModel* inputsModel{nullptr};
-    SocketModel* outputsModel{nullptr};
+    SocketModel inputsModel{};
+    SocketModel outputsModel{};
 
     std::unordered_map<QString, QVariant> output_values;
     std::unordered_map<QString, dvector_ptr> vector_cache;
@@ -112,6 +116,8 @@ signals:
     void inputsChanged();
     void outputsChanged();
     void messagesChanged();
+    void inputsModelChanged();
+    void outputsModelChanged();
     void nodeChanged(NodeItem*, QStringList);
 
     void wireConnectedTo(QString const&);

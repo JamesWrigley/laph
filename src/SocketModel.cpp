@@ -24,20 +24,18 @@
 #include <iostream>
 #endif
 
-SocketModel::SocketModel(SocketModel const& other) : SocketModel(other.parent(),
-                                                                 other.socketsTemplate,
-                                                                 other.sockets) { }
-
-SocketModel::SocketModel(QObject* parent,
-                         QVariantMap socketsTemplate,
-                         SocketVector sockets) : QAbstractListModel(parent),
-                                                 xcom(XCom::get())
+SocketModel::SocketModel(SocketModel const& other) : QAbstractListModel(other.parent()),
+                                                     xcom(XCom::get())
 {
-    this->socketsTemplate = socketsTemplate;
-    this->sockets = sockets;
+    this->nodeIndex = other.nodeIndex;
+    this->socketsType = other.socketsType;
+    this->sockets = other.sockets;
+    this->socket_counts = other.socket_counts;
+}
 
-    connect(this, &SocketModel::socketsTemplateChanged,
-            this, &SocketModel::refreshSockets);
+SocketModel::SocketModel(QObject* parent) : QAbstractListModel(parent),
+                                            xcom(XCom::get())
+{
     connect(&xcom, &XCom::createSocket, this, &SocketModel::onCreateSocket);
     connect(&xcom, &XCom::deleteSocket, this, &SocketModel::onDeleteSocket);
 }
@@ -91,12 +89,12 @@ SocketConstIterator SocketModel::cend() const
     return this->sockets.cend();
 }
 
-void SocketModel::refreshSockets()
+void SocketModel::setTemplate(QVariantMap const& socketTemplate)
 {
     this->sockets.clear();
 
-    auto end_it{this->socketsTemplate.end()};
-    for (auto socket_it{this->socketsTemplate.begin()}; socket_it != end_it; ++socket_it) {
+    auto end_it{socketTemplate.cend()};
+    for (auto socket_it{socketTemplate.cbegin()}; socket_it != end_it; ++socket_it) {
         Socket socket{};
         socket.name = socket_it.key();
         socket.prefix = socket.name;
@@ -160,14 +158,6 @@ void SocketModel::disconnectSocket(QString const& socket_name)
     } else {
         this->socket_counts.at(socket_it->prefix) -= 1;
     }
-}
-
-QVariantMap SocketModel::getSocketsTemplate() { return this->socketsTemplate; }
-
-void SocketModel::setSocketsTemplate(QVariantMap const& socketsTemplate)
-{
-    this->socketsTemplate = socketsTemplate;
-    emit this->socketsTemplateChanged();
 }
 
 Qt::ItemFlags SocketModel::flags(QModelIndex const&) const

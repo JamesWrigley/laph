@@ -52,20 +52,6 @@ NodeItem {
 
     signal inputChanged()
 
-    SocketModel {
-        id: inputsModel
-        objectName: "inputsModel"
-
-        socketsTemplate: inputs
-    }
-
-    SocketModel {
-        id: outputsModel
-        objectName: "outputsModel"
-
-        socketsTemplate: outputs
-    }
-
     Connections {
         target: graphEngine
 

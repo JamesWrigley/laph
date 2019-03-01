@@ -40,27 +40,17 @@ class SocketModel : public QAbstractListModel
 {
     Q_OBJECT
 
-    Q_PROPERTY(QVariantMap socketsTemplate READ getSocketsTemplate WRITE setSocketsTemplate NOTIFY socketsTemplateChanged)
-
 public:
     SocketModel(SocketModel const&);
-    SocketModel(QObject* = Q_NULLPTR,
-                QVariantMap = { },
-                SocketVector = { });
+    SocketModel(QObject* = Q_NULLPTR);
 
     enum SocketRoles { NameRole = Qt::UserRole + 1,
                        TypeRole,
                        RepeatingRole };
 
-    SocketModel& operator=(SocketModel const& other)
-        {
-            this->sockets = other.sockets;
-            this->socketsTemplate = other.socketsTemplate;
-            return *this;
-        }
-
     void connectSocket(QString const&);
     void disconnectSocket(QString const&);
+    void setTemplate(QVariantMap const&);
 
     SocketIterator begin();
     SocketIterator end();
@@ -77,9 +67,6 @@ private:
     void removeSocket(SocketConstIterator);
     SocketConstIterator findSocket(QString const&);
 
-    QVariantMap getSocketsTemplate();
-    void setSocketsTemplate(QVariantMap const&);
-
     Qt::ItemFlags flags(QModelIndex const&) const;
     int rowCount(QModelIndex const& = QModelIndex()) const;
     QVariant data(QModelIndex const&, int = Qt::DisplayRole) const;
@@ -88,14 +75,9 @@ private:
     XCom& xcom;
     SocketType socketsType;
     SocketVector sockets{};
-    QVariantMap socketsTemplate;
     std::unordered_map<QString, unsigned int> socket_counts{};
 
-signals:
-    void socketsTemplateChanged();
-
 private slots:
-    void refreshSockets();
     void onCreateSocket(Socket, unsigned int nodeIndex, unsigned int socketIndex);
     void onDeleteSocket(SocketType, unsigned int nodeIndex, unsigned int socketIndex);
 };

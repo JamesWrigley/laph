@@ -249,8 +249,8 @@ void Glaph::removeNode(unsigned int index)
 
     wire_cleanup(this->getInputs(node));
     wire_cleanup(this->getOutputs(node));
-    socket_cleanup(*(node->inputsModel), node->inputs);
-    socket_cleanup(*(node->outputsModel), node->outputs);
+    socket_cleanup(node->inputsModel, node->inputs);
+    socket_cleanup(node->outputsModel, node->outputs);
 
     this->nodes.erase(index);
 }

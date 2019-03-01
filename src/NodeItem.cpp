@@ -94,7 +94,7 @@ void NodeItem::evaluate(QString const& output_socket_name,
                 // repetitions to the sockets vector to process.
                 std::vector<Socket const*> sockets{&(this->getSocket(arg_str, SocketType::Input))};
                 if (sockets.front()->repeating) {
-                    for (auto const& socket : *(this->inputsModel)) {
+                    for (auto const& socket : this->inputsModel) {
                         if (&socket != sockets.front() && socket.prefix == sockets.front()->prefix) {
                             sockets.push_back(&socket);
                         }
@@ -224,10 +224,10 @@ void NodeItem::onWireDisconnected(unsigned int index, XCom::TipType type,
         // Only remove the socket if the wire is an input node with no other
         // wires connected to that socket.
         if (type == XCom::TipType::Input) {
-            this->outputsModel->disconnectSocket(socket_name);
+            this->outputsModel.disconnectSocket(socket_name);
         } else {
             if (this->graphEngine->getInputs(this, socket_name).size() <= 1) {
-                this->inputsModel->disconnectSocket(socket_name);
+                this->inputsModel.disconnectSocket(socket_name);
             }
         }
     }
@@ -238,10 +238,10 @@ void NodeItem::onWireConnected(unsigned int index, XCom::TipType type,
 {
     if (index == this->index) {
         if (type == XCom::TipType::Input) {
-            this->outputsModel->connectSocket(socket_name);
+            this->outputsModel.connectSocket(socket_name);
         } else {
             if (this->graphEngine->getInputs(this, socket_name).size() == 1) {
-                this->inputsModel->connectSocket(socket_name);
+                this->inputsModel.connectSocket(socket_name);
             }
         }
     }
@@ -268,14 +268,14 @@ bool NodeItem::isInput(QString socket_name)
 
 void NodeItem::onInputsChanged()
 {
-    this->inputsModel = this->findChild<SocketModel*>("inputsModel");
-    this->inputsModel->nodeIndex = this->index;
+    this->inputsModel.setTemplate(this->inputs);
+    this->inputsModel.nodeIndex = this->index;
 }
 
 void NodeItem::onOutputsChanged()
 {
-    this->outputsModel = this->findChild<SocketModel*>("outputsModel");
-    this->outputsModel->nodeIndex = this->index;
+    this->outputsModel.setTemplate(this->outputs);
+    this->outputsModel.nodeIndex = this->index;
 }
 
 QVariantMap NodeItem::getHooksMap()
@@ -297,13 +297,13 @@ QVariantMap NodeItem::getHooksMap()
 Socket const& NodeItem::getSocket(QString const& socket_name,
                                   SocketType socket_type)
 {
-    auto* model{socket_type & SocketType::Input ? inputsModel : outputsModel};
-    auto socket_it{std::find_if(model->cbegin(), model->cend(),
+    SocketModel& model{socket_type & SocketType::Input ? this->inputsModel : this->outputsModel};
+    auto socket_it{std::find_if(model.cbegin(), model.cend(),
                                 [&] (Socket const& socket) {
                                     return socket.name == socket_name;
                                 })};
 
-    if (socket_it != model->cend()) {
+    if (socket_it != model.cend()) {
         return *socket_it;
     } else {
         throw std::runtime_error(fmt("Could not find socket :0", {socket_name}));
@@ -328,6 +328,8 @@ void NodeItem::setHooks(QObject* hooks)
 
 QVariantMap NodeItem::getOutputs() { return this->outputs; }
 
+SocketModel* NodeItem::getOutputsModel() { return &(this->outputsModel); }
+
 void NodeItem::setOutputs(QVariantMap const& outputs)
 {
     this->outputs = outputs;
@@ -335,6 +337,8 @@ void NodeItem::setOutputs(QVariantMap const& outputs)
 }
 
 QVariantMap NodeItem::getInputs() { return this->inputs; }
+
+SocketModel* NodeItem::getInputsModel() { return &(this->inputsModel); }
 
 MessageModel* NodeItem::getMessages() { return &(this->messageModel); }
 
