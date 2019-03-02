@@ -73,8 +73,10 @@ private:
     jl_value_t* safe_eval(std::string);
     template<typename T>
     T inputToType(QObject*, QString const&, std::function<T(QVariant const&)>);
+    void onMainStackChange(std::function<bool(QUndoStack&)>, std::function<void(QUndoStack&)>,
+                           std::function<int(QUndoStack&)>);
     void onStackChange(std::function<bool(QUndoStack&)>, std::function<void(QUndoStack&)>,
-                       std::function<int(QUndoStack&)>, unsigned int);
+                       std::function<int(QUndoStack&)>, unsigned int, QUndoStack&);
 
     XCom& xcom;
     QUndoStack mainStack;

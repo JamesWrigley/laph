@@ -63,8 +63,14 @@ Glaph::Glaph(QObject* parent) : QObject(parent),
                                                    this->socketStack.push(new DeleteSocket(socket, nodeIndex, socketIndex));
                                                });
 
-    connect(&xcom, &XCom::requestUndo, [&] () { this->mainStack.undo(); });
-    connect(&xcom, &XCom::requestRedo, [&] () { this->mainStack.redo(); });
+    connect(&xcom, &XCom::requestUndo, [&] () {
+                                           this->onMainStackChange(std::mem_fn(&QUndoStack::canUndo), std::mem_fn(&QUndoStack::undo),
+                                                                   [] (auto& s) { return s.index() - 1; });
+                                       });
+    connect(&xcom, &XCom::requestRedo, [&] () {
+                                           this->onMainStackChange(std::mem_fn(&QUndoStack::canRedo), std::mem_fn(&QUndoStack::redo),
+                                                                   std::mem_fn(&QUndoStack::index));
+                                       });
 }
 
 Glaph::~Glaph()
@@ -72,27 +78,34 @@ Glaph::~Glaph()
     jl_atexit_hook(0);
 }
 
+void Glaph::onMainStackChange(std::function<bool(QUndoStack&)> predicate, std::function<void(QUndoStack&)> action,
+                              std::function<int(QUndoStack&)> index)
+{
+    if (predicate(this->mainStack)) {
+        unsigned int eventId{static_cast<BaseCommand const*>(this->mainStack.command(index(this->mainStack)))->eventId};
+        this->onStackChange(predicate, action, index, eventId, this->mainStack);
+    }
+}
+
 void Glaph::socketStackUndo(unsigned int eventId)
 {
     this->onStackChange(std::mem_fn(&QUndoStack::canUndo), std::mem_fn(&QUndoStack::undo),
-                        [] (auto& s) { return s.index() - 1; }, eventId);
+                        [] (auto& s) { return s.index() - 1; }, eventId, this->socketStack);
 }
 
 void Glaph::socketStackRedo(unsigned int eventId)
 {
     this->onStackChange(std::mem_fn(&QUndoStack::canRedo), std::mem_fn(&QUndoStack::redo),
-                        std::mem_fn(&QUndoStack::index), eventId);
+                        std::mem_fn(&QUndoStack::index), eventId, this->socketStack);
 }
 
 void Glaph::onStackChange(std::function<bool(QUndoStack&)> predicate, std::function<void(QUndoStack&)> action,
-                          std::function<int(QUndoStack&)> index, unsigned int eventId)
+                          std::function<int(QUndoStack&)> index, unsigned int eventId, QUndoStack& stack)
 {
-    auto nextSocketCommand{[&] () {
-                               return static_cast<SocketCommand const*>(this->socketStack.command(index(this->socketStack)));
-                           }};
+    auto nextCommand{[&] () { return static_cast<BaseCommand const*>(stack.command(index(stack))); }};
 
-    while (predicate(this->socketStack) && nextSocketCommand()->eventId == eventId) {
-        action(this->socketStack);
+    while (predicate(stack) && nextCommand()->eventId == eventId) {
+        action(stack);
     }
 }
 
