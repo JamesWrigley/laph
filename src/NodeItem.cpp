@@ -268,14 +268,16 @@ bool NodeItem::isInput(QString socket_name)
 
 void NodeItem::onInputsChanged()
 {
-    this->inputsModel.setTemplate(this->inputs);
-    this->inputsModel.nodeIndex = this->index;
+    if (!this->graphEngine->nodeExisted(this->index)) {
+        this->inputsModel.setTemplate(this->inputs);
+    }
 }
 
 void NodeItem::onOutputsChanged()
 {
-    this->outputsModel.setTemplate(this->outputs);
-    this->outputsModel.nodeIndex = this->index;
+    if (!this->graphEngine->nodeExisted(this->index)) {
+        this->outputsModel.setTemplate(this->outputs);
+    }
 }
 
 QVariantMap NodeItem::getHooksMap()
@@ -315,6 +317,8 @@ int NodeItem::getIndex() { return this->index; }
 void NodeItem::setIndex(int i)
 {
     this->index = i;
+    this->inputsModel.nodeIndex = i;
+    this->outputsModel.nodeIndex = i;
     emit this->indexChanged();
 }
 

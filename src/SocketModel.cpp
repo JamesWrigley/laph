@@ -33,9 +33,10 @@ SocketModel::SocketModel(SocketModel const& other) : QAbstractListModel(other.pa
     this->socket_counts = other.socket_counts;
 }
 
-SocketModel::SocketModel(QObject* parent) : QAbstractListModel(parent),
-                                            xcom(XCom::get())
+SocketModel::SocketModel(SocketType type, QObject* parent) : QAbstractListModel(parent),
+                                                             xcom(XCom::get())
 {
+    this->socketsType = type;
     connect(&xcom, &XCom::createSocket, this, &SocketModel::onCreateSocket);
     connect(&xcom, &XCom::deleteSocket, this, &SocketModel::onDeleteSocket);
 }
@@ -103,18 +104,17 @@ void SocketModel::setTemplate(QVariantMap const& socketTemplate)
         socket.type = properties.value("type").value<Socket::SocketType>();
         socket.repeating = properties.value("repeating", false).toBool();
 
-        this->addSocket(socket, this->sockets.end());
-        this->socket_counts.insert({socket.prefix, 1});
-    }
-
-    if (this->sockets.size() > 0) {
-        this->socketsType = (SocketType)(this->sockets.front().type & (SocketType::Input | SocketType::Output));
+        emit this->xcom.requestCreateSocket(socket, this->nodeIndex, this->sockets.size());
     }
 }
 
 void SocketModel::onCreateSocket(Socket socket, unsigned int nodeIndex, unsigned int socketIndex)
 {
-    if (nodeIndex == this->nodeIndex && this->sockets.size() > 0 && ioTypesMatch(socket, this->sockets.front())) {
+    if (nodeIndex == this->nodeIndex && ioTypesMatch(this->socketsType, socket.type)) {
+        if (this->socket_counts.find(socket.prefix) == this->socket_counts.end()) {
+            this->socket_counts.insert({socket.prefix, 0});
+        }
+
         this->socket_counts.at(socket.prefix) += 1;
         this->addSocket(socket, this->cbegin() + socketIndex);
     }
@@ -122,7 +122,7 @@ void SocketModel::onCreateSocket(Socket socket, unsigned int nodeIndex, unsigned
 
 void SocketModel::onDeleteSocket(SocketType type, unsigned int nodeIndex, unsigned int socketIndex)
 {
-    if (nodeIndex == this->nodeIndex && this->sockets.size() > 0 && type & this->socketsType) {
+    if (nodeIndex == this->nodeIndex && this->sockets.size() > 0 && ioTypesMatch(type, this->socketsType)) {
         auto socket_it{this->cbegin() + socketIndex};
         this->removeSocket(socket_it);
     }

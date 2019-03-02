@@ -97,8 +97,8 @@ public:
 
     QVariantMap inputs;
     QVariantMap outputs;
-    SocketModel inputsModel{};
-    SocketModel outputsModel{};
+    SocketModel inputsModel{SocketType::Input};
+    SocketModel outputsModel{SocketType::Output};
 
     std::unordered_map<QString, QVariant> output_values;
     std::unordered_map<QString, dvector_ptr> vector_cache;

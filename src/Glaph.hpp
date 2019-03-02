@@ -58,6 +58,7 @@ public:
     // Socket::SocketType.
     Q_INVOKABLE Socket::SocketType getInputValueType(NodeItem*, QString const&);
 
+    bool nodeExisted(unsigned int);
     void socketStackUndo(unsigned int);
     void socketStackRedo(unsigned int);
     WireItem const* getWire(int);
@@ -81,6 +82,7 @@ private:
     QQmlComponent nodeComponent;
 
     std::unordered_set<WireItemPtr> wires;
+    std::unordered_set<unsigned int> deleted_nodes;
     std::unordered_map<unsigned int, NodeItemPtr> nodes;
     std::unordered_map<std::string, std::unordered_map<std::string, jl_function_t*>> functions;
 

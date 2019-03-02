@@ -98,8 +98,8 @@ QString getObjectName(QQuickItem* node, QString prefix,
     return name.toString();
 }
 
-bool ioTypesMatch(Socket const& one, Socket const& two)
+bool ioTypesMatch(SocketType one, SocketType two)
 {
     unsigned int mask{SocketType::Input | SocketType::Output};
-    return (one.type & mask) == (two.type & mask);
+    return (one & mask) == (two & mask);
 }

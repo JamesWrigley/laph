@@ -101,8 +101,9 @@ QObject* Glaph::beginCreateNode(QString const& node_path)
     std::string nodeFile{fs::path(node_path.toStdString()).filename().string()};
 
     this->nodeComponent.loadUrl(node_path);
-    QObject* node_ptr{this->nodeComponent.beginCreate(this->xcom.engine->rootContext())};
-    static_cast<NodeItem*>(node_ptr)->nodeFile = QString::fromStdString(nodeFile);
+    NodeItem* node_ptr{static_cast<NodeItem*>(this->nodeComponent.beginCreate(this->xcom.engine->rootContext()))};
+    node_ptr->nodeFile = QString::fromStdString(nodeFile);
+    node_ptr->setGraphEngine(this);
     QQmlEngine::setObjectOwnership(node_ptr, QQmlEngine::CppOwnership);
     return node_ptr;
 }
@@ -111,7 +112,6 @@ void Glaph::endCreateNode(QString const& code_path, QObject* qobj_node)
 {
     this->nodeComponent.completeCreate();
     NodeItem* node{static_cast<NodeItem*>(qobj_node)};
-    node->setGraphEngine(this);
     connect(node, &NodeItem::nodeChanged, this, &Glaph::evaluateFrom);
     QString node_name{QFileInfo(code_path).baseName()};
 
@@ -239,20 +239,24 @@ void Glaph::removeNode(unsigned int index)
                               emit this->xcom.wireDisconnected(wire->inputNode->index, XCom::TipType::Input, wire->inputSocket);
                           }
                       }};
-    auto socket_cleanup{[&] (SocketModel model, QVariantMap const& modelTemplate) {
+    auto socket_cleanup{[&] (SocketModel model) {
                             for (auto socket_it{model.cbegin()}; socket_it != model.cend(); ++socket_it) {
-                                if (!modelTemplate.contains(socket_it->name)) {
-                                    emit this->xcom.requestDeleteSocket(*socket_it, index, socket_it - model.cbegin());
-                                }
+                                emit this->xcom.requestDeleteSocket(*socket_it, index, socket_it - model.cbegin());
                             }
                         }};
 
     wire_cleanup(this->getInputs(node));
     wire_cleanup(this->getOutputs(node));
-    socket_cleanup(node->inputsModel, node->inputs);
-    socket_cleanup(node->outputsModel, node->outputs);
+    socket_cleanup(node->inputsModel);
+    socket_cleanup(node->outputsModel);
 
+    this->deleted_nodes.insert(index);
     this->nodes.erase(index);
+}
+
+bool Glaph::nodeExisted(unsigned int nodeIndex)
+{
+    return this->deleted_nodes.find(nodeIndex) != this->deleted_nodes.end();
 }
 
 void Glaph::evaluateFrom(NodeItem* node, QStringList outputs)

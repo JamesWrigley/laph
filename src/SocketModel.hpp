@@ -42,7 +42,7 @@ class SocketModel : public QAbstractListModel
 
 public:
     SocketModel(SocketModel const&);
-    SocketModel(QObject* = Q_NULLPTR);
+    SocketModel(SocketType = SocketType::Input, QObject* = Q_NULLPTR);
 
     enum SocketRoles { NameRole = Qt::UserRole + 1,
                        TypeRole,
