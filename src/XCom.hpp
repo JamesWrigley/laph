@@ -62,8 +62,8 @@ public:
 signals:
     void repaintCanvas();
 
-    void wireConnected(unsigned int, TipType, QString const&);
-    void wireDisconnected(unsigned int, TipType, QString const&);
+    void wireConnected(unsigned int nodeIndex, TipType, QString const& socketName);
+    void wireDisconnected(unsigned int nodeIndex, TipType, QString const& socketName);
 
     // Signals to be emitted from QMLland
     void requestCreateNode(QString const& nodeFile, int nodeIndex, int x, int y);
