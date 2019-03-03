@@ -259,10 +259,9 @@ void NodeItem::endCreateWire()
 
 bool NodeItem::isInput(QString socket_name)
 {
-    QVariantMap inputs(this->getInputs());
-    return std::any_of(inputs.keyBegin(), inputs.keyEnd(),
-                       [&] (QVariant const& socket_key) {
-                           return socket_name == socket_key.toString();
+    return std::any_of(this->inputsModel.cbegin(), this->inputsModel.cend(),
+                       [&] (Socket const& socket) {
+                           return socket_name == socket.name;
                        });
 }
 
