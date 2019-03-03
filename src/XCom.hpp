@@ -72,6 +72,7 @@ signals:
     void requestDeleteWire(int wireIndex);
     void requestReconnectWireTip(unsigned int wireIndex, TipType tipType,
                                  unsigned int nodeIndex, QString const& newSocket);
+    void nodeMoved(unsigned int nodeIndex, int oldX, int oldY, int newX, int newY);
     void requestUndo();
     void requestRedo();
 

@@ -26,6 +26,50 @@ BaseCommand::BaseCommand() : xcom(XCom::get()),
                              eventId(xcom.eventId)
 { }
 
+/*** MoveNode ***/
+
+MoveNode::MoveNode(Glaph& glaph, unsigned int nodeIndex, int oldX, int oldY, int newX, int newY) : glaph(glaph)
+{
+    this->oldX = oldX;
+    this->oldY = oldY;
+    this->newX = newX;
+    this->newY = newY;
+    this->nodeIndex = nodeIndex;
+}
+
+void MoveNode::undo()
+{
+    NodeItem* node{this->glaph.getNode(this->nodeIndex)};
+    node->setProperty("x", this->oldX);
+    node->setProperty("y", this->oldY);
+}
+
+void MoveNode::redo()
+{
+    NodeItem* node{this->glaph.getNode(this->nodeIndex)};
+    // This check is to avoid the spurious redo() called by the stack when the
+    // object is first created, since by then the node will already be in its
+    // correct position.
+    if (node->property("x").toInt() != this->newX || node->property("y").toInt() != this->newY) {
+        node->setProperty("x", this->newX);
+        node->setProperty("y", this->newY);
+    }
+}
+
+int MoveNode::id() const { return 1; }
+
+bool MoveNode::mergeWith(QUndoCommand const* qundocommand)
+{
+    MoveNode const* command{static_cast<MoveNode const*>(qundocommand)};
+    if (command->nodeIndex == this->nodeIndex) {
+        this->newX = command->newX;
+        this->newY = command->newY;
+        return true;
+    } else {
+        return false;
+    }
+}
+
 /*** NodeCommand ***/
 
 NodeCommand::NodeCommand(Glaph& glaph) : glaph(glaph)

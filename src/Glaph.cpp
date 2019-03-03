@@ -59,6 +59,9 @@ Glaph::Glaph(QObject* parent) : QObject(parent),
     connect(&xcom, &XCom::requestDeleteSocket, [&] (Socket const& socket, unsigned int nodeIndex, unsigned int socketIndex) {
                                                    this->socketStack.push(new DeleteSocket(socket, nodeIndex, socketIndex));
                                                });
+    connect(&xcom, &XCom::nodeMoved, [&] (unsigned int nodeIndex, int oldX, int oldY, int newX, int newY) {
+                                         this->mainStack.push(new MoveNode(*this, nodeIndex, oldX, oldY, newX, newY));
+                                     });
 
     connect(&xcom, &XCom::requestUndo, [&] () {
                                            this->onMainStackChange(std::mem_fn(&QUndoStack::canUndo), std::mem_fn(&QUndoStack::undo),

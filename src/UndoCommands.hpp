@@ -39,6 +39,27 @@ public:
     virtual void redo() = 0;
 };
 
+class MoveNode : public BaseCommand
+{
+public:
+    MoveNode(Glaph&, unsigned int, int, int, int, int);
+
+    void undo() override;
+    void redo() override;
+
+    int id() const override;
+    bool mergeWith(QUndoCommand const*) override;
+
+private:
+    Glaph& glaph;
+
+    int oldX;
+    int oldY;
+    int newX;
+    int newY;
+    unsigned int nodeIndex;
+};
+
 class NodeCommand : public BaseCommand
 {
 public:

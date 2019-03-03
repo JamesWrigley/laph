@@ -185,6 +185,15 @@ NodeItem {
                 drag.target: glode
                 drag.threshold: 0
                 drag.axis: Drag.XAndYAxis
+                drag.onActiveChanged: {
+                    if (drag.active) {
+                        oldX = glode.x
+                        oldY = glode.y
+                    } else {
+                        xcom.eventId += 1
+                        xcom.nodeMoved(glode.index, oldX, oldY, glode.x, glode.y)
+                    }
+                }
 
                 onPressed: {
                     root.attemptFocus(mouse.x, mouse.y)
@@ -195,6 +204,9 @@ NodeItem {
                 onReleased: mouse.accepted = false
                 onDoubleClicked: mouse.accepted = false
                 onPositionChanged: mouse.accepted = false
+
+                property int oldX
+                property int oldY
             }
 
             Component {
