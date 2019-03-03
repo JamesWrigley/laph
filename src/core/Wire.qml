@@ -204,8 +204,6 @@ WireItem {
         sourceComponent: tip
 
         onLoaded: {
-            item.Drag.active = true
-
             item.parent = initialSocket
             item.isOutput = Qt.binding(function () { return root.startOnLeft })
             item.twinIndex = Qt.binding(function () { return startIndex })

@@ -273,6 +273,7 @@ NodeItem {
                                         if (da.wires === 0) {
                                             xcom.eventId += 1
                                             xcom.requestCreateWire(glode.index, name, !parent.isInput)
+                                            wire.endTip.Drag.active = true
                                         } else {
                                             mouse.accepted = false
                                         }
