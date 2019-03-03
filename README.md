@@ -15,6 +15,16 @@ enormous amount of flexibility when it comes to processing the data.
 * Qt 5.11 or higher
 * Julia 1.0 or higher
 
+## Roadmap
+- [x] Create a draggable canvas and nodes/sockets/wires
+- [x] Embed Julia
+- [x] Initial version of a lazily-evaluated graph engine
+- [ ] Undo/redo *[in progress]*
+- [ ] Unit tests
+- [ ] Support for saving the node graphs (including node settings and vector data)
+- [ ] Plotting support (most likely using [QCustomPlot](https://www.qcustomplot.com/))
+- [ ] Optimize the graph engine
+
 ## Quickstart
 Assuming we are in the cloned repo directory:
 
