@@ -20,7 +20,6 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
-#include <filesystem>
 
 #include <QString>
 #include <QtGlobal>
@@ -30,8 +29,6 @@
 #include "util.hpp"
 #include "Glaph.hpp"
 #include "UndoCommands.hpp"
-
-namespace fs = std::filesystem;
 
 Glaph::Glaph(QObject* parent) : QObject(parent),
                                 xcom(XCom::get()),
@@ -111,11 +108,9 @@ void Glaph::onStackChange(std::function<bool(QUndoStack&)> predicate, std::funct
 
 QObject* Glaph::beginCreateNode(QString const& node_path)
 {
-    std::string nodeFile{fs::path(node_path.toStdString()).filename().string()};
-
     this->nodeComponent.loadUrl(node_path);
     NodeItem* node_ptr{static_cast<NodeItem*>(this->nodeComponent.beginCreate(this->xcom.engine->rootContext()))};
-    node_ptr->nodeFile = QString::fromStdString(nodeFile);
+    node_ptr->nodeFile = QFileInfo(node_path).fileName();
     node_ptr->setGraphEngine(this);
     QQmlEngine::setObjectOwnership(node_ptr, QQmlEngine::CppOwnership);
     return node_ptr;

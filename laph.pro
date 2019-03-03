@@ -5,9 +5,8 @@
 QT += qml quick widgets
 TARGET = laph
 TEMPLATE = app
-LIBS += -L$$(JULIA_LIB_PATH) -ljulia -lstdc++fs
+LIBS += -L$$(JULIA_LIB_PATH) -ljulia
 CONFIG += debug_and_release
-QMAKE_CXXFLAGS += -std=c++17
 INCLUDEPATH += . $$(JULIA_INCLUDE_PATH)
 DEFINES += QT_DEPRECATED_WARNINGS JULIA_ENABLE_THREADING
 

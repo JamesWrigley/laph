@@ -11,7 +11,7 @@ enormous amount of flexibility when it comes to processing the data.
 ![Laph](laph.png)
 
 ## Requirements
-* A C++14 compliant compiler *(technically C++17 right now, but it'll be back to C++14 soon)*
+* A C++14 compliant compiler
 * Qt 5.11 or higher
 * Julia 1.0 or higher
 
@@ -22,3 +22,6 @@ Assuming we are in the cloned repo directory:
 qmake-qt5
 make
 ```
+
+Note that the path to the Julia libraries/headers are expected to be in
+`JULIA_LIB_PATH` and `JULIA_INCLUDE_PATH`, respectively.
