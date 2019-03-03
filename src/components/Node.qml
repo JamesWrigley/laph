@@ -49,6 +49,7 @@ NodeItem {
     property real yOffset
     default property Component uiComponent
     property bool selected: scope.activeFocus
+    property color mainColor: Qt.rgba(0.33, 0.33, 0.33, 0.8)
 
     signal inputChanged()
 
@@ -105,7 +106,7 @@ NodeItem {
             z: rootZ
             radius: 10
             focus: true
-            color: Qt.rgba(0.33, 0.33, 0.33, 0.8)
+            color: mainMa.drag.active ? Qt.lighter(glode.mainColor, 1.25) : glode.mainColor
             border.width: 4
             border.color: selected ? Qt.lighter("gray", 1.5) : "gray"
             width: childrenRect.width
@@ -137,9 +138,9 @@ NodeItem {
 
             ToolTip {
                 id: tooltip
-                delay: 500
+                delay: 200
                 width: 250
-                visible: mainMa.containsMouse && !ma.drag.active && tipListView.count > 0
+                visible: mainMa.containsMouse && tipListView.count > 0
 
                 contentItem: Column {
                     padding: 0
@@ -178,13 +179,15 @@ NodeItem {
             MouseArea {
                 id: mainMa
 
-                // Ugly hack to make sure that this overlays all other MouseArea's
-                z: 1 + parent.z
-                anchors.fill: mainLayout
+                anchors.fill: root
                 hoverEnabled: true
 
+                drag.target: glode
+                drag.threshold: 0
+                drag.axis: Drag.XAndYAxis
+
                 onPressed: {
-                    mouse.accepted = parent.attemptFocus(mouse.x, mouse.y)
+                    root.attemptFocus(mouse.x, mouse.y)
                 }
 
                 onWheel: wheel.accepted = false
@@ -315,72 +318,13 @@ NodeItem {
             ColumnLayout {
                 id: mainLayout
 
-                Rectangle {
-                    id: titleBar
+                Text {
+                    id: titleLabel
+                    Layout.topMargin: 10
+                    Layout.bottomMargin: -10
+                    Layout.alignment: Qt.AlignHCenter
 
-                    Layout.fillWidth: true
-                    Layout.topMargin: root.border.width
-                    Layout.leftMargin: root.border.width
-                    Layout.rightMargin: root.border.width
-
-                    height: 25
-                    radius: 6
-                    color: {
-                        if (ma.containsPress) {
-                            return Qt.darker(root.color, 1.2)
-                        } else if (ma.containsMouse) {
-                            return Qt.darker(root.color, 1.1)
-                        } else {
-                            return root.color
-                        } }
-
-                    // Inner rectangle to cover up the corner radius on the bottom edge
-                    Rectangle {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.bottom: parent.bottom
-
-                        color: parent.color
-                        height: parent.radius
-                    }
-
-                    Text {
-                        id: titleLabel
-
-                        anchors.centerIn: parent
-                        text: title
-                    }
-
-                    MouseArea {
-                        id: ma
-
-                        anchors.fill: titleBar
-                        parent: mainMa
-                        hoverEnabled: true
-
-                        drag.target: glode
-                        drag.threshold: 0
-                        drag.axis: Drag.XAndYAxis
-                        drag.onActiveChanged: {
-                            if (drag.active) {
-                                startDragPos = Qt.point(glode.x, glode.y)
-                            } else {
-                                xDrag += glode.x - startDragPos.x
-                                yDrag += glode.y - startDragPos.y
-                            }
-                        }
-
-                        property point startDragPos
-
-                        onWheel: wheel.accepted = false
-                        onClicked: mouse.accepted = false
-                        onPressed: {
-                            root.attemptFocus(mouse.x, mouse.y)
-                        }
-                        onReleased: mouse.accepted = false
-                        onDoubleClicked: mouse.accepted = false
-                        onPositionChanged: mouse.accepted = false
-                    }
+                    text: title
                 }
 
                 RowLayout {
