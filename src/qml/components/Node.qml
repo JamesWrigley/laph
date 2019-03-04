@@ -189,7 +189,12 @@ NodeItem {
                     if (drag.active) {
                         oldX = glode.x
                         oldY = glode.y
+
+                        startDragPos = Qt.point(glode.x, glode.y)
                     } else {
+                        xDrag += glode.x - startDragPos.x
+                        yDrag += glode.y - startDragPos.y
+
                         xcom.eventId += 1
                         xcom.nodeMoved(glode.index, oldX, oldY, glode.x, glode.y)
                     }
@@ -207,6 +212,7 @@ NodeItem {
 
                 property int oldX
                 property int oldY
+                property point startDragPos
             }
 
             Component {
