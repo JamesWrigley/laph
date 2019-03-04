@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 
     // We load the QML file after setting the context properties so that the
     // file has access to the properties immediately.
-    engine.load(basePath.filePath("src/core/main.qml"));
+    engine.load(basePath.filePath("./src/qml/core/main.qml"));
 
     return app.exec();
 }

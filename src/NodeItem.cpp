@@ -29,7 +29,7 @@
 
 NodeItem::NodeItem(QQuickItem* parent) : QQuickItem(parent),
                                          xcom(XCom::get()),
-                                         wireComponent(xcom.engine, "./core/Wire.qml")
+                                         wireComponent(xcom.engine, "./qml/core/Wire.qml")
 {
     connect(&(this->xcom), &XCom::wireDisconnected, this, &NodeItem::onWireDisconnected);
     connect(&(this->xcom), &XCom::wireConnected, this, &NodeItem::onWireConnected);

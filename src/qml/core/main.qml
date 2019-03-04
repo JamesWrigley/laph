@@ -38,7 +38,7 @@ ApplicationWindow {
 
     NodeMonitor {
         id: nm
-        dir: "src/nodes"
+        dir: "./src/qml/nodes"
     }
 
     Connections {
@@ -219,7 +219,8 @@ ApplicationWindow {
             node.yOffset = Qt.binding(function() { return canvas.yOffset })
             node.canvas =  Qt.binding(function() { return canvas })
 
-            graphEngine.endCreateNode(path.replace("qml", "jl"), node)
+            var jlPath = "./jl/" + nodeFile.replace("qml", "jl")
+            graphEngine.endCreateNode(jlPath, node)
             nodeCount += 1
             nodes.push(node)
         }
