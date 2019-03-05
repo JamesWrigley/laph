@@ -30,6 +30,8 @@
 #include "Glaph.hpp"
 #include "UndoCommands.hpp"
 
+JULIA_DEFINE_FAST_TLS()
+
 Glaph::Glaph(QObject* parent) : QObject(parent),
                                 xcom(XCom::get()),
                                 mainStack(parent),

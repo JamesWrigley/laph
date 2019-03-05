@@ -14,6 +14,7 @@ enormous amount of flexibility when it comes to processing the data.
 * A C++14 compliant compiler
 * Qt 5.11 or higher
 * Julia 1.0 or higher
+* CMake 3.8.0 or higher
 
 ## Roadmap
 - [x] Create a draggable canvas and nodes/sockets/wires
@@ -29,7 +30,8 @@ enormous amount of flexibility when it comes to processing the data.
 Assuming we are in the cloned repo directory:
 
 ```bash
-qmake-qt5
+mkdir build && cd build
+cmake ..
 make
 ```
 
