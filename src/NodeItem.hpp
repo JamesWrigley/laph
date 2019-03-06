@@ -31,6 +31,10 @@
 #include <QStringList>
 #include <QVariantMap>
 #include <QQmlComponent>
+#include <QQmlPropertyMap>
+
+#include <google/protobuf/message.h>
+#include <google/protobuf/descriptor.h>
 
 #include "util.hpp"
 #include "XCom.hpp"
@@ -38,6 +42,8 @@
 #include "WireItem.hpp"
 #include "SocketModel.hpp"
 #include "MessageModel.hpp"
+
+namespace pb = google::protobuf;
 
 using dvector = std::vector<double>;
 using dvector_ptr = std::shared_ptr<dvector>;
@@ -55,6 +61,7 @@ class NodeItem : public QQuickItem
     Q_PROPERTY(QVariantMap outputs READ getOutputs WRITE setOutputs NOTIFY outputsChanged)
     Q_PROPERTY(SocketModel* inputsModel READ getInputsModel NOTIFY inputsModelChanged)
     Q_PROPERTY(SocketModel* outputsModel READ getOutputsModel NOTIFY outputsModelChanged)
+    Q_PROPERTY(QQmlPropertyMap* store READ getStore NOTIFY storeChanged)
 
 public:
     NodeItem(QQuickItem* = Q_NULLPTR);
@@ -74,6 +81,7 @@ public:
     QObject* getHooks();
     QVariantMap getInputs();
     QVariantMap getOutputs();
+    QQmlPropertyMap* getStore();
     SocketModel* getInputsModel();
     SocketModel* getOutputsModel();
     MessageModel* getMessages();
@@ -82,11 +90,13 @@ public:
     void setInputs(QVariantMap const&);
     void setOutputs(QVariantMap const&);
     void setGraphEngine(Glaph*);
+    void setMessagePrototype(pb::Message const*);
 
     bool isInput(QString);
     QVariantMap getHooksMap();
     Socket const& getSocket(QString const&, SocketType);
     void evaluate(QString const&, std::unordered_set<WireItem*> const&);
+    std::string serialize();
 
     void cacheOutput(QString const&, SocketType);
     void cacheComputation(jl_value_t*, SocketType, QString const&);
@@ -106,13 +116,16 @@ public:
 
 private:
     XCom& xcom;
+    QQmlPropertyMap store{};
     Glaph* graphEngine{nullptr};
     QQmlComponent wireComponent;
     MessageModel messageModel{};
+    pb::Message const* messagePrototype{nullptr};
 
 signals:
     void hooksChanged();
     void indexChanged();
+    void storeChanged();
     void inputsChanged();
     void outputsChanged();
     void messagesChanged();

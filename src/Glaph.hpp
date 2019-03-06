@@ -19,6 +19,7 @@
 #ifndef GLAPH_HPP
 #define GLAPH_HPP
 
+#include <vector>
 #include <memory>
 #include <string>
 #include <functional>
@@ -31,12 +32,35 @@
 #include <QStringList>
 #include <QQmlComponent>
 
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/compiler/importer.h>
+
 #include "XCom.hpp"
 #include "Socket.hpp"
 #include "NodeItem.hpp"
 #include "WireItem.hpp"
 
+namespace pb = google::protobuf;
+using pbFieldType = pb::FieldDescriptor::Type;
 using NodeItemPtr = std::unique_ptr<NodeItem, std::function<void(NodeItem*)>>;
+
+class LaphErrorCollector : public pb::compiler::MultiFileErrorCollector
+{
+public:
+    void AddError(std::string const& filename, int line, int col, std::string const& msg) override
+        {
+            std::string error{fmt("ERROR in :0, line :1, column :2: ':3'",
+                                  {QString::fromStdString(filename), line, col, QString::fromStdString(msg)})};
+            throw std::runtime_error(error);
+        }
+
+    void AddWarning(std::string const& filename, int line, int col, std::string const& msg) override
+        {
+            println("WARNING in :0, line :1, column :2: ':3'", {QString::fromStdString(filename), line,
+                                                                col, QString::fromStdString(msg)});
+        }
+};
 
 class Glaph : public QObject
 {
@@ -87,6 +111,14 @@ private:
     std::unordered_set<unsigned int> deleted_nodes;
     std::unordered_map<unsigned int, NodeItemPtr> nodes;
     std::unordered_map<std::string, std::unordered_map<std::string, jl_function_t*>> functions;
+
+    pb::compiler::Importer importer;
+    LaphErrorCollector errorCollector{};
+    pb::compiler::DiskSourceTree sourceTree{};
+    pb::DynamicMessageFactory messageFactory{};
+
+    std::vector<pbFieldType> const supportedTypes{pbFieldType::TYPE_DOUBLE,
+                                                  pbFieldType::TYPE_STRING};
 
 signals:
     void inputChanged(unsigned int nodeIndex);

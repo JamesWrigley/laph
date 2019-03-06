@@ -26,20 +26,22 @@
 #include <QFileInfo>
 #include <QQmlEngine>
 
-#include "util.hpp"
 #include "Glaph.hpp"
 #include "UndoCommands.hpp"
 
-JULIA_DEFINE_FAST_TLS()
+JULIA_DEFINE_FAST_TLS();
 
 Glaph::Glaph(QObject* parent) : QObject(parent),
                                 xcom(XCom::get()),
                                 mainStack(parent),
                                 socketStack(parent),
-                                nodeComponent(xcom.engine)
+                                nodeComponent(xcom.engine),
+                                importer(&this->sourceTree, &this->errorCollector)
 {
+    // Initialize the Julia runtime
     jl_init();
 
+    // Connect signals
     connect(&xcom, &XCom::requestCreateNode, [&] (QString const& nodeFile, int index, int x, int y) {
                                                  this->mainStack.push(new CreateNode(*this, nodeFile, index, x, y));
                                              });
@@ -73,11 +75,32 @@ Glaph::Glaph(QObject* parent) : QObject(parent),
                                            this->onMainStackChange(std::mem_fn(&QUndoStack::canRedo), std::mem_fn(&QUndoStack::redo),
                                                                    std::mem_fn(&QUndoStack::index));
                                        });
+
+    // Set up protobuf
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
+    this->sourceTree.MapPath("", "proto");
+    pb::FileDescriptor const* fileDescriptor{this->importer.Import("nodes.proto")};
+
+    // Check that all the message fields are supported
+    for (int i{0}; i < fileDescriptor->message_type_count(); ++i) {
+        pb::Descriptor const* messageDescriptor{fileDescriptor->message_type(i)};
+        for (int j{0}; j < messageDescriptor->field_count(); ++j) {
+            pb::FieldDescriptor const* fieldDescriptor{messageDescriptor->field(j)};
+            bool supported{std::any_of(this->supportedTypes.begin(), this->supportedTypes.end(),
+                                       [&] (auto& t) { return t == fieldDescriptor->type(); })};
+
+            if (!supported) {
+                throw std::runtime_error(fmt("Field type ':0' of :1 is not supported",
+                                             {fieldDescriptor->type(), QString::fromStdString(fieldDescriptor->full_name())}));
+            }
+        }
+    }
 }
 
 Glaph::~Glaph()
 {
     jl_atexit_hook(0);
+    pb::ShutdownProtobufLibrary();
 }
 
 void Glaph::onMainStackChange(std::function<bool(QUndoStack&)> predicate, std::function<void(QUndoStack&)> action,
@@ -113,10 +136,18 @@ void Glaph::onStackChange(std::function<bool(QUndoStack&)> predicate, std::funct
 
 QObject* Glaph::beginCreateNode(QString const& node_path)
 {
+    QFileInfo fileInfo{node_path};
+
     this->nodeComponent.loadUrl(node_path);
     NodeItem* node_ptr{static_cast<NodeItem*>(this->nodeComponent.beginCreate(this->xcom.engine->rootContext()))};
-    node_ptr->nodeFile = QFileInfo(node_path).fileName();
+    node_ptr->nodeFile = fileInfo.fileName();
     node_ptr->setGraphEngine(this);
+
+    pb::Descriptor const* descriptor{this->importer.pool()->FindMessageTypeByName(fileInfo.baseName().toStdString())};
+    if (descriptor != NULL) {
+        node_ptr->setMessagePrototype(this->messageFactory.GetPrototype(descriptor));
+    }
+
     QQmlEngine::setObjectOwnership(node_ptr, QQmlEngine::CppOwnership);
     return node_ptr;
 }

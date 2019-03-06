@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message Constant {
+    double k = 1;
+}
+
+message Math {
+    string expr = 1;
+}
+
+message Vector {
+    repeated double nums = 1;
+}

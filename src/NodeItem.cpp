@@ -167,6 +167,51 @@ void NodeItem::evaluate(QString const& output_socket_name,
     }
 }
 
+std::string NodeItem::serialize()
+{
+    if (this->messagePrototype == nullptr) {
+        return std::string();
+    }
+
+    std::unique_ptr<pb::Message> message{this->messagePrototype->New()};
+    pb::Descriptor const* descriptor{message->GetDescriptor()};
+    pb::Reflection const* reflection{message->GetReflection()};
+
+    for (auto& field : this->store.keys()) {
+        QVariant value{this->store.value(field)};
+        pb::FieldDescriptor const* fieldDescriptor{descriptor->FindFieldByName(field.toStdString())};
+        pb::FieldDescriptor::Type type{fieldDescriptor->type()};
+
+        // Note: this should be cleaned up if possible, too much duplicate code
+        if (type == pbFieldType::TYPE_DOUBLE) {
+            if (fieldDescriptor->is_repeated()) {
+                QVariantList valuesList{value.toList()};
+                for (int i{0}; i < valuesList.size(); ++i) {
+                    reflection->SetRepeatedDouble(message.get(), fieldDescriptor,
+                                                  i, valuesList.at(i).value<double>());
+                }
+            } else {
+                reflection->SetDouble(message.get(), fieldDescriptor, value.value<double>());
+            }
+        } else if (type == pbFieldType::TYPE_STRING) {
+            if (fieldDescriptor->is_repeated()) {
+                QVariantList valuesList{value.toList()};
+                for (int i{0}; i < valuesList.size(); ++i) {
+                    reflection->SetRepeatedString(message.get(), fieldDescriptor,
+                                                  i, valuesList.at(i).toString().toStdString());
+                }
+            } else {
+                reflection->SetString(message.get(), fieldDescriptor, value.toString().toStdString());
+            }
+        } else {
+            throw std::runtime_error(fmt("Protobuf FieldDescriptor type not supported: :0",
+                                         {fieldDescriptor->type()}));
+        }
+    }
+
+    return message->SerializeAsString();
+}
+
 void NodeItem::cacheOutput(QString const& output_socket_name, SocketType type)
 {
     // Make sure we're dealing with an input socket
@@ -331,6 +376,8 @@ void NodeItem::setHooks(QObject* hooks)
 
 QVariantMap NodeItem::getOutputs() { return this->outputs; }
 
+QQmlPropertyMap* NodeItem::getStore() { return &this->store; }
+
 SocketModel* NodeItem::getOutputsModel() { return &(this->outputsModel); }
 
 void NodeItem::setOutputs(QVariantMap const& outputs)
@@ -354,4 +401,13 @@ void NodeItem::setInputs(QVariantMap const& inputs)
 void NodeItem::setGraphEngine(Glaph* graphEngine)
 {
     this->graphEngine = graphEngine;
+}
+
+void NodeItem::setMessagePrototype(pb::Message const* messagePrototype)
+{
+    this->messagePrototype = messagePrototype;
+    pb::Descriptor const* descriptor{messagePrototype->GetDescriptor()};
+    for (int i{0}; i < descriptor->field_count(); ++i) {
+        this->store.insert(QString::fromStdString(descriptor->field(i)->name()), QVariant{});
+    }
 }

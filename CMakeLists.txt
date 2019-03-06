@@ -6,6 +6,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 14)
 add_definitions(-DJULIA_ENABLE_THREADING)
 
+find_package(Protobuf REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Qml Quick REQUIRED)
 
 link_directories($ENV{JULIA_LIB_PATH})

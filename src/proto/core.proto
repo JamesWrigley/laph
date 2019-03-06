@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+message Graph {
+    repeated Node nodes = 1;
+    repeated Wire wires = 2;
+}
+
+message Node {
+    sint32 x = 1;
+    sint32 y = 2;
+
+    uint32 index = 3;
+    string nodeFile = 4;
+    repeated string inputSockets = 5;
+    repeated string outputSockets = 6;
+    // This is meant to be the serialized form of one of the node messages
+    // defined in nodes.proto.
+    string data = 7;
+}
+
+message Wire {
+    uint32 index = 1;
+    string inputSocket = 2;
+    string outputSocket = 3;
+    uint32 inputNodeIndex = 4;
+    uint32 outputNodeIndex = 5;
+}
